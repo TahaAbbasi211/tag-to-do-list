@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- soft glow disc -->
+    <path
+        android:pathData="M54,30 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0"
+        android:fillAlpha="0.10">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="33" android:startY="9"
+                android:endX="75" android:endY="51">
+                <item android:offset="0" android:color="#FF7C6CFF" />
+                <item android:offset="1" android:color="#FF4FD9C0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- check mark -->
+    <path
+        android:pathData="M38,55 L49,66 L71,42"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:strokeColor">
+            <gradient
+                android:type="linear"
+                android:startX="38" android:startY="66"
+                android:endX="71" android:endY="42">
+                <item android:offset="0" android:color="#FF6C5CFF" />
+                <item android:offset="0.55" android:color="#FF9B7BFF" />
+                <item android:offset="1" android:color="#FF4FD9C0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- accent dot -->
+    <path
+        android:pathData="M74,30 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0"
+        android:fillColor="#FFFF9A62" />
+</vector>

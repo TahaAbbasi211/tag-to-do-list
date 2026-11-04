@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tag</string>
+    <string name="app_subtitle">Routine &amp; tâches</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">Aujourd\'hui</string>
+    <string name="nav_tasks">Tâches</string>
+    <string name="nav_insights">Statistiques</string>
+    <string name="nav_settings">Réglages</string>
+
+    <!-- Actions courantes -->
+    <string name="action_save">Enregistrer</string>
+    <string name="action_cancel">Annuler</string>
+    <string name="action_add">Ajouter</string>
+    <string name="action_delete">Supprimer</string>
+    <string name="action_clear">Effacer</string>
+    <string name="action_done">Terminé</string>
+    <string name="action_ok">OK</string>
+    <string name="action_undo">Annuler</string>
+    <string name="action_close">Fermer</string>
+    <string name="action_edit">Modifier</string>
+    <string name="action_move_up">Monter</string>
+    <string name="action_move_down">Descendre</string>
+
+    <!-- Ã‰cran Aujourd hui -->
+    <string name="today_perfect_day">Journée parfaite</string>
+    <string name="today_complete_count">%1$d sur %2$d terminées</string>
+    <string name="today_empty_title">Aucune routine pour l\'instant</string>
+    <string name="today_empty_message">Appuie sur + pour ajouter ta première routine quotidienne</string>
+    <string name="today_add_routine">Ajouter une routine</string>
+    <string name="today_search_hint">Rechercher des routines…</string>
+    <string name="today_streak_days">Série de %1$d jours</string>
+    <string name="today_focus_start">Lancer la concentration</string>
+
+    <!-- Salutations -->
+    <string name="greeting_night">Bonne nuit</string>
+    <string name="greeting_morning">Bonjour</string>
+    <string name="greeting_afternoon">Bon après-midi</string>
+    <string name="greeting_evening">Bonsoir</string>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+
+    <!-- Groupes -->
+    <string name="group_morning">Matin</string>
+    <string name="group_afternoon">Après-midi</string>
+    <string name="group_evening">Soir</string>
+    <string name="group_anytime">À tout moment</string>
+
+    <!-- PrioritÃ©s -->
+    <string name="priority_low">Faible</string>
+    <string name="priority_medium">Moyenne</string>
+    <string name="priority_high">Élevée</string>
+
+    <!-- Jours relatifs -->
+    <string name="day_today">Aujourd\'hui</string>
+    <string name="day_tomorrow">Demain</string>
+    <string name="day_yesterday">Hier</string>
+    <string name="day_in_days">Dans %1$d jours</string>
+    <string name="day_days_ago">Il y a %1$d jours</string>
+
+    <!-- Ã‰cran TÃ¢ches -->
+    <string name="tasks_search_hint">Rechercher des tâches…</string>
+    <string name="tasks_filter_all">Toutes</string>
+    <string name="tasks_filter_today">Aujourd\'hui</string>
+    <string name="tasks_filter_upcoming">À venir</string>
+    <string name="tasks_filter_overdue">En retard</string>
+    <string name="tasks_filter_done">Terminées</string>
+    <string name="tasks_empty_title">Aucune tâche pour l\'instant</string>
+    <string name="tasks_empty_message">Appuie sur + pour ajouter une tâche à suivre</string>
+    <string name="tasks_add_task">Ajouter une tâche</string>
+    <string name="tasks_delete">Supprimer la tâche</string>
+
+    <!-- Ã‰diteur de tÃ¢che -->
+    <string name="task_editor_new">Nouvelle tâche</string>
+    <string name="task_editor_edit">Modifier la tâche</string>
+    <string name="task_editor_title">Titre</string>
+    <string name="task_editor_note">Note (facultatif)</string>
+    <string name="task_editor_tag">Étiquette</string>
+    <string name="task_editor_tag_none">Aucune</string>
+    <string name="task_editor_priority">Priorité</string>
+    <string name="task_editor_due_date">Date d\'échéance</string>
+    <string name="task_editor_due_none">Aucune échéance</string>
+    <string name="task_editor_quick_today">Aujourd\'hui</string>
+    <string name="task_editor_quick_tomorrow">Demain</string>
+    <string name="task_editor_quick_weekend">Ce week-end</string>
+    <string name="task_editor_pick_date">Choisir une date</string>
+
+    <!-- Ã‰diteur de routine -->
+    <string name="routine_editor_new">Nouvelle routine</string>
+    <string name="routine_editor_edit">Modifier la routine</string>
+    <string name="routine_editor_title">Titre</string>
+    <string name="routine_editor_group">Groupe</string>
+    <string name="routine_editor_icon">Icône</string>
+    <string name="routine_editor_color">Couleur</string>
+    <string name="routine_editor_days">Jours</string>
+    <string name="routine_editor_reminder_time">Heure du rappel</string>
+    <string name="routine_editor_hour">Heure</string>
+    <string name="routine_editor_minute">Min</string>
+    <string name="routine_editor_notify">Me notifier</string>
+    <string name="routine_editor_set_time_first">Définis d\'abord une heure</string>
+    <string name="routine_editor_remind_at">Rappelle-moi à %1$s les jours sélectionnés</string>
+    <string name="routine_editor_delete">Supprimer la routine</string>
+
+    <!-- Statistiques -->
+    <string name="insights_empty_title">Aucune donnée pour l\'instant</string>
+    <string name="insights_empty_message">Termine quelques routines et tâches pour voir tes statistiques</string>
+    <string name="insights_consistency">Score de régularité</string>
+    <string name="insights_out_of_100">sur 100</string>
+    <string name="insights_current_streak">Série actuelle</string>
+    <string name="insights_best_streak">Meilleure série</string>
+    <string name="insights_completions">Réalisations</string>
+    <string name="insights_last_7_days">7 derniers jours</string>
+    <string name="insights_daily_rate">Taux de réalisation quotidien</string>
+    <string name="insights_activity">Activité</string>
+    <string name="insights_last_12_weeks">12 dernières semaines</string>
+    <string name="insights_top_routines">Routines principales</string>
+    <string name="insights_rate_30_days">Taux de réalisation sur 30 jours</string>
+    <string name="insights_tasks">Tâches</string>
+    <string name="insights_total_tasks">Total des tâches</string>
+    <string name="insights_completed">Terminées</string>
+    <string name="insights_completion_rate">Taux de réalisation</string>
+    <string name="insights_best_weekday">Meilleur jour</string>
+    <string name="insights_worst_weekday">Jour le plus difficile</string>
+    <string name="insights_focus_time">Temps de concentration</string>
+    <string name="insights_streak_forecast">Prévision de série</string>
+    <string name="insights_forecast_body">À ton rythme actuel, tu devrais atteindre une série de %1$d jours.</string>
+
+    <!-- RÃ©glages -->
+    <string name="settings_appearance">Apparence</string>
+    <string name="settings_theme_mode">Thème</string>
+    <string name="settings_theme_colour">Couleur du thème</string>
+    <string name="settings_languages">Langues</string>
+    <string name="settings_language_system">Système par défaut</string>
+    <string name="settings_profile">Ton profil</string>
+    <string name="settings_your_name">Ton nom</string>
+    <string name="settings_save_name">Enregistrer le nom</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_enable_reminders">Activer les rappels</string>
+    <string name="settings_enable_reminders_sub">Reçois une notification pour les routines planifiées</string>
+    <string name="settings_daily_digest">Résumé quotidien</string>
+    <string name="settings_daily_digest_sub">Récapitulatif des routines du jour à %1$s</string>
+    <string name="settings_digest_time">Heure du résumé : %1$s</string>
+    <string name="settings_tags">Étiquettes</string>
+    <string name="settings_new_tag">Nouvelle étiquette</string>
+    <string name="settings_delete_tag">Supprimer l\'étiquette</string>
+    <string name="settings_data">Données</string>
+    <string name="settings_export">Exporter la sauvegarde</string>
+    <string name="settings_import">Importer la sauvegarde</string>
+    <string name="settings_reset">Réinitialiser toute la progression</string>
+    <string name="settings_about">À propos</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_built_with">Créé avec Jetpack Compose</string>
+
+    <!-- Modes de thÃ¨me -->
+    <string name="theme_system">Système</string>
+    <string name="theme_light">Clair</string>
+    <string name="theme_dark">Sombre</string>
+
+    <!-- Palettes de thÃ¨me -->
+    <string name="palette_violet">Violet</string>
+    <string name="palette_sky">Ciel</string>
+    <string name="palette_purple">Pourpre</string>
+    <string name="palette_pink">Rose</string>
+    <string name="palette_teal">Turquoise</string>
+    <string name="palette_sunset">Coucher de soleil</string>
+
+    <!-- BoÃ®tes de dialogue -->
+    <string name="dialog_reset_title">Réinitialiser toute la progression ?</string>
+    <string name="dialog_reset_body">Cela supprimera tous les journaux de réalisation des routines et des tâches. Tes routines et tes tâches seront conservées.</string>
+    <string name="dialog_reset_confirm">Réinitialiser</string>
+    <string name="dialog_export_title">Sauvegarde exportée</string>
+    <string name="dialog_export_body">Enregistrée dans :\n%1$s</string>
+    <string name="dialog_import_title">Sauvegarde restaurée</string>
+    <string name="dialog_import_body">%1$d routines, %2$d tâches et %3$d étiquettes restaurées.</string>
+    <string name="dialog_import_failed">Impossible de lire ce fichier de sauvegarde.</string>
+
+    <!-- Annuler -->
+    <string name="undo_routine_deleted">Routine supprimée</string>
+    <string name="undo_task_deleted">Tâche supprimée</string>
+    <string name="undo_tag_deleted">Étiquette supprimée</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_routines">Rappels de routine</string>
+    <string name="notif_channel_routines_desc">Rappels pour les routines planifiées.</string>
+    <string name="notif_channel_digest">Résumé quotidien</string>
+    <string name="notif_channel_digest_desc">Un court résumé de ce qu\'il reste à faire aujourd\'hui.</string>
+    <string name="notif_routine_body">C\'est l\'heure de ta routine. Appuie pour ouvrir Tag.</string>
+    <string name="notif_digest_title">Ta journée jusqu\'ici</string>
+    <string name="notif_digest_nothing">Rien de prévu aujourd\'hui. Profite du calme.</string>
+    <string name="notif_digest_all_done">Les %1$d routines sont terminées. Beau travail.</string>
+    <string name="notif_digest_remaining">%1$d routines sur %2$d restent à faire aujourd\'hui.</string>
+    <string name="notif_action_done">Marquer comme fait</string>
+    <string name="notif_action_snooze">Reporter de 15 min</string>
+
+    <!-- Minuteur de concentration -->
+    <string name="focus_title">Concentration</string>
+    <string name="focus_start">Démarrer</string>
+    <string name="focus_pause">Pause</string>
+    <string name="focus_resume">Reprendre</string>
+    <string name="focus_stop">Arrêter</string>
+    <string name="focus_give_up">Abandonner</string>
+    <string name="focus_running">Concentration sur %1$s</string>
+    <string name="focus_no_routine">Aucune routine sélectionnée</string>
+    <string name="focus_pick_routine">Choisis une routine sur laquelle te concentrer</string>
+    <string name="focus_minutes">%1$d min</string>
+    <string name="focus_session_done">Session de concentration terminée</string>
+    <string name="focus_total">Temps de concentration total : %1$s</string>
+
+    <!-- Descriptions de contenu -->
+    <string name="cd_delete">Supprimer</string>
+    <string name="cd_more">Plus d\'options</string>
+    <string name="cd_drag">Réorganiser</string>
+    <string name="tasks_no_matches">Aucun résultat</string>
+    <string name="tasks_try_different_search">Essaie une autre recherche</string>
+    <string name="insights_percent_completion">%1$d%% complété</string>
+</resources>
+

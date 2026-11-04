@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tag</string>
+    <string name="app_subtitle">روتین و کارها</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">امروز</string>
+    <string name="nav_tasks">کارها</string>
+    <string name="nav_insights">آمار</string>
+    <string name="nav_settings">تنظیمات</string>
+
+    <!-- Common actions -->
+    <string name="action_save">ذخیره</string>
+    <string name="action_cancel">لغو</string>
+    <string name="action_add">افزودن</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_clear">پاک کردن</string>
+    <string name="action_done">انجام شد</string>
+    <string name="action_ok">تأیید</string>
+    <string name="action_undo">بازگرداندن</string>
+    <string name="action_close">بستن</string>
+    <string name="action_edit">ویرایش</string>
+    <string name="action_move_up">انتقال به بالا</string>
+    <string name="action_move_down">انتقال به پایین</string>
+
+    <!-- Today screen -->
+    <string name="today_perfect_day">روز کامل</string>
+    <string name="today_complete_count">%1$d از %2$d انجام شد</string>
+    <string name="today_empty_title">هنوز روتینی نداری</string>
+    <string name="today_empty_message">روی + بزن و اولین روتین روزانه‌ات را اضافه کن</string>
+    <string name="today_add_routine">افزودن روتین</string>
+    <string name="today_search_hint">جست‌وجوی روتین‌ها…</string>
+    <string name="today_streak_days">زنجیره %1$d روزه</string>
+    <string name="today_focus_start">شروع تمرکز</string>
+
+    <!-- Greetings -->
+    <string name="greeting_night">شب بخیر</string>
+    <string name="greeting_morning">صبح بخیر</string>
+    <string name="greeting_afternoon">بعدازظهر بخیر</string>
+    <string name="greeting_evening">عصر بخیر</string>
+    <string name="greeting_with_name">%1$s، %2$s</string>
+
+    <!-- Groups -->
+    <string name="group_morning">صبح</string>
+    <string name="group_afternoon">بعدازظهر</string>
+    <string name="group_evening">عصر</string>
+    <string name="group_anytime">هر وقت</string>
+
+    <!-- Priorities -->
+    <string name="priority_low">کم</string>
+    <string name="priority_medium">متوسط</string>
+    <string name="priority_high">زیاد</string>
+
+    <!-- Relative days -->
+    <string name="day_today">امروز</string>
+    <string name="day_tomorrow">فردا</string>
+    <string name="day_yesterday">دیروز</string>
+    <string name="day_in_days">%1$d روز دیگر</string>
+    <string name="day_days_ago">%1$d روز پیش</string>
+
+    <!-- Tasks screen -->
+    <string name="tasks_search_hint">جست‌وجوی کارها…</string>
+    <string name="tasks_filter_all">همه</string>
+    <string name="tasks_filter_today">امروز</string>
+    <string name="tasks_filter_upcoming">پیش‌رو</string>
+    <string name="tasks_filter_overdue">عقب‌افتاده</string>
+    <string name="tasks_filter_done">انجام‌شده</string>
+    <string name="tasks_empty_title">هنوز کاری نداری</string>
+    <string name="tasks_empty_message">روی + بزن و کاری را که می‌خواهی پیگیری کنی اضافه کن</string>
+    <string name="tasks_add_task">افزودن کار</string>
+    <string name="tasks_delete">حذف کار</string>
+
+    <!-- Task editor -->
+    <string name="task_editor_new">کار جدید</string>
+    <string name="task_editor_edit">ویرایش کار</string>
+    <string name="task_editor_title">عنوان</string>
+    <string name="task_editor_note">یادداشت (اختیاری)</string>
+    <string name="task_editor_tag">برچسب</string>
+    <string name="task_editor_tag_none">هیچ‌کدام</string>
+    <string name="task_editor_priority">اولویت</string>
+    <string name="task_editor_due_date">تاریخ سررسید</string>
+    <string name="task_editor_due_none">بدون سررسید</string>
+    <string name="task_editor_quick_today">امروز</string>
+    <string name="task_editor_quick_tomorrow">فردا</string>
+    <string name="task_editor_quick_weekend">آخر این هفته</string>
+    <string name="task_editor_pick_date">انتخاب تاریخ</string>
+
+    <!-- Routine editor -->
+    <string name="routine_editor_new">روتین جدید</string>
+    <string name="routine_editor_edit">ویرایش روتین</string>
+    <string name="routine_editor_title">عنوان</string>
+    <string name="routine_editor_group">بخش</string>
+    <string name="routine_editor_icon">نماد</string>
+    <string name="routine_editor_color">رنگ</string>
+    <string name="routine_editor_days">روزها</string>
+    <string name="routine_editor_reminder_time">زمان یادآوری</string>
+    <string name="routine_editor_hour">ساعت</string>
+    <string name="routine_editor_minute">دقیقه</string>
+    <string name="routine_editor_notify">به من یادآوری کن</string>
+    <string name="routine_editor_set_time_first">اول یک زمان انتخاب کن</string>
+    <string name="routine_editor_remind_at">در روزهای انتخاب‌شده ساعت %1$s یادآوری کن</string>
+    <string name="routine_editor_delete">حذف روتین</string>
+
+    <!-- Insights -->
+    <string name="insights_empty_title">هنوز داده‌ای نیست</string>
+    <string name="insights_empty_message">چند روتین و کار را انجام بده تا آمارت نمایش داده شود</string>
+    <string name="insights_consistency">امتیاز پایبندی</string>
+    <string name="insights_out_of_100">از ۱۰۰</string>
+    <string name="insights_current_streak">زنجیره فعلی</string>
+    <string name="insights_best_streak">بهترین زنجیره</string>
+    <string name="insights_completions">انجام‌شده‌ها</string>
+    <string name="insights_last_7_days">۷ روز گذشته</string>
+    <string name="insights_daily_rate">نرخ انجام روزانه</string>
+    <string name="insights_activity">فعالیت</string>
+    <string name="insights_last_12_weeks">۱۲ هفته گذشته</string>
+    <string name="insights_top_routines">روتین‌های برتر</string>
+    <string name="insights_rate_30_days">نرخ انجام در ۳۰ روز</string>
+    <string name="insights_tasks">کارها</string>
+    <string name="insights_total_tasks">کل کارها</string>
+    <string name="insights_completed">انجام‌شده</string>
+    <string name="insights_completion_rate">نرخ انجام</string>
+    <string name="insights_best_weekday">بهترین روز</string>
+    <string name="insights_worst_weekday">سخت‌ترین روز</string>
+    <string name="insights_focus_time">زمان تمرکز</string>
+    <string name="insights_streak_forecast">پیش‌بینی زنجیره</string>
+    <string name="insights_forecast_body">با روند فعلی، احتمالاً به زنجیره %1$d روزه می‌رسی.</string>
+
+    <!-- Settings -->
+    <string name="settings_appearance">ظاهر</string>
+    <string name="settings_theme_mode">حالت نمایش</string>
+    <string name="settings_theme_colour">رنگ برنامه</string>
+    <string name="settings_languages">زبان‌ها</string>
+    <string name="settings_language_system">زبان دستگاه</string>
+    <string name="settings_profile">پروفایل شما</string>
+    <string name="settings_your_name">نام شما</string>
+    <string name="settings_save_name">ذخیره نام</string>
+    <string name="settings_notifications">اعلان‌ها</string>
+    <string name="settings_enable_reminders">فعال بودن یادآورها</string>
+    <string name="settings_enable_reminders_sub">برای روتین‌های زمان‌بندی‌شده اعلان بگیر</string>
+    <string name="settings_daily_digest">خلاصه روزانه</string>
+    <string name="settings_daily_digest_sub">خلاصه روتین‌های امروز در ساعت %1$s</string>
+    <string name="settings_digest_time">زمان خلاصه: %1$s</string>
+    <string name="settings_tags">برچسب‌ها</string>
+    <string name="settings_new_tag">برچسب جدید</string>
+    <string name="settings_delete_tag">حذف برچسب</string>
+    <string name="settings_data">داده‌ها</string>
+    <string name="settings_export">تهیه نسخه پشتیبان</string>
+    <string name="settings_import">بازگرداندن پشتیبان</string>
+    <string name="settings_reset">پاک کردن همه پیشرفت</string>
+    <string name="settings_about">درباره</string>
+    <string name="settings_version">نسخه %1$s</string>
+    <string name="settings_built_with">ساخته‌شده با Jetpack Compose</string>
+
+    <!-- Theme modes -->
+    <string name="theme_system">سیستم</string>
+    <string name="theme_light">روشن</string>
+    <string name="theme_dark">تاریک</string>
+
+    <!-- Theme palettes -->
+    <string name="palette_violet">بنفش</string>
+    <string name="palette_sky">آبی آسمانی</string>
+    <string name="palette_purple">ارغوانی</string>
+    <string name="palette_pink">صورتی</string>
+    <string name="palette_teal">فیروزه‌ای</string>
+    <string name="palette_sunset">غروب</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_reset_title">همه پیشرفت پاک شود؟</string>
+    <string name="dialog_reset_body">تمام گزارش‌های انجام‌شدن روتین‌ها و کارها حذف می‌شود. خود روتین‌ها و کارها باقی می‌مانند.</string>
+    <string name="dialog_reset_confirm">پاک کن</string>
+    <string name="dialog_export_title">پشتیبان ساخته شد</string>
+    <string name="dialog_export_body">ذخیره شد در:\n%1$s</string>
+    <string name="dialog_import_title">پشتیبان بازگردانده شد</string>
+    <string name="dialog_import_body">%1$d روتین، %2$d کار و %3$d برچسب بازگردانده شد.</string>
+    <string name="dialog_import_failed">خواندن این فایل پشتیبان ممکن نشد.</string>
+
+    <!-- Undo -->
+    <string name="undo_routine_deleted">روتین حذف شد</string>
+    <string name="undo_task_deleted">کار حذف شد</string>
+    <string name="undo_tag_deleted">برچسب حذف شد</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_routines">یادآور روتین‌ها</string>
+    <string name="notif_channel_routines_desc">یادآوری برای روتین‌های زمان‌بندی‌شده.</string>
+    <string name="notif_channel_digest">خلاصه روزانه</string>
+    <string name="notif_channel_digest_desc">خلاصه کوتاهی از کارهای باقی‌مانده امروز.</string>
+    <string name="notif_routine_body">وقت روتینت است. برای باز کردن Tag بزن.</string>
+    <string name="notif_digest_title">وضعیت امروزت</string>
+    <string name="notif_digest_nothing">امروز چیزی برنامه‌ریزی نشده. از آرامشت لذت ببر.</string>
+    <string name="notif_digest_all_done">هر %1$d روتین انجام شد. کارت درسته!</string>
+    <string name="notif_digest_remaining">%1$d از %2$d روتین هنوز برای امروز مانده.</string>
+    <string name="notif_action_done">انجام شد</string>
+    <string name="notif_action_snooze">۱۵ دقیقه بعد</string>
+
+    <!-- Focus timer -->
+    <string name="focus_title">تمرکز</string>
+    <string name="focus_start">شروع</string>
+    <string name="focus_pause">توقف</string>
+    <string name="focus_resume">ادامه</string>
+    <string name="focus_stop">پایان</string>
+    <string name="focus_give_up">رها کردن</string>
+    <string name="focus_running">در حال تمرکز روی %1$s</string>
+    <string name="focus_no_routine">روتینی انتخاب نشده</string>
+    <string name="focus_pick_routine">یک روتین برای تمرکز انتخاب کن</string>
+    <string name="focus_minutes">%1$d دقیقه</string>
+    <string name="focus_session_done">جلسه تمرکز کامل شد</string>
+    <string name="focus_total">مجموع تمرکز: %1$s</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_delete">حذف</string>
+    <string name="cd_more">گزینه‌های بیشتر</string>
+    <string name="cd_drag">جابه‌جایی</string>
+    <string name="tasks_no_matches">موردی یافت نشد</string>
+    <string name="tasks_try_different_search">جستجوی دیگری را امتحان کنید</string>
+    <string name="insights_percent_completion">%1$d%% تکمیل شده</string>
+</resources>
+

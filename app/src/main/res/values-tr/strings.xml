@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tag</string>
+    <string name="app_subtitle">Rutin ve Görevler</string>
+
+    <!-- Gezinme -->
+    <string name="nav_today">Bugün</string>
+    <string name="nav_tasks">Görevler</string>
+    <string name="nav_insights">İstatistikler</string>
+    <string name="nav_settings">Ayarlar</string>
+
+    <!-- SÄ±k kullanÄ±lan iÅŸlemler -->
+    <string name="action_save">Kaydet</string>
+    <string name="action_cancel">İptal</string>
+    <string name="action_add">Ekle</string>
+    <string name="action_delete">Sil</string>
+    <string name="action_clear">Temizle</string>
+    <string name="action_done">Tamam</string>
+    <string name="action_ok">Tamam</string>
+    <string name="action_undo">Geri al</string>
+    <string name="action_close">Kapat</string>
+    <string name="action_edit">Düzenle</string>
+    <string name="action_move_up">Yukarı taşı</string>
+    <string name="action_move_down">Aşağı taşı</string>
+
+    <!-- BugÃ¼n ekranÄ± -->
+    <string name="today_perfect_day">Kusursuz gün</string>
+    <string name="today_complete_count">%2$d görevin %1$d tanesi tamam</string>
+    <string name="today_empty_title">Henüz rutin yok</string>
+    <string name="today_empty_message">İlk günlük rutinini eklemek için + simgesine dokun</string>
+    <string name="today_add_routine">Rutin ekle</string>
+    <string name="today_search_hint">Rutinlerde ara…</string>
+    <string name="today_streak_days">%1$d günlük seri</string>
+    <string name="today_focus_start">Odaklanmayı başlat</string>
+
+    <!-- KarÅŸÄ±lamalar -->
+    <string name="greeting_night">İyi geceler</string>
+    <string name="greeting_morning">Günaydın</string>
+    <string name="greeting_afternoon">İyi günler</string>
+    <string name="greeting_evening">İyi akşamlar</string>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+
+    <!-- Gruplar -->
+    <string name="group_morning">Sabah</string>
+    <string name="group_afternoon">Öğleden sonra</string>
+    <string name="group_evening">Akşam</string>
+    <string name="group_anytime">Her zaman</string>
+
+    <!-- Ã–ncelikler -->
+    <string name="priority_low">Düşük</string>
+    <string name="priority_medium">Orta</string>
+    <string name="priority_high">Yüksek</string>
+
+    <!-- GÃ¶reli gÃ¼nler -->
+    <string name="day_today">Bugün</string>
+    <string name="day_tomorrow">Yarın</string>
+    <string name="day_yesterday">Dün</string>
+    <string name="day_in_days">%1$d gün sonra</string>
+    <string name="day_days_ago">%1$d gün önce</string>
+
+    <!-- GÃ¶revler ekranÄ± -->
+    <string name="tasks_search_hint">Görevlerde ara…</string>
+    <string name="tasks_filter_all">Tümü</string>
+    <string name="tasks_filter_today">Bugün</string>
+    <string name="tasks_filter_upcoming">Yaklaşan</string>
+    <string name="tasks_filter_overdue">Gecikmiş</string>
+    <string name="tasks_filter_done">Tamamlanan</string>
+    <string name="tasks_empty_title">Henüz görev yok</string>
+    <string name="tasks_empty_message">Takip etmek istediğin bir görev eklemek için + simgesine dokun</string>
+    <string name="tasks_add_task">Görev ekle</string>
+    <string name="tasks_delete">Görevi sil</string>
+
+    <!-- GÃ¶rev dÃ¼zenleyici -->
+    <string name="task_editor_new">Yeni Görev</string>
+    <string name="task_editor_edit">Görevi Düzenle</string>
+    <string name="task_editor_title">Başlık</string>
+    <string name="task_editor_note">Not (isteğe bağlı)</string>
+    <string name="task_editor_tag">Etiket</string>
+    <string name="task_editor_tag_none">Yok</string>
+    <string name="task_editor_priority">Öncelik</string>
+    <string name="task_editor_due_date">Bitiş tarihi</string>
+    <string name="task_editor_due_none">Bitiş tarihi yok</string>
+    <string name="task_editor_quick_today">Bugün</string>
+    <string name="task_editor_quick_tomorrow">Yarın</string>
+    <string name="task_editor_quick_weekend">Bu hafta sonu</string>
+    <string name="task_editor_pick_date">Tarih seç</string>
+
+    <!-- Rutin dÃ¼zenleyici -->
+    <string name="routine_editor_new">Yeni Rutin</string>
+    <string name="routine_editor_edit">Rutini Düzenle</string>
+    <string name="routine_editor_title">Başlık</string>
+    <string name="routine_editor_group">Grup</string>
+    <string name="routine_editor_icon">Simge</string>
+    <string name="routine_editor_color">Renk</string>
+    <string name="routine_editor_days">Günler</string>
+    <string name="routine_editor_reminder_time">Hatırlatıcı saati</string>
+    <string name="routine_editor_hour">Saat</string>
+    <string name="routine_editor_minute">Dk</string>
+    <string name="routine_editor_notify">Bana bildir</string>
+    <string name="routine_editor_set_time_first">Önce bir saat belirle</string>
+    <string name="routine_editor_remind_at">Seçilen günlerde saat %1$s olduğunda hatırlat</string>
+    <string name="routine_editor_delete">Rutini sil</string>
+
+    <!-- Ä°statistikler -->
+    <string name="insights_empty_title">Henüz veri yok</string>
+    <string name="insights_empty_message">İstatistiklerini görmek için birkaç rutin ve görev tamamla</string>
+    <string name="insights_consistency">İstikrar Puanı</string>
+    <string name="insights_out_of_100">100 üzerinden</string>
+    <string name="insights_current_streak">Güncel seri</string>
+    <string name="insights_best_streak">En iyi seri</string>
+    <string name="insights_completions">Tamamlananlar</string>
+    <string name="insights_last_7_days">Son 7 gün</string>
+    <string name="insights_daily_rate">Günlük tamamlama oranı</string>
+    <string name="insights_activity">Etkinlik</string>
+    <string name="insights_last_12_weeks">Son 12 hafta</string>
+    <string name="insights_top_routines">En iyi rutinler</string>
+    <string name="insights_rate_30_days">30 günlük tamamlama oranı</string>
+    <string name="insights_tasks">Görevler</string>
+    <string name="insights_total_tasks">Toplam görev</string>
+    <string name="insights_completed">Tamamlandı</string>
+    <string name="insights_completion_rate">Tamamlama oranı</string>
+    <string name="insights_best_weekday">En iyi gün</string>
+    <string name="insights_worst_weekday">En zorlu gün</string>
+    <string name="insights_focus_time">Odaklanma süresi</string>
+    <string name="insights_streak_forecast">Seri tahmini</string>
+    <string name="insights_forecast_body">Bu hızla devam edersen %1$d günlük bir seriye ulaşman muhtemel.</string>
+
+    <!-- Ayarlar -->
+    <string name="settings_appearance">Görünüm</string>
+    <string name="settings_theme_mode">Tema</string>
+    <string name="settings_theme_colour">Tema rengi</string>
+    <string name="settings_languages">Diller</string>
+    <string name="settings_language_system">Sistem varsayılanı</string>
+    <string name="settings_profile">Profilin</string>
+    <string name="settings_your_name">Adın</string>
+    <string name="settings_save_name">Adı kaydet</string>
+    <string name="settings_notifications">Bildirimler</string>
+    <string name="settings_enable_reminders">Hatırlatıcıları aç</string>
+    <string name="settings_enable_reminders_sub">Planlanan rutinler için bildirim al</string>
+    <string name="settings_daily_digest">Günlük özet</string>
+    <string name="settings_daily_digest_sub">Bugünkü rutinlerin özeti, saat %1$s</string>
+    <string name="settings_digest_time">Özet saati: %1$s</string>
+    <string name="settings_tags">Etiketler</string>
+    <string name="settings_new_tag">Yeni etiket</string>
+    <string name="settings_delete_tag">Etiketi sil</string>
+    <string name="settings_data">Veriler</string>
+    <string name="settings_export">Yedek dışa aktar</string>
+    <string name="settings_import">Yedek içe aktar</string>
+    <string name="settings_reset">Tüm ilerlemeyi sıfırla</string>
+    <string name="settings_about">Hakkında</string>
+    <string name="settings_version">Sürüm %1$s</string>
+    <string name="settings_built_with">Jetpack Compose ile geliştirildi</string>
+
+    <!-- Tema modlarÄ± -->
+    <string name="theme_system">Sistem</string>
+    <string name="theme_light">Açık</string>
+    <string name="theme_dark">Koyu</string>
+
+    <!-- Tema paletleri -->
+    <string name="palette_violet">Menekşe</string>
+    <string name="palette_sky">Gök mavisi</string>
+    <string name="palette_purple">Mor</string>
+    <string name="palette_pink">Pembe</string>
+    <string name="palette_teal">Deniz mavisi</string>
+    <string name="palette_sunset">Gün batımı</string>
+
+    <!-- Ä°letiÅŸim pencereleri -->
+    <string name="dialog_reset_title">Tüm ilerleme sıfırlansın mı?</string>
+    <string name="dialog_reset_body">Bu işlem tüm rutin ve görev tamamlama kayıtlarını siler. Rutinlerin ve görevlerin korunur.</string>
+    <string name="dialog_reset_confirm">Sıfırla</string>
+    <string name="dialog_export_title">Yedek dışa aktarıldı</string>
+    <string name="dialog_export_body">Kaydedildi:\n%1$s</string>
+    <string name="dialog_import_title">Yedek geri yüklendi</string>
+    <string name="dialog_import_body">%1$d rutin, %2$d görev ve %3$d etiket geri yüklendi.</string>
+    <string name="dialog_import_failed">Bu yedek dosyası okunamadı.</string>
+
+    <!-- Geri al -->
+    <string name="undo_routine_deleted">Rutin silindi</string>
+    <string name="undo_task_deleted">Görev silindi</string>
+    <string name="undo_tag_deleted">Etiket silindi</string>
+
+    <!-- Bildirimler -->
+    <string name="notif_channel_routines">Rutin hatırlatıcıları</string>
+    <string name="notif_channel_routines_desc">Planlanan rutinler için hatırlatıcılar.</string>
+    <string name="notif_channel_digest">Günlük özet</string>
+    <string name="notif_channel_digest_desc">Bugün kalanların kısa bir özeti.</string>
+    <string name="notif_routine_body">Rutin zamanı geldi. Tag\'ı açmak için dokun.</string>
+    <string name="notif_digest_title">Bugünün şu ana kadarki özeti</string>
+    <string name="notif_digest_nothing">Bugün için planlanmış bir şey yok. Sakinliğin tadını çıkar.</string>
+    <string name="notif_digest_all_done">%1$d rutinin tamamı bitti. Harika iş.</string>
+    <string name="notif_digest_remaining">Bugün yapılacak %2$d rutinden %1$d tanesi kaldı.</string>
+    <string name="notif_action_done">Tamamlandı olarak işaretle</string>
+    <string name="notif_action_snooze">15 dk ertele</string>
+
+    <!-- Odaklanma zamanlayÄ±cÄ±sÄ± -->
+    <string name="focus_title">Odaklanma</string>
+    <string name="focus_start">Başlat</string>
+    <string name="focus_pause">Duraklat</string>
+    <string name="focus_resume">Devam et</string>
+    <string name="focus_stop">Durdur</string>
+    <string name="focus_give_up">Vazgeç</string>
+    <string name="focus_running">%1$s üzerinde odaklanılıyor</string>
+    <string name="focus_no_routine">Rutin seçilmedi</string>
+    <string name="focus_pick_routine">Odaklanmak için bir rutin seç</string>
+    <string name="focus_minutes">%1$d dk</string>
+    <string name="focus_session_done">Odaklanma oturumu tamamlandı</string>
+    <string name="focus_total">Toplam odaklanma: %1$s</string>
+
+    <!-- Ä°Ã§erik aÃ§Ä±klamalarÄ± -->
+    <string name="cd_delete">Sil</string>
+    <string name="cd_more">Diğer seçenekler</string>
+    <string name="cd_drag">Yeniden sırala</string>
+    <string name="tasks_no_matches">Sonuç yok</string>
+    <string name="tasks_try_different_search">Farkli bir arama dene</string>
+    <string name="insights_percent_completion">%%%1$d tamamlandi</string>
+</resources>
+

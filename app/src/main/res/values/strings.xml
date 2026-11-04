@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tag</string>
+    <string name="app_subtitle">Routine &amp; Tasks</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">Today</string>
+    <string name="nav_tasks">Tasks</string>
+    <string name="nav_insights">Insights</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Common actions -->
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_add">Add</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_done">Done</string>
+    <string name="action_ok">OK</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_close">Close</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_move_up">Move up</string>
+    <string name="action_move_down">Move down</string>
+
+    <!-- Today screen -->
+    <string name="today_perfect_day">Perfect day</string>
+    <string name="today_complete_count">%1$d of %2$d complete</string>
+    <string name="today_empty_title">No routines yet</string>
+    <string name="today_empty_message">Tap + to add your first daily routine</string>
+    <string name="today_add_routine">Add routine</string>
+    <string name="today_search_hint">Search routines…</string>
+    <string name="today_streak_days">%1$d day streak</string>
+    <string name="today_focus_start">Start focus</string>
+
+    <!-- Greetings -->
+    <string name="greeting_night">Good night</string>
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+
+    <!-- Groups -->
+    <string name="group_morning">Morning</string>
+    <string name="group_afternoon">Afternoon</string>
+    <string name="group_evening">Evening</string>
+    <string name="group_anytime">Anytime</string>
+
+    <!-- Priorities -->
+    <string name="priority_low">Low</string>
+    <string name="priority_medium">Medium</string>
+    <string name="priority_high">High</string>
+
+    <!-- Relative days -->
+    <string name="day_today">Today</string>
+    <string name="day_tomorrow">Tomorrow</string>
+    <string name="day_yesterday">Yesterday</string>
+    <string name="day_in_days">In %1$d days</string>
+    <string name="day_days_ago">%1$d days ago</string>
+
+    <!-- Tasks screen -->
+    <string name="tasks_search_hint">Search tasks…</string>
+    <string name="tasks_filter_all">All</string>
+    <string name="tasks_filter_today">Today</string>
+    <string name="tasks_filter_upcoming">Upcoming</string>
+    <string name="tasks_filter_overdue">Overdue</string>
+    <string name="tasks_filter_done">Done</string>
+    <string name="tasks_empty_title">No tasks yet</string>
+    <string name="tasks_empty_message">Tap + to add a task you want to track</string>
+    <string name="tasks_add_task">Add task</string>
+    <string name="tasks_delete">Delete task</string>
+
+    <!-- Task editor -->
+    <string name="task_editor_new">New Task</string>
+    <string name="task_editor_edit">Edit Task</string>
+    <string name="task_editor_title">Title</string>
+    <string name="task_editor_note">Note (optional)</string>
+    <string name="task_editor_tag">Tag</string>
+    <string name="task_editor_tag_none">None</string>
+    <string name="task_editor_priority">Priority</string>
+    <string name="task_editor_due_date">Due date</string>
+    <string name="task_editor_due_none">No due date</string>
+    <string name="task_editor_quick_today">Today</string>
+    <string name="task_editor_quick_tomorrow">Tomorrow</string>
+    <string name="task_editor_quick_weekend">This weekend</string>
+    <string name="task_editor_pick_date">Pick a date</string>
+
+    <!-- Routine editor -->
+    <string name="routine_editor_new">New Routine</string>
+    <string name="routine_editor_edit">Edit Routine</string>
+    <string name="routine_editor_title">Title</string>
+    <string name="routine_editor_group">Group</string>
+    <string name="routine_editor_icon">Icon</string>
+    <string name="routine_editor_color">Color</string>
+    <string name="routine_editor_days">Days</string>
+    <string name="routine_editor_reminder_time">Reminder time</string>
+    <string name="routine_editor_hour">Hour</string>
+    <string name="routine_editor_minute">Min</string>
+    <string name="routine_editor_notify">Notify me</string>
+    <string name="routine_editor_set_time_first">Set a time first</string>
+    <string name="routine_editor_remind_at">Remind me at %1$s on the selected days</string>
+    <string name="routine_editor_delete">Delete routine</string>
+
+    <!-- Insights -->
+    <string name="insights_empty_title">No data yet</string>
+    <string name="insights_empty_message">Complete some routines and tasks to see your insights</string>
+    <string name="insights_consistency">Consistency Score</string>
+    <string name="insights_out_of_100">out of 100</string>
+    <string name="insights_current_streak">Current streak</string>
+    <string name="insights_best_streak">Best streak</string>
+    <string name="insights_completions">Completions</string>
+    <string name="insights_last_7_days">Last 7 days</string>
+    <string name="insights_daily_rate">Daily completion rate</string>
+    <string name="insights_activity">Activity</string>
+    <string name="insights_last_12_weeks">Last 12 weeks</string>
+    <string name="insights_top_routines">Top routines</string>
+    <string name="insights_rate_30_days">Completion rate over 30 days</string>
+    <string name="insights_tasks">Tasks</string>
+    <string name="insights_total_tasks">Total tasks</string>
+    <string name="insights_completed">Completed</string>
+    <string name="insights_completion_rate">Completion rate</string>
+    <string name="insights_best_weekday">Best day</string>
+    <string name="insights_worst_weekday">Toughest day</string>
+    <string name="insights_focus_time">Focus time</string>
+    <string name="insights_streak_forecast">Streak forecast</string>
+    <string name="insights_forecast_body">At your current pace you are likely to reach a %1$d day streak.</string>
+
+    <!-- Settings -->
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme_mode">Theme</string>
+    <string name="settings_theme_colour">Theme colour</string>
+    <string name="settings_languages">Languages</string>
+    <string name="settings_language_system">System default</string>
+    <string name="settings_profile">Your profile</string>
+    <string name="settings_your_name">Your name</string>
+    <string name="settings_save_name">Save name</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_enable_reminders">Enable reminders</string>
+    <string name="settings_enable_reminders_sub">Get notified for scheduled routines</string>
+    <string name="settings_daily_digest">Daily digest</string>
+    <string name="settings_daily_digest_sub">Summary of today\'s routines at %1$s</string>
+    <string name="settings_digest_time">Digest time: %1$s</string>
+    <string name="settings_tags">Tags</string>
+    <string name="settings_new_tag">New tag</string>
+    <string name="settings_delete_tag">Delete tag</string>
+    <string name="settings_data">Data</string>
+    <string name="settings_export">Export backup</string>
+    <string name="settings_import">Import backup</string>
+    <string name="settings_reset">Reset all progress</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_built_with">Built with Jetpack Compose</string>
+
+    <!-- Theme modes -->
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
+    <!-- Theme palettes -->
+    <string name="palette_violet">Violet</string>
+    <string name="palette_sky">Sky</string>
+    <string name="palette_purple">Purple</string>
+    <string name="palette_pink">Pink</string>
+    <string name="palette_teal">Teal</string>
+    <string name="palette_sunset">Sunset</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_reset_title">Reset all progress?</string>
+    <string name="dialog_reset_body">This will delete all routine and task completion logs. Your routines and tasks themselves will be kept.</string>
+    <string name="dialog_reset_confirm">Reset</string>
+    <string name="dialog_export_title">Backup exported</string>
+    <string name="dialog_export_body">Saved to:\n%1$s</string>
+    <string name="dialog_import_title">Backup restored</string>
+    <string name="dialog_import_body">Restored %1$d routines, %2$d tasks and %3$d tags.</string>
+    <string name="dialog_import_failed">Could not read that backup file.</string>
+
+    <!-- Undo -->
+    <string name="undo_routine_deleted">Routine deleted</string>
+    <string name="undo_task_deleted">Task deleted</string>
+    <string name="undo_tag_deleted">Tag deleted</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_routines">Routine reminders</string>
+    <string name="notif_channel_routines_desc">Reminders for scheduled routines.</string>
+    <string name="notif_channel_digest">Daily summary</string>
+    <string name="notif_channel_digest_desc">A short summary of what is left today.</string>
+    <string name="notif_routine_body">Time for your routine. Tap to open Tag.</string>
+    <string name="notif_digest_title">Your day so far</string>
+    <string name="notif_digest_nothing">Nothing scheduled today. Enjoy the calm.</string>
+    <string name="notif_digest_all_done">All %1$d routines are done. Nice work.</string>
+    <string name="notif_digest_remaining">%1$d of %2$d routines still to do today.</string>
+    <string name="notif_action_done">Mark done</string>
+    <string name="notif_action_snooze">Snooze 15 min</string>
+
+    <!-- Focus timer -->
+    <string name="focus_title">Focus</string>
+    <string name="focus_start">Start</string>
+    <string name="focus_pause">Pause</string>
+    <string name="focus_resume">Resume</string>
+    <string name="focus_stop">Stop</string>
+    <string name="focus_give_up">Give up</string>
+    <string name="focus_running">Focusing on %1$s</string>
+    <string name="focus_no_routine">No routine selected</string>
+    <string name="focus_pick_routine">Pick a routine to focus on</string>
+    <string name="focus_minutes">%1$d min</string>
+    <string name="focus_session_done">Focus session complete</string>
+    <string name="focus_total">Total focused: %1$s</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_delete">Delete</string>
+    <string name="cd_more">More options</string>
+    <string name="cd_drag">Reorder</string>
+    <string name="tasks_no_matches">No matches</string>
+    <string name="tasks_try_different_search">Try a different search</string>
+    <string name="insights_percent_completion">%1$d%% completion</string>
+</resources>

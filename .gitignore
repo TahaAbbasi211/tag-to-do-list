@@ -1,0 +1,25 @@
+# Gradle
+.gradle/
+build/
+app/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local machine configuration: contains absolute toolchain paths.
+local.properties
+
+# Release signing material must never be committed.
+keystore/
+*.jks
+*.keystore
+
+# Bundled toolchain used only on this host.
+.toolchain/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

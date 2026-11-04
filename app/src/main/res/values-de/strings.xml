@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tag</string>
+    <string name="app_subtitle">Routine &amp; Aufgaben</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">Heute</string>
+    <string name="nav_tasks">Aufgaben</string>
+    <string name="nav_insights">Statistiken</string>
+    <string name="nav_settings">Einstellungen</string>
+
+    <!-- Allgemeine Aktionen -->
+    <string name="action_save">Speichern</string>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="action_add">Hinzufügen</string>
+    <string name="action_delete">Löschen</string>
+    <string name="action_clear">Leeren</string>
+    <string name="action_done">Fertig</string>
+    <string name="action_ok">OK</string>
+    <string name="action_undo">Rückgängig</string>
+    <string name="action_close">Schließen</string>
+    <string name="action_edit">Bearbeiten</string>
+    <string name="action_move_up">Nach oben</string>
+    <string name="action_move_down">Nach unten</string>
+
+    <!-- Heute-Bildschirm -->
+    <string name="today_perfect_day">Perfekter Tag</string>
+    <string name="today_complete_count">%1$d von %2$d erledigt</string>
+    <string name="today_empty_title">Noch keine Routinen</string>
+    <string name="today_empty_message">Tippe auf +, um deine erste tägliche Routine anzulegen</string>
+    <string name="today_add_routine">Routine hinzufügen</string>
+    <string name="today_search_hint">Routinen suchen…</string>
+    <string name="today_streak_days">%1$d Tage Serie</string>
+    <string name="today_focus_start">Fokus starten</string>
+
+    <!-- BegrÃ¼ÃŸungen -->
+    <string name="greeting_night">Gute Nacht</string>
+    <string name="greeting_morning">Guten Morgen</string>
+    <string name="greeting_afternoon">Guten Tag</string>
+    <string name="greeting_evening">Guten Abend</string>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+
+    <!-- Gruppen -->
+    <string name="group_morning">Morgen</string>
+    <string name="group_afternoon">Nachmittag</string>
+    <string name="group_evening">Abend</string>
+    <string name="group_anytime">Jederzeit</string>
+
+    <!-- PrioritÃ¤ten -->
+    <string name="priority_low">Niedrig</string>
+    <string name="priority_medium">Mittel</string>
+    <string name="priority_high">Hoch</string>
+
+    <!-- Relative Tage -->
+    <string name="day_today">Heute</string>
+    <string name="day_tomorrow">Morgen</string>
+    <string name="day_yesterday">Gestern</string>
+    <string name="day_in_days">In %1$d Tagen</string>
+    <string name="day_days_ago">Vor %1$d Tagen</string>
+
+    <!-- Aufgaben-Bildschirm -->
+    <string name="tasks_search_hint">Aufgaben suchen…</string>
+    <string name="tasks_filter_all">Alle</string>
+    <string name="tasks_filter_today">Heute</string>
+    <string name="tasks_filter_upcoming">Demnächst</string>
+    <string name="tasks_filter_overdue">Überfällig</string>
+    <string name="tasks_filter_done">Erledigt</string>
+    <string name="tasks_empty_title">Noch keine Aufgaben</string>
+    <string name="tasks_empty_message">Tippe auf +, um eine Aufgabe anzulegen, die du verfolgen möchtest</string>
+    <string name="tasks_add_task">Aufgabe hinzufügen</string>
+    <string name="tasks_delete">Aufgabe löschen</string>
+
+    <!-- Aufgaben-Editor -->
+    <string name="task_editor_new">Neue Aufgabe</string>
+    <string name="task_editor_edit">Aufgabe bearbeiten</string>
+    <string name="task_editor_title">Titel</string>
+    <string name="task_editor_note">Notiz (optional)</string>
+    <string name="task_editor_tag">Etikett</string>
+    <string name="task_editor_tag_none">Keins</string>
+    <string name="task_editor_priority">Priorität</string>
+    <string name="task_editor_due_date">Fälligkeitsdatum</string>
+    <string name="task_editor_due_none">Kein Fälligkeitsdatum</string>
+    <string name="task_editor_quick_today">Heute</string>
+    <string name="task_editor_quick_tomorrow">Morgen</string>
+    <string name="task_editor_quick_weekend">Dieses Wochenende</string>
+    <string name="task_editor_pick_date">Datum auswählen</string>
+
+    <!-- Routine-Editor -->
+    <string name="routine_editor_new">Neue Routine</string>
+    <string name="routine_editor_edit">Routine bearbeiten</string>
+    <string name="routine_editor_title">Titel</string>
+    <string name="routine_editor_group">Gruppe</string>
+    <string name="routine_editor_icon">Symbol</string>
+    <string name="routine_editor_color">Farbe</string>
+    <string name="routine_editor_days">Tage</string>
+    <string name="routine_editor_reminder_time">Erinnerungszeit</string>
+    <string name="routine_editor_hour">Stunde</string>
+    <string name="routine_editor_minute">Min.</string>
+    <string name="routine_editor_notify">Benachrichtigen</string>
+    <string name="routine_editor_set_time_first">Lege zuerst eine Uhrzeit fest</string>
+    <string name="routine_editor_remind_at">Erinnere mich um %1$s an den ausgewählten Tagen</string>
+    <string name="routine_editor_delete">Routine löschen</string>
+
+    <!-- Statistiken -->
+    <string name="insights_empty_title">Noch keine Daten</string>
+    <string name="insights_empty_message">Erledige ein paar Routinen und Aufgaben, um deine Statistiken zu sehen</string>
+    <string name="insights_consistency">Beständigkeitswert</string>
+    <string name="insights_out_of_100">von 100</string>
+    <string name="insights_current_streak">Aktuelle Serie</string>
+    <string name="insights_best_streak">Beste Serie</string>
+    <string name="insights_completions">Erledigungen</string>
+    <string name="insights_last_7_days">Letzte 7 Tage</string>
+    <string name="insights_daily_rate">Tägliche Erledigungsquote</string>
+    <string name="insights_activity">Aktivität</string>
+    <string name="insights_last_12_weeks">Letzte 12 Wochen</string>
+    <string name="insights_top_routines">Top-Routinen</string>
+    <string name="insights_rate_30_days">Erledigungsquote der letzten 30 Tage</string>
+    <string name="insights_tasks">Aufgaben</string>
+    <string name="insights_total_tasks">Aufgaben insgesamt</string>
+    <string name="insights_completed">Erledigt</string>
+    <string name="insights_completion_rate">Erledigungsquote</string>
+    <string name="insights_best_weekday">Bester Tag</string>
+    <string name="insights_worst_weekday">Schwierigster Tag</string>
+    <string name="insights_focus_time">Fokuszeit</string>
+    <string name="insights_streak_forecast">Serien-Prognose</string>
+    <string name="insights_forecast_body">In deinem aktuellen Tempo erreichst du wahrscheinlich eine Serie von %1$d Tagen.</string>
+
+    <!-- Einstellungen -->
+    <string name="settings_appearance">Darstellung</string>
+    <string name="settings_theme_mode">Design</string>
+    <string name="settings_theme_colour">Farbschema</string>
+    <string name="settings_languages">Sprachen</string>
+    <string name="settings_language_system">Systemstandard</string>
+    <string name="settings_profile">Dein Profil</string>
+    <string name="settings_your_name">Dein Name</string>
+    <string name="settings_save_name">Namen speichern</string>
+    <string name="settings_notifications">Benachrichtigungen</string>
+    <string name="settings_enable_reminders">Erinnerungen aktivieren</string>
+    <string name="settings_enable_reminders_sub">Lass dich an geplante Routinen erinnern</string>
+    <string name="settings_daily_digest">Tägliche Zusammenfassung</string>
+    <string name="settings_daily_digest_sub">Überblick über die heutigen Routinen um %1$s</string>
+    <string name="settings_digest_time">Zeit der Zusammenfassung: %1$s</string>
+    <string name="settings_tags">Etiketten</string>
+    <string name="settings_new_tag">Neues Etikett</string>
+    <string name="settings_delete_tag">Etikett löschen</string>
+    <string name="settings_data">Daten</string>
+    <string name="settings_export">Sicherung exportieren</string>
+    <string name="settings_import">Sicherung importieren</string>
+    <string name="settings_reset">Gesamten Fortschritt zurücksetzen</string>
+    <string name="settings_about">Über die App</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_built_with">Erstellt mit Jetpack Compose</string>
+
+    <!-- Design-Modi -->
+    <string name="theme_system">System</string>
+    <string name="theme_light">Hell</string>
+    <string name="theme_dark">Dunkel</string>
+
+    <!-- Farbschemata -->
+    <string name="palette_violet">Violett</string>
+    <string name="palette_sky">Himmelblau</string>
+    <string name="palette_purple">Lila</string>
+    <string name="palette_pink">Rosa</string>
+    <string name="palette_teal">Petrol</string>
+    <string name="palette_sunset">Abendrot</string>
+
+    <!-- Dialoge -->
+    <string name="dialog_reset_title">Gesamten Fortschritt zurücksetzen?</string>
+    <string name="dialog_reset_body">Dabei werden alle Erledigungsprotokolle für Routinen und Aufgaben gelöscht. Deine Routinen und Aufgaben selbst bleiben erhalten.</string>
+    <string name="dialog_reset_confirm">Zurücksetzen</string>
+    <string name="dialog_export_title">Sicherung exportiert</string>
+    <string name="dialog_export_body">Gespeichert unter:\n%1$s</string>
+    <string name="dialog_import_title">Sicherung wiederhergestellt</string>
+    <string name="dialog_import_body">%1$d Routinen, %2$d Aufgaben und %3$d Etiketten wiederhergestellt.</string>
+    <string name="dialog_import_failed">Diese Sicherungsdatei konnte nicht gelesen werden.</string>
+
+    <!-- RÃ¼ckgÃ¤ngig -->
+    <string name="undo_routine_deleted">Routine gelöscht</string>
+    <string name="undo_task_deleted">Aufgabe gelöscht</string>
+    <string name="undo_tag_deleted">Etikett gelöscht</string>
+
+    <!-- Benachrichtigungen -->
+    <string name="notif_channel_routines">Routinen-Erinnerungen</string>
+    <string name="notif_channel_routines_desc">Erinnerungen an geplante Routinen.</string>
+    <string name="notif_channel_digest">Tägliche Zusammenfassung</string>
+    <string name="notif_channel_digest_desc">Ein kurzer Überblick darüber, was heute noch ansteht.</string>
+    <string name="notif_routine_body">Zeit für deine Routine. Tippe, um Tag zu öffnen.</string>
+    <string name="notif_digest_title">Dein Tag bisher</string>
+    <string name="notif_digest_nothing">Heute steht nichts an. Genieß die Ruhe.</string>
+    <string name="notif_digest_all_done">Alle %1$d Routinen sind erledigt. Gut gemacht.</string>
+    <string name="notif_digest_remaining">Heute sind noch %1$d von %2$d Routinen offen.</string>
+    <string name="notif_action_done">Als erledigt markieren</string>
+    <string name="notif_action_snooze">15 Min. später</string>
+
+    <!-- Fokus-Timer -->
+    <string name="focus_title">Fokus</string>
+    <string name="focus_start">Starten</string>
+    <string name="focus_pause">Pausieren</string>
+    <string name="focus_resume">Fortsetzen</string>
+    <string name="focus_stop">Stoppen</string>
+    <string name="focus_give_up">Aufgeben</string>
+    <string name="focus_running">Fokus auf %1$s</string>
+    <string name="focus_no_routine">Keine Routine ausgewählt</string>
+    <string name="focus_pick_routine">Wähle eine Routine für den Fokus</string>
+    <string name="focus_minutes">%1$d Min.</string>
+    <string name="focus_session_done">Fokus-Sitzung abgeschlossen</string>
+    <string name="focus_total">Fokuszeit insgesamt: %1$s</string>
+
+    <!-- Inhaltsbeschreibungen -->
+    <string name="cd_delete">Löschen</string>
+    <string name="cd_more">Weitere Optionen</string>
+    <string name="cd_drag">Neu anordnen</string>
+    <string name="tasks_no_matches">Keine Treffer</string>
+    <string name="tasks_try_different_search">Versuche eine andere Suche</string>
+    <string name="insights_percent_completion">%1$d%% abgeschlossen</string>
+</resources>
+

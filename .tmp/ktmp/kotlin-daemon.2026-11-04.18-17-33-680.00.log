@@ -1,0 +1,1419 @@
+2026-11-04 18:17:33.710 [daemon] INFO: Kotlin compiler daemon version <unknown>
+2026-11-04 18:17:33.749 [daemon] INFO: daemon JVM args: -Djava.awt.headless=true -Djava.rmi.server.hostname=127.0.0.1 -Xmx3072m -XX:MaxMetaspaceSize=1024m -XX:ReservedCodeCacheSize=320m -Dkotlin.environment.keepalive -ea -XX:+UseCodeCacheFlushing -XX:+UseParallelGC --add-exports=java.base/sun.nio.ch=ALL-UNNAMED
+2026-11-04 18:17:33.763 [daemon] INFO: daemon args: --daemon-runFilesPath E:/Projects/Tag/.tmp/ktmp --daemon-autoshutdownIdleSeconds=7200 --daemon-compilerClasspath E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-compiler-embeddable\2.0.21\79346ed53db48b18312a472602eb5c057070c54d\kotlin-compiler-embeddable-2.0.21.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-script-runtime\2.0.21\c9b044380ad41f89aa89aa896c2d32a8c0b2129d\kotlin-script-runtime-2.0.21.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-reflect\1.6.10\1cbe9c92c12a94eea200d23c2bbaedaf3daf5132\kotlin-reflect-1.6.10.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-daemon-embeddable\2.0.21\c9e933b23287de9b5a17e2116b4657bb91aea72c\kotlin-daemon-embeddable-2.0.21.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.intellij.deps\trove4j\1.0.20200330\3afb14d5f9ceb459d724e907a21145e8ff394f02\trove4j-1.0.20200330.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-core-jvm\1.6.4\2c997cd1c0ef33f3e751d3831929aeff1390cb30\kotlinx-coroutines-core-jvm-1.6.4.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar
+2026-11-04 18:17:33.801 [daemon] INFO: starting daemon
+2026-11-04 18:17:33.937 [daemon] INFO: daemon is listening on port: 17688
+2026-11-04 18:17:33.944 [compiler] INFO: initiate elections
+2026-11-04 18:17:34.026 [compiler] INFO: getDaemonJVMOptions: DaemonJVMOptions(maxMemory=3072m, maxMetaspaceSize=1024m, reservedCodeCacheSize=320m, jvmParams=[-Djava.awt.headless=true, -Djava.rmi.server.hostname=127.0.0.1, -Dkotlin.environment.keepalive, -ea, -XX:+UseCodeCacheFlushing, -XX:+UseParallelGC, --add-exports=java.base/sun.nio.ch=ALL-UNNAMED, Dkotlin.environment.keepalive, ea])
+2026-11-04 18:17:34.041 [compiler] INFO: Registered a client alive file: E:\Projects\Tag\.tmp\ktmp\kotlin-compiler-in-ag-2462256140122396192.alive
+2026-11-04 18:17:34.044 [compiler] INFO: leased a new session 1, session alive file: E:\Projects\Tag\.kotlin\sessions\kotlin-compiler-1081931603234622857.salive
+2026-11-04 18:17:34.110 [compiler] INFO: Starting compilation with args: -Xallow-no-source-files -classpath E:\Projects\Tag\app\build\intermediates\compile_and_runtime_not_namespaced_r_class_jar\release\processReleaseResources\R.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\78ead6cde14372b644bbf7165211b1d0\transformed\activity-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\3d14c436efe9911c53175cf4adde1b40\transformed\activity-compose-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f3f633c4665bf26f77f2fe9bb9ee8b18\transformed\activity-ktx-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c68f666a63f8d665c14f79aba237c148\transformed\core-1.15.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\e7548e7872aa5ce1ee6d882bba98c9e7\transformed\material3-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\98a424e932425b0040f79ebf43a4c3a0\transformed\ui-util-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\338d79c1e5b1d60c05be2537bc4b3483\transformed\ui-unit-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\4527a70b9e9bf9ddf2cad67342b847a6\transformed\ui-text-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\bd98859ac052f36e8f5dc46efeb0eb6e\transformed\foundation-layout-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ae793998e0ebea1b58907fadd25c651b\transformed\material-ripple-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\85ff82fc0d536e6861179773d14f5842\transformed\foundation-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\138e0ab59051396fe94f2fcd4fcc3465\transformed\animation-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d4af6d34b12e65261d46c56415228735\transformed\animation-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7acc84fc16189557b7da815f780c6987\transformed\ui-geometry-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\5ca284661d0cae9b95d988ba8b3bb951\transformed\ui-tooling-preview-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c7f3134a19554a2c58805b6c79c5203f\transformed\ui-graphics-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\1b213d1681dab54b396483b0981f518e\transformed\material-icons-extended-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\bbdd315217cee6220e49944353507e8b\transformed\material-icons-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\1e00426fae452d0f5b87a1f712ca610f\transformed\ui-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7979776942bca41d471d83b2777895ff\transformed\lifecycle-runtime-compose-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\8e0802389ed87901a7e263676875ba64\transformed\lifecycle-livedata-core-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.lifecycle\lifecycle-common-jvm\2.8.7\7174a594afb73a9ad9ac9074ce78b94af3cc52a7\lifecycle-common-jvm-2.8.7.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f3f9d8eec99cda8e0b6770873d4c2c4b\transformed\lifecycle-runtime-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f67b4488eeceb1721508e48dbbe8f4dd\transformed\lifecycle-viewmodel-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f5ed638214986dbec1a59c6a68051604\transformed\lifecycle-viewmodel-ktx-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\05dd7602455823a7e38949a0c2ce883a\transformed\lifecycle-runtime-ktx-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ae70eabc672f677939d39c4991616a96\transformed\lifecycle-viewmodel-compose-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f039ef9096c6cbec75a1815a778a5dd7\transformed\lifecycle-viewmodel-savedstate-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7f44ca91583d8d33435b242c3861044d\transformed\core-ktx-1.15.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\e54b770d52b2a61bbc92ca62e115f558\transformed\core-splashscreen-1.0.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-common\2.6.1\ff1b9580850a9b7eef56554e356628d225785265\room-common-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\4080674f1340cee0b08b7badc0e677dc\transformed\room-runtime-2.6.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\6b032d49a9e7581e062ae22980a9c0f5\transformed\room-ktx-2.6.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.datastore\datastore-core-okio-jvm\1.1.1\cba5887aaa9316d650b3ebc667243ed3a05f4407\datastore-core-okio-jvm-1.1.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c34be7308248693d8ac7d98fa06169b3\transformed\datastore-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.datastore\datastore-preferences-core-jvm\1.1.1\e562d4a944240c0e67317f0b862da24aca3aabc\datastore-preferences-core-jvm-1.1.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\56422cedbf854e207f942971eef897bb\transformed\datastore-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\0223f96b4a81bb5b16d60543d9d3ea06\transformed\datastore-preferences-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ab569e66565763a517e39e2ac7eb9f75\transformed\sqlite-framework-2.4.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d281ac23017789e5ab706d043f1ab64a\transformed\sqlite-2.4.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c376f902ec565be1f863cc8bcf132884\transformed\versionedparcelable-1.1.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d2cee410679ad2a26995bb287ac56890\transformed\runtime-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ca8fcbc7b6437a5112884406f3dfd9e0\transformed\runtime-saveable-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d616abaa970d2fca8bbffbc5633e0f07\transformed\savedstate-ktx-1.2.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\a93798f75972b9813b40b9c16337fae6\transformed\savedstate-1.2.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.arch.core\core-common\2.2.0\5e1b8b81dfd5f52c56a8d53b18ca759c19a301f3\core-common-2.2.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.collection\collection-jvm\1.4.4\da13a7e557c430276b8cb490420effebc1398c0d\collection-jvm-1.4.4.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.annotation\annotation-jvm\1.8.1\b8a16fe526014b7941c1debaccaf9c5153692dbb\annotation-jvm-1.8.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\fafe2d9cc7756985d9bb89a1e599d505\transformed\annotation-experimental-1.4.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-core-jvm\1.7.3\2b09627576f0989a436a00a4a54b55fa5026fb86\kotlinx-coroutines-core-jvm-1.7.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-android\1.7.3\38d9cad3a0b03a10453b56577984bdeb48edeed5\kotlinx-coroutines-android-1.7.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup.okio\okio-jvm\3.4.0\4e8bd78a52ab935ce383d0092646922154295e54\okio-jvm-3.4.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk8\1.8.22\b25c86d47d6b962b9cf0f8c3f320c8a10eea3dd1\kotlin-stdlib-jdk8-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk7\1.8.22\4dabb8248310d833bb6a8b516024a91fd3d275c\kotlin-stdlib-jdk7-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\23.0.0\8cc20c07506ec18e0834947b84a864bfc094484e\annotations-23.0.0.jar;E:\Projects\Tag\.toolchain\android-sdk\platforms\android-35\android.jar;E:\Projects\Tag\.toolchain\android-sdk\build-tools\35.0.0\core-lambda-stubs.jar -d E:\Projects\Tag\app\build\generated\ksp\release -jvm-target 17 -module-name app_release -no-jdk -no-reflect -no-stdlib -language-version 1.9 -Xplugin=E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing\2.0.21-1.0.28\25530ee051cd46963eef72fdea489d5cbc4d971a\symbol-processing-2.0.21-1.0.28.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing-api\2.0.21-1.0.28\be0d4d8db16fcfcfe993750d10e390a0472614d4\symbol-processing-api-2.0.21-1.0.28.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-core-jvm\1.6.3\6b6c17d0312ba7192893adea9d52959941d0119b\kotlinx-serialization-core-jvm-1.6.3.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-json-jvm\1.6.3\2241746853abf04073e3ab0dcd9e6729d363b313\kotlinx-serialization-json-jvm-1.6.3.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar -P plugin:com.google.devtools.ksp.symbol-processing:apclasspath=E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-migration\2.6.1\8d8218e4ccfe9b34485619a8ca68f8760840301d\room-migration-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-compiler-processing\2.6.1\64891dd45a3adbb4137f338563b6d716dca7c456\room-compiler-processing-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-common\2.6.1\ff1b9580850a9b7eef56554e356628d225785265\room-common-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-compiler\2.6.1\d789379e27b40fa5cc6e17f4c56988d6500a4036\room-compiler-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.auto\auto-common\0.11\345a7dc983e11c123c8000a53383cc2b83848caf\auto-common-0.11.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.auto.value\auto-value-annotations\1.6.3\b88c1bb7f149f6d2cc03898359283e57b08f39cc\auto-value-annotations-1.6.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing-api\1.9.0-1.0.13\c001c57ba3e093c65d23e124adfcdf5df9dde8a2\symbol-processing-api-1.9.0-1.0.13.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.intellij\annotations\12.0\bbcf6448f6d40abe506e2c83b70a3e8bfd2b4539\annotations-12.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup\kotlinpoet-javapoet\1.14.2\e4481d491afe47e3dcce952c87628141dc16454b\kotlinpoet-javapoet-1.14.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup\javapoet\1.13.0\d6562d385049f35eb50403fa86bb11cce76b866a\javapoet-1.13.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup\kotlinpoet\1.14.2\b6741951260d555a05932e39de177fc64ef450bd\kotlinpoet-1.14.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\commons-codec\commons-codec\1.15\49d94806b6e3dc933dacbd8acb0fdbab8ebd1e5d\commons-codec-1.15.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk8\1.8.22\b25c86d47d6b962b9cf0f8c3f320c8a10eea3dd1\kotlin-stdlib-jdk8-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-reflect\1.8.21\662838019bc1141f8a311180d93b9e13765c7f55\kotlin-reflect-1.8.21.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk7\1.8.22\4dabb8248310d833bb6a8b516024a91fd3d275c\kotlin-stdlib-jdk7-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\1.9.0\8ee15ef0c67dc83d874f412d84378d7f0eb50b63\kotlin-stdlib-1.9.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.xerial\sqlite-jdbc\3.41.2.2\ddeb8d3a3004f412ed19b4c98b3aec11d9452ab5\sqlite-jdbc-3.41.2.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.annotation\annotation\1.3.0\21f49f5f9b85fc49de712539f79123119740595\annotation-1.3.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.guava\guava\31.1-jre\60458f877d055d0c9114d9e1a2efb737b4bc282c\guava-31.1-jre.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.code.gson\gson\2.9.0\8a1167e089096758b49f9b34066ef98b2f4b37aa\gson-2.9.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.guava\failureaccess\1.0.1\1dcf1de382a0bf95a3d8b0849546c88bac1292c9\failureaccess-1.0.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.guava\listenablefuture\9999.0-empty-to-avoid-conflict-with-guava\b421526c5f297295adef1c886e5246c39d4ac629\listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.code.findbugs\jsr305\3.0.2\25ea2e8b0c338a877313bd4672d3fe056ea78f0d\jsr305-3.0.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.checkerframework\checker-qual\3.12.0\d5692f0526415fcc6de94bb5bfbd3afd9dd3b3e5\checker-qual-3.12.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.errorprone\error_prone_annotations\2.11.0\c5a0ace696d3f8b1c1d8cc036d8c03cc0cbe6b69\error_prone_annotations-2.11.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.j2objc\j2objc-annotations\1.3\ba035118bc8bac37d7eff77700720999acd9986d\j2objc-annotations-1.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-common\1.9.0\cd65c21cfd1eec4d44ef09f9f52b6d9f8a720636\kotlin-stdlib-common-1.9.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar,plugin:com.google.devtools.ksp.symbol-processing:classOutputDir=E:\Projects\Tag\app\build\generated\ksp\release\classes,plugin:com.google.devtools.ksp.symbol-processing:javaOutputDir=E:\Projects\Tag\app\build\generated\ksp\release\java,plugin:com.google.devtools.ksp.symbol-processing:kotlinOutputDir=E:\Projects\Tag\app\build\generated\ksp\release\kotlin,plugin:com.google.devtools.ksp.symbol-processing:resourceOutputDir=E:\Projects\Tag\app\build\generated\ksp\release\resources,plugin:com.google.devtools.ksp.symbol-processing:cachesDir=E:\Projects\Tag\app\build\kspCaches\release,plugin:com.google.devtools.ksp.symbol-processing:kspOutputDir=E:\Projects\Tag\app\build\generated\ksp\release,plugin:com.google.devtools.ksp.symbol-processing:incremental=true,plugin:com.google.devtools.ksp.symbol-processing:incrementalLog=false,plugin:com.google.devtools.ksp.symbol-processing:projectBaseDir=E:\Projects\Tag\app,plugin:com.google.devtools.ksp.symbol-processing:allWarningsAsErrors=false,plugin:com.google.devtools.ksp.symbol-processing:returnOkOnError=true,plugin:com.google.devtools.ksp.symbol-processing:apoption=room.schemaLocation=E:\Projects\Tag\app/schemas,plugin:com.google.devtools.ksp.symbol-processing:excludedProcessors=,plugin:com.google.devtools.ksp.symbol-processing:mapAnnotationArgumentsInJava=false -opt-in=androidx.compose.material3.ExperimentalMaterial3Api -opt-in=androidx.compose.foundation.ExperimentalFoundationApi -opt-in=androidx.compose.animation.ExperimentalAnimationApi -opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi -Xallow-unstable-dependencies E:\Projects\Tag\app\build\generated\source\buildConfig\release\com\tag\routine\BuildConfig.java E:\Projects\Tag\app\src\main\java\com\tag\routine\data\AppConstants.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Receivers.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Reminders.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\TagApp.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\BackupFilePicker.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Charts.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Common.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Icons.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\PillNavBar.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\FocusController.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\i18n\LocalizedApp.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Color.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Theme.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Type.kt
+2026-11-04 18:17:34.205 [daemon] INFO: Message: logging: using Kotlin home directory <no_path>
+2026-11-04 18:17:34.364 [daemon] INFO: Message: logging: exception on loading scripting plugin: java.lang.ClassNotFoundException: org.jetbrains.kotlin.scripting.compiler.plugin.ScriptingCompilerConfigurationComponentRegistrar
+2026-11-04 18:17:34.365 [daemon] INFO: Message: logging: scripting plugin will not be loaded: not all required jars are present in the classpath (missing files: [.\kotlin-scripting-compiler.jar, .\kotlin-scripting-compiler-impl.jar, .\kotlin-scripting-common.jar, .\kotlin-scripting-jvm.jar])
+2026-11-04 18:17:34.424 [daemon] INFO: Message: logging: using JVM IR backend
+2026-11-04 18:17:34.425 [daemon] INFO: Message: logging: configuring the compilation environment
+2026-11-04 18:17:44.853 [daemon] INFO: Message: logging: [ksp] round 1 of processing
+2026-11-04 18:17:44.853 [daemon] INFO: Message: info: [ksp] loaded provider(s): [androidx.room.RoomKspProcessor$Provider]
+2026-11-04 18:17:44.858 [daemon] INFO: Message: logging: [ksp] round 2 of processing
+2026-11-04 18:17:44.891 [compiler] INFO: Done with result 0
+2026-11-04 18:17:44.897 [compiler] INFO: cleaning after session 1
+2026-11-04 18:17:45.420 [compiler] INFO: getDaemonJVMOptions: DaemonJVMOptions(maxMemory=3072m, maxMetaspaceSize=1024m, reservedCodeCacheSize=320m, jvmParams=[-Djava.awt.headless=true, -Djava.rmi.server.hostname=127.0.0.1, -Dkotlin.environment.keepalive, -ea, -XX:+UseCodeCacheFlushing, -XX:+UseParallelGC, --add-exports=java.base/sun.nio.ch=ALL-UNNAMED, Dkotlin.environment.keepalive, ea])
+2026-11-04 18:17:45.423 [compiler] INFO: Registered a client alive file: E:\Projects\Tag\.tmp\ktmp\kotlin-compiler-in-ag-2462256140122396192.alive
+2026-11-04 18:17:45.424 [compiler] INFO: leased a new session 2, session alive file: E:\Projects\Tag\.kotlin\sessions\kotlin-compiler-1081931603234622857.salive
+2026-11-04 18:17:45.448 [compiler] INFO: Starting compilation with args: -Xallow-no-source-files -classpath E:\Projects\Tag\app\build\intermediates\compile_and_runtime_not_namespaced_r_class_jar\release\processReleaseResources\R.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\78ead6cde14372b644bbf7165211b1d0\transformed\activity-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\3d14c436efe9911c53175cf4adde1b40\transformed\activity-compose-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f3f633c4665bf26f77f2fe9bb9ee8b18\transformed\activity-ktx-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c68f666a63f8d665c14f79aba237c148\transformed\core-1.15.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\e7548e7872aa5ce1ee6d882bba98c9e7\transformed\material3-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\98a424e932425b0040f79ebf43a4c3a0\transformed\ui-util-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\338d79c1e5b1d60c05be2537bc4b3483\transformed\ui-unit-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\4527a70b9e9bf9ddf2cad67342b847a6\transformed\ui-text-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\bd98859ac052f36e8f5dc46efeb0eb6e\transformed\foundation-layout-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ae793998e0ebea1b58907fadd25c651b\transformed\material-ripple-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\85ff82fc0d536e6861179773d14f5842\transformed\foundation-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\138e0ab59051396fe94f2fcd4fcc3465\transformed\animation-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d4af6d34b12e65261d46c56415228735\transformed\animation-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7acc84fc16189557b7da815f780c6987\transformed\ui-geometry-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\5ca284661d0cae9b95d988ba8b3bb951\transformed\ui-tooling-preview-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c7f3134a19554a2c58805b6c79c5203f\transformed\ui-graphics-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\1b213d1681dab54b396483b0981f518e\transformed\material-icons-extended-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\bbdd315217cee6220e49944353507e8b\transformed\material-icons-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\1e00426fae452d0f5b87a1f712ca610f\transformed\ui-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7979776942bca41d471d83b2777895ff\transformed\lifecycle-runtime-compose-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\8e0802389ed87901a7e263676875ba64\transformed\lifecycle-livedata-core-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.lifecycle\lifecycle-common-jvm\2.8.7\7174a594afb73a9ad9ac9074ce78b94af3cc52a7\lifecycle-common-jvm-2.8.7.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f3f9d8eec99cda8e0b6770873d4c2c4b\transformed\lifecycle-runtime-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f67b4488eeceb1721508e48dbbe8f4dd\transformed\lifecycle-viewmodel-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f5ed638214986dbec1a59c6a68051604\transformed\lifecycle-viewmodel-ktx-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\05dd7602455823a7e38949a0c2ce883a\transformed\lifecycle-runtime-ktx-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ae70eabc672f677939d39c4991616a96\transformed\lifecycle-viewmodel-compose-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f039ef9096c6cbec75a1815a778a5dd7\transformed\lifecycle-viewmodel-savedstate-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7f44ca91583d8d33435b242c3861044d\transformed\core-ktx-1.15.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\e54b770d52b2a61bbc92ca62e115f558\transformed\core-splashscreen-1.0.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-common\2.6.1\ff1b9580850a9b7eef56554e356628d225785265\room-common-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\4080674f1340cee0b08b7badc0e677dc\transformed\room-runtime-2.6.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\6b032d49a9e7581e062ae22980a9c0f5\transformed\room-ktx-2.6.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.datastore\datastore-core-okio-jvm\1.1.1\cba5887aaa9316d650b3ebc667243ed3a05f4407\datastore-core-okio-jvm-1.1.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c34be7308248693d8ac7d98fa06169b3\transformed\datastore-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.datastore\datastore-preferences-core-jvm\1.1.1\e562d4a944240c0e67317f0b862da24aca3aabc\datastore-preferences-core-jvm-1.1.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\56422cedbf854e207f942971eef897bb\transformed\datastore-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\0223f96b4a81bb5b16d60543d9d3ea06\transformed\datastore-preferences-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ab569e66565763a517e39e2ac7eb9f75\transformed\sqlite-framework-2.4.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d281ac23017789e5ab706d043f1ab64a\transformed\sqlite-2.4.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c376f902ec565be1f863cc8bcf132884\transformed\versionedparcelable-1.1.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d2cee410679ad2a26995bb287ac56890\transformed\runtime-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ca8fcbc7b6437a5112884406f3dfd9e0\transformed\runtime-saveable-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d616abaa970d2fca8bbffbc5633e0f07\transformed\savedstate-ktx-1.2.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\a93798f75972b9813b40b9c16337fae6\transformed\savedstate-1.2.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.arch.core\core-common\2.2.0\5e1b8b81dfd5f52c56a8d53b18ca759c19a301f3\core-common-2.2.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.collection\collection-jvm\1.4.4\da13a7e557c430276b8cb490420effebc1398c0d\collection-jvm-1.4.4.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.annotation\annotation-jvm\1.8.1\b8a16fe526014b7941c1debaccaf9c5153692dbb\annotation-jvm-1.8.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\fafe2d9cc7756985d9bb89a1e599d505\transformed\annotation-experimental-1.4.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-core-jvm\1.7.3\2b09627576f0989a436a00a4a54b55fa5026fb86\kotlinx-coroutines-core-jvm-1.7.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-android\1.7.3\38d9cad3a0b03a10453b56577984bdeb48edeed5\kotlinx-coroutines-android-1.7.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup.okio\okio-jvm\3.4.0\4e8bd78a52ab935ce383d0092646922154295e54\okio-jvm-3.4.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk8\1.8.22\b25c86d47d6b962b9cf0f8c3f320c8a10eea3dd1\kotlin-stdlib-jdk8-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk7\1.8.22\4dabb8248310d833bb6a8b516024a91fd3d275c\kotlin-stdlib-jdk7-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\23.0.0\8cc20c07506ec18e0834947b84a864bfc094484e\annotations-23.0.0.jar;E:\Projects\Tag\.toolchain\android-sdk\platforms\android-35\android.jar;E:\Projects\Tag\.toolchain\android-sdk\build-tools\35.0.0\core-lambda-stubs.jar -d E:\Projects\Tag\app\build\tmp\kotlin-classes\release -jvm-target 17 -module-name app_release -no-jdk -no-reflect -no-stdlib -Xplugin=E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-compose-compiler-plugin-embeddable\2.0.21\e14f003d962fb25693b461de59490c91072a7979\kotlin-compose-compiler-plugin-embeddable-2.0.21.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing\2.0.21-1.0.28\25530ee051cd46963eef72fdea489d5cbc4d971a\symbol-processing-2.0.21-1.0.28.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing-api\2.0.21-1.0.28\be0d4d8db16fcfcfe993750d10e390a0472614d4\symbol-processing-api-2.0.21-1.0.28.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-core-jvm\1.6.3\6b6c17d0312ba7192893adea9d52959941d0119b\kotlinx-serialization-core-jvm-1.6.3.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-json-jvm\1.6.3\2241746853abf04073e3ab0dcd9e6729d363b313\kotlinx-serialization-json-jvm-1.6.3.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar -P plugin:androidx.compose.compiler.plugins.kotlin:generateFunctionKeyMetaClasses=false,plugin:androidx.compose.compiler.plugins.kotlin:traceMarkersEnabled=true -opt-in=androidx.compose.material3.ExperimentalMaterial3Api -opt-in=androidx.compose.foundation.ExperimentalFoundationApi -opt-in=androidx.compose.animation.ExperimentalAnimationApi -opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi -Xallow-unstable-dependencies E:\Projects\Tag\app\build\generated\ksp\release\java\com\tag\routine\data\FocusDao_Impl.java E:\Projects\Tag\app\build\generated\ksp\release\java\com\tag\routine\data\LogDao_Impl.java E:\Projects\Tag\app\build\generated\ksp\release\java\com\tag\routine\data\RoutineDao_Impl.java E:\Projects\Tag\app\build\generated\ksp\release\java\com\tag\routine\data\TagDao_Impl.java E:\Projects\Tag\app\build\generated\ksp\release\java\com\tag\routine\data\TagDatabase_Impl.java E:\Projects\Tag\app\build\generated\ksp\release\java\com\tag\routine\data\TaskDao_Impl.java E:\Projects\Tag\app\build\generated\source\buildConfig\release\com\tag\routine\BuildConfig.java E:\Projects\Tag\app\src\main\java\com\tag\routine\data\AppConstants.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Receivers.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Reminders.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\TagApp.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\BackupFilePicker.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Charts.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Common.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Icons.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\PillNavBar.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\FocusController.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\i18n\LocalizedApp.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Color.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Theme.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Type.kt
+2026-11-04 18:17:52.216 [daemon] INFO: Message: logging: using Kotlin home directory <no_path>
+2026-11-04 18:17:52.216 [daemon] INFO: Message: logging: exception on loading scripting plugin: java.lang.ClassNotFoundException: org.jetbrains.kotlin.scripting.compiler.plugin.ScriptingCompilerConfigurationComponentRegistrar
+2026-11-04 18:17:52.216 [daemon] INFO: Message: logging: scripting plugin will not be loaded: not all required jars are present in the classpath (missing files: [.\kotlin-scripting-compiler.jar, .\kotlin-scripting-compiler-impl.jar, .\kotlin-scripting-common.jar, .\kotlin-scripting-jvm.jar])
+2026-11-04 18:17:52.216 [daemon] INFO: Message: logging: using JVM IR backend
+2026-11-04 18:17:52.216 [daemon] INFO: Message: logging: configuring the compilation environment
+2026-11-04 18:17:52.217 [daemon] INFO: Message: error: argument type mismatch: actual type is 'android.content.res.Resources!', but 'kotlin.Int' was expected.
+            val base = Dates.greeting(context.resources)
+                                      ^^^^^^^^^^^^^^^^^
+2026-11-04 18:17:52.281 [compiler] INFO: Done with result 1
+2026-11-04 18:17:52.284 [compiler] INFO: cleaning after session 2
+2026-11-04 18:35:46.849 [compiler] INFO: getDaemonJVMOptions: DaemonJVMOptions(maxMemory=3072m, maxMetaspaceSize=1024m, reservedCodeCacheSize=320m, jvmParams=[-Djava.awt.headless=true, -Djava.rmi.server.hostname=127.0.0.1, -Dkotlin.environment.keepalive, -ea, -XX:+UseCodeCacheFlushing, -XX:+UseParallelGC, --add-exports=java.base/sun.nio.ch=ALL-UNNAMED, Dkotlin.environment.keepalive, ea])
+2026-11-04 18:35:46.854 [compiler] INFO: Registered a client alive file: E:\Projects\Tag\.tmp\ktmp\kotlin-compiler-in-ag-2462256140122396192.alive
+2026-11-04 18:35:46.856 [compiler] INFO: leased a new session 3, session alive file: E:\Projects\Tag\.kotlin\sessions\kotlin-compiler-3843253590777186447.salive
+2026-11-04 18:35:46.873 [compiler] INFO: Starting compilation with args: -Xallow-no-source-files -classpath E:\Projects\Tag\app\build\intermediates\compile_and_runtime_not_namespaced_r_class_jar\release\processReleaseResources\R.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\78ead6cde14372b644bbf7165211b1d0\transformed\activity-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\3d14c436efe9911c53175cf4adde1b40\transformed\activity-compose-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f3f633c4665bf26f77f2fe9bb9ee8b18\transformed\activity-ktx-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c68f666a63f8d665c14f79aba237c148\transformed\core-1.15.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\e7548e7872aa5ce1ee6d882bba98c9e7\transformed\material3-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\98a424e932425b0040f79ebf43a4c3a0\transformed\ui-util-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\338d79c1e5b1d60c05be2537bc4b3483\transformed\ui-unit-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\4527a70b9e9bf9ddf2cad67342b847a6\transformed\ui-text-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\bd98859ac052f36e8f5dc46efeb0eb6e\transformed\foundation-layout-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ae793998e0ebea1b58907fadd25c651b\transformed\material-ripple-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\85ff82fc0d536e6861179773d14f5842\transformed\foundation-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\138e0ab59051396fe94f2fcd4fcc3465\transformed\animation-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d4af6d34b12e65261d46c56415228735\transformed\animation-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7acc84fc16189557b7da815f780c6987\transformed\ui-geometry-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\5ca284661d0cae9b95d988ba8b3bb951\transformed\ui-tooling-preview-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c7f3134a19554a2c58805b6c79c5203f\transformed\ui-graphics-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\1b213d1681dab54b396483b0981f518e\transformed\material-icons-extended-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\bbdd315217cee6220e49944353507e8b\transformed\material-icons-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\1e00426fae452d0f5b87a1f712ca610f\transformed\ui-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7979776942bca41d471d83b2777895ff\transformed\lifecycle-runtime-compose-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\8e0802389ed87901a7e263676875ba64\transformed\lifecycle-livedata-core-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.lifecycle\lifecycle-common-jvm\2.8.7\7174a594afb73a9ad9ac9074ce78b94af3cc52a7\lifecycle-common-jvm-2.8.7.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f3f9d8eec99cda8e0b6770873d4c2c4b\transformed\lifecycle-runtime-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f67b4488eeceb1721508e48dbbe8f4dd\transformed\lifecycle-viewmodel-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f5ed638214986dbec1a59c6a68051604\transformed\lifecycle-viewmodel-ktx-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\05dd7602455823a7e38949a0c2ce883a\transformed\lifecycle-runtime-ktx-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ae70eabc672f677939d39c4991616a96\transformed\lifecycle-viewmodel-compose-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f039ef9096c6cbec75a1815a778a5dd7\transformed\lifecycle-viewmodel-savedstate-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7f44ca91583d8d33435b242c3861044d\transformed\core-ktx-1.15.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\e54b770d52b2a61bbc92ca62e115f558\transformed\core-splashscreen-1.0.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-common\2.6.1\ff1b9580850a9b7eef56554e356628d225785265\room-common-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\4080674f1340cee0b08b7badc0e677dc\transformed\room-runtime-2.6.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\6b032d49a9e7581e062ae22980a9c0f5\transformed\room-ktx-2.6.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.datastore\datastore-core-okio-jvm\1.1.1\cba5887aaa9316d650b3ebc667243ed3a05f4407\datastore-core-okio-jvm-1.1.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c34be7308248693d8ac7d98fa06169b3\transformed\datastore-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.datastore\datastore-preferences-core-jvm\1.1.1\e562d4a944240c0e67317f0b862da24aca3aabc\datastore-preferences-core-jvm-1.1.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\56422cedbf854e207f942971eef897bb\transformed\datastore-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\0223f96b4a81bb5b16d60543d9d3ea06\transformed\datastore-preferences-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ab569e66565763a517e39e2ac7eb9f75\transformed\sqlite-framework-2.4.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d281ac23017789e5ab706d043f1ab64a\transformed\sqlite-2.4.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c376f902ec565be1f863cc8bcf132884\transformed\versionedparcelable-1.1.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d2cee410679ad2a26995bb287ac56890\transformed\runtime-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ca8fcbc7b6437a5112884406f3dfd9e0\transformed\runtime-saveable-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d616abaa970d2fca8bbffbc5633e0f07\transformed\savedstate-ktx-1.2.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\a93798f75972b9813b40b9c16337fae6\transformed\savedstate-1.2.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.arch.core\core-common\2.2.0\5e1b8b81dfd5f52c56a8d53b18ca759c19a301f3\core-common-2.2.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.collection\collection-jvm\1.4.4\da13a7e557c430276b8cb490420effebc1398c0d\collection-jvm-1.4.4.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.annotation\annotation-jvm\1.8.1\b8a16fe526014b7941c1debaccaf9c5153692dbb\annotation-jvm-1.8.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\fafe2d9cc7756985d9bb89a1e599d505\transformed\annotation-experimental-1.4.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-core-jvm\1.7.3\2b09627576f0989a436a00a4a54b55fa5026fb86\kotlinx-coroutines-core-jvm-1.7.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-android\1.7.3\38d9cad3a0b03a10453b56577984bdeb48edeed5\kotlinx-coroutines-android-1.7.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup.okio\okio-jvm\3.4.0\4e8bd78a52ab935ce383d0092646922154295e54\okio-jvm-3.4.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk8\1.8.22\b25c86d47d6b962b9cf0f8c3f320c8a10eea3dd1\kotlin-stdlib-jdk8-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk7\1.8.22\4dabb8248310d833bb6a8b516024a91fd3d275c\kotlin-stdlib-jdk7-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\23.0.0\8cc20c07506ec18e0834947b84a864bfc094484e\annotations-23.0.0.jar;E:\Projects\Tag\.toolchain\android-sdk\platforms\android-35\android.jar;E:\Projects\Tag\.toolchain\android-sdk\build-tools\35.0.0\core-lambda-stubs.jar -d E:\Projects\Tag\app\build\generated\ksp\release -jvm-target 17 -module-name app_release -no-jdk -no-reflect -no-stdlib -language-version 1.9 -Xplugin=E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing\2.0.21-1.0.28\25530ee051cd46963eef72fdea489d5cbc4d971a\symbol-processing-2.0.21-1.0.28.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing-api\2.0.21-1.0.28\be0d4d8db16fcfcfe993750d10e390a0472614d4\symbol-processing-api-2.0.21-1.0.28.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-core-jvm\1.6.3\6b6c17d0312ba7192893adea9d52959941d0119b\kotlinx-serialization-core-jvm-1.6.3.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-json-jvm\1.6.3\2241746853abf04073e3ab0dcd9e6729d363b313\kotlinx-serialization-json-jvm-1.6.3.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar -P plugin:com.google.devtools.ksp.symbol-processing:knownModified=E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt,plugin:com.google.devtools.ksp.symbol-processing:apclasspath=E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-migration\2.6.1\8d8218e4ccfe9b34485619a8ca68f8760840301d\room-migration-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-compiler-processing\2.6.1\64891dd45a3adbb4137f338563b6d716dca7c456\room-compiler-processing-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-common\2.6.1\ff1b9580850a9b7eef56554e356628d225785265\room-common-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-compiler\2.6.1\d789379e27b40fa5cc6e17f4c56988d6500a4036\room-compiler-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.auto\auto-common\0.11\345a7dc983e11c123c8000a53383cc2b83848caf\auto-common-0.11.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.auto.value\auto-value-annotations\1.6.3\b88c1bb7f149f6d2cc03898359283e57b08f39cc\auto-value-annotations-1.6.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing-api\1.9.0-1.0.13\c001c57ba3e093c65d23e124adfcdf5df9dde8a2\symbol-processing-api-1.9.0-1.0.13.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.intellij\annotations\12.0\bbcf6448f6d40abe506e2c83b70a3e8bfd2b4539\annotations-12.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup\kotlinpoet-javapoet\1.14.2\e4481d491afe47e3dcce952c87628141dc16454b\kotlinpoet-javapoet-1.14.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup\javapoet\1.13.0\d6562d385049f35eb50403fa86bb11cce76b866a\javapoet-1.13.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup\kotlinpoet\1.14.2\b6741951260d555a05932e39de177fc64ef450bd\kotlinpoet-1.14.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\commons-codec\commons-codec\1.15\49d94806b6e3dc933dacbd8acb0fdbab8ebd1e5d\commons-codec-1.15.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk8\1.8.22\b25c86d47d6b962b9cf0f8c3f320c8a10eea3dd1\kotlin-stdlib-jdk8-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-reflect\1.8.21\662838019bc1141f8a311180d93b9e13765c7f55\kotlin-reflect-1.8.21.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk7\1.8.22\4dabb8248310d833bb6a8b516024a91fd3d275c\kotlin-stdlib-jdk7-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\1.9.0\8ee15ef0c67dc83d874f412d84378d7f0eb50b63\kotlin-stdlib-1.9.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.xerial\sqlite-jdbc\3.41.2.2\ddeb8d3a3004f412ed19b4c98b3aec11d9452ab5\sqlite-jdbc-3.41.2.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.annotation\annotation\1.3.0\21f49f5f9b85fc49de712539f79123119740595\annotation-1.3.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.guava\guava\31.1-jre\60458f877d055d0c9114d9e1a2efb737b4bc282c\guava-31.1-jre.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.code.gson\gson\2.9.0\8a1167e089096758b49f9b34066ef98b2f4b37aa\gson-2.9.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.guava\failureaccess\1.0.1\1dcf1de382a0bf95a3d8b0849546c88bac1292c9\failureaccess-1.0.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.guava\listenablefuture\9999.0-empty-to-avoid-conflict-with-guava\b421526c5f297295adef1c886e5246c39d4ac629\listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.code.findbugs\jsr305\3.0.2\25ea2e8b0c338a877313bd4672d3fe056ea78f0d\jsr305-3.0.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.checkerframework\checker-qual\3.12.0\d5692f0526415fcc6de94bb5bfbd3afd9dd3b3e5\checker-qual-3.12.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.errorprone\error_prone_annotations\2.11.0\c5a0ace696d3f8b1c1d8cc036d8c03cc0cbe6b69\error_prone_annotations-2.11.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.j2objc\j2objc-annotations\1.3\ba035118bc8bac37d7eff77700720999acd9986d\j2objc-annotations-1.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-common\1.9.0\cd65c21cfd1eec4d44ef09f9f52b6d9f8a720636\kotlin-stdlib-common-1.9.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar,plugin:com.google.devtools.ksp.symbol-processing:classOutputDir=E:\Projects\Tag\app\build\generated\ksp\release\classes,plugin:com.google.devtools.ksp.symbol-processing:javaOutputDir=E:\Projects\Tag\app\build\generated\ksp\release\java,plugin:com.google.devtools.ksp.symbol-processing:kotlinOutputDir=E:\Projects\Tag\app\build\generated\ksp\release\kotlin,plugin:com.google.devtools.ksp.symbol-processing:resourceOutputDir=E:\Projects\Tag\app\build\generated\ksp\release\resources,plugin:com.google.devtools.ksp.symbol-processing:cachesDir=E:\Projects\Tag\app\build\kspCaches\release,plugin:com.google.devtools.ksp.symbol-processing:kspOutputDir=E:\Projects\Tag\app\build\generated\ksp\release,plugin:com.google.devtools.ksp.symbol-processing:incremental=true,plugin:com.google.devtools.ksp.symbol-processing:incrementalLog=false,plugin:com.google.devtools.ksp.symbol-processing:projectBaseDir=E:\Projects\Tag\app,plugin:com.google.devtools.ksp.symbol-processing:allWarningsAsErrors=false,plugin:com.google.devtools.ksp.symbol-processing:returnOkOnError=true,plugin:com.google.devtools.ksp.symbol-processing:apoption=room.schemaLocation=E:\Projects\Tag\app/schemas,plugin:com.google.devtools.ksp.symbol-processing:excludedProcessors=,plugin:com.google.devtools.ksp.symbol-processing:mapAnnotationArgumentsInJava=false -opt-in=androidx.compose.material3.ExperimentalMaterial3Api -opt-in=androidx.compose.foundation.ExperimentalFoundationApi -opt-in=androidx.compose.animation.ExperimentalAnimationApi -opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi -Xallow-unstable-dependencies E:\Projects\Tag\app\build\generated\source\buildConfig\release\com\tag\routine\BuildConfig.java E:\Projects\Tag\app\src\main\java\com\tag\routine\data\AppConstants.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Receivers.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Reminders.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\TagApp.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\BackupFilePicker.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Charts.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Common.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Icons.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\PillNavBar.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\FocusController.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\i18n\LocalizedApp.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Color.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Theme.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Type.kt
+2026-11-04 18:35:46.876 [daemon] INFO: Message: logging: using Kotlin home directory <no_path>
+2026-11-04 18:35:46.877 [daemon] INFO: Message: logging: exception on loading scripting plugin: java.lang.ClassNotFoundException: org.jetbrains.kotlin.scripting.compiler.plugin.ScriptingCompilerConfigurationComponentRegistrar
+2026-11-04 18:35:46.878 [daemon] INFO: Message: logging: scripting plugin will not be loaded: not all required jars are present in the classpath (missing files: [.\kotlin-scripting-compiler.jar, .\kotlin-scripting-compiler-impl.jar, .\kotlin-scripting-common.jar, .\kotlin-scripting-jvm.jar])
+2026-11-04 18:35:46.894 [daemon] INFO: Message: logging: using JVM IR backend
+2026-11-04 18:35:46.895 [daemon] INFO: Message: logging: configuring the compilation environment
+2026-11-04 18:35:48.942 [daemon] INFO: Message: logging: [ksp] round 1 of processing
+2026-11-04 18:35:48.942 [daemon] INFO: Message: info: [ksp] loaded provider(s): [androidx.room.RoomKspProcessor$Provider]
+2026-11-04 18:35:49.185 [compiler] INFO: Done with result 0
+2026-11-04 18:35:49.187 [compiler] INFO: cleaning after session 3
+2026-11-04 18:35:49.897 [compiler] INFO: getDaemonJVMOptions: DaemonJVMOptions(maxMemory=3072m, maxMetaspaceSize=1024m, reservedCodeCacheSize=320m, jvmParams=[-Djava.awt.headless=true, -Djava.rmi.server.hostname=127.0.0.1, -Dkotlin.environment.keepalive, -ea, -XX:+UseCodeCacheFlushing, -XX:+UseParallelGC, --add-exports=java.base/sun.nio.ch=ALL-UNNAMED, Dkotlin.environment.keepalive, ea])
+2026-11-04 18:35:49.901 [compiler] INFO: Registered a client alive file: E:\Projects\Tag\.tmp\ktmp\kotlin-compiler-in-ag-2462256140122396192.alive
+2026-11-04 18:35:49.902 [compiler] INFO: leased a new session 4, session alive file: E:\Projects\Tag\.kotlin\sessions\kotlin-compiler-3843253590777186447.salive
+2026-11-04 18:35:49.927 [compiler] INFO: Starting compilation with args: -Xallow-no-source-files -classpath E:\Projects\Tag\app\build\intermediates\compile_and_runtime_not_namespaced_r_class_jar\release\processReleaseResources\R.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\78ead6cde14372b644bbf7165211b1d0\transformed\activity-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\3d14c436efe9911c53175cf4adde1b40\transformed\activity-compose-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f3f633c4665bf26f77f2fe9bb9ee8b18\transformed\activity-ktx-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c68f666a63f8d665c14f79aba237c148\transformed\core-1.15.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\e7548e7872aa5ce1ee6d882bba98c9e7\transformed\material3-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\98a424e932425b0040f79ebf43a4c3a0\transformed\ui-util-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\338d79c1e5b1d60c05be2537bc4b3483\transformed\ui-unit-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\4527a70b9e9bf9ddf2cad67342b847a6\transformed\ui-text-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\bd98859ac052f36e8f5dc46efeb0eb6e\transformed\foundation-layout-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ae793998e0ebea1b58907fadd25c651b\transformed\material-ripple-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\85ff82fc0d536e6861179773d14f5842\transformed\foundation-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\138e0ab59051396fe94f2fcd4fcc3465\transformed\animation-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d4af6d34b12e65261d46c56415228735\transformed\animation-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7acc84fc16189557b7da815f780c6987\transformed\ui-geometry-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\5ca284661d0cae9b95d988ba8b3bb951\transformed\ui-tooling-preview-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c7f3134a19554a2c58805b6c79c5203f\transformed\ui-graphics-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\1b213d1681dab54b396483b0981f518e\transformed\material-icons-extended-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\bbdd315217cee6220e49944353507e8b\transformed\material-icons-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\1e00426fae452d0f5b87a1f712ca610f\transformed\ui-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7979776942bca41d471d83b2777895ff\transformed\lifecycle-runtime-compose-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\8e0802389ed87901a7e263676875ba64\transformed\lifecycle-livedata-core-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.lifecycle\lifecycle-common-jvm\2.8.7\7174a594afb73a9ad9ac9074ce78b94af3cc52a7\lifecycle-common-jvm-2.8.7.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f3f9d8eec99cda8e0b6770873d4c2c4b\transformed\lifecycle-runtime-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f67b4488eeceb1721508e48dbbe8f4dd\transformed\lifecycle-viewmodel-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f5ed638214986dbec1a59c6a68051604\transformed\lifecycle-viewmodel-ktx-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\05dd7602455823a7e38949a0c2ce883a\transformed\lifecycle-runtime-ktx-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ae70eabc672f677939d39c4991616a96\transformed\lifecycle-viewmodel-compose-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f039ef9096c6cbec75a1815a778a5dd7\transformed\lifecycle-viewmodel-savedstate-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7f44ca91583d8d33435b242c3861044d\transformed\core-ktx-1.15.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\e54b770d52b2a61bbc92ca62e115f558\transformed\core-splashscreen-1.0.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-common\2.6.1\ff1b9580850a9b7eef56554e356628d225785265\room-common-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\4080674f1340cee0b08b7badc0e677dc\transformed\room-runtime-2.6.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\6b032d49a9e7581e062ae22980a9c0f5\transformed\room-ktx-2.6.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.datastore\datastore-core-okio-jvm\1.1.1\cba5887aaa9316d650b3ebc667243ed3a05f4407\datastore-core-okio-jvm-1.1.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c34be7308248693d8ac7d98fa06169b3\transformed\datastore-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.datastore\datastore-preferences-core-jvm\1.1.1\e562d4a944240c0e67317f0b862da24aca3aabc\datastore-preferences-core-jvm-1.1.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\56422cedbf854e207f942971eef897bb\transformed\datastore-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\0223f96b4a81bb5b16d60543d9d3ea06\transformed\datastore-preferences-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ab569e66565763a517e39e2ac7eb9f75\transformed\sqlite-framework-2.4.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d281ac23017789e5ab706d043f1ab64a\transformed\sqlite-2.4.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c376f902ec565be1f863cc8bcf132884\transformed\versionedparcelable-1.1.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d2cee410679ad2a26995bb287ac56890\transformed\runtime-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ca8fcbc7b6437a5112884406f3dfd9e0\transformed\runtime-saveable-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d616abaa970d2fca8bbffbc5633e0f07\transformed\savedstate-ktx-1.2.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\a93798f75972b9813b40b9c16337fae6\transformed\savedstate-1.2.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.arch.core\core-common\2.2.0\5e1b8b81dfd5f52c56a8d53b18ca759c19a301f3\core-common-2.2.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.collection\collection-jvm\1.4.4\da13a7e557c430276b8cb490420effebc1398c0d\collection-jvm-1.4.4.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.annotation\annotation-jvm\1.8.1\b8a16fe526014b7941c1debaccaf9c5153692dbb\annotation-jvm-1.8.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\fafe2d9cc7756985d9bb89a1e599d505\transformed\annotation-experimental-1.4.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-core-jvm\1.7.3\2b09627576f0989a436a00a4a54b55fa5026fb86\kotlinx-coroutines-core-jvm-1.7.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-android\1.7.3\38d9cad3a0b03a10453b56577984bdeb48edeed5\kotlinx-coroutines-android-1.7.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup.okio\okio-jvm\3.4.0\4e8bd78a52ab935ce383d0092646922154295e54\okio-jvm-3.4.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk8\1.8.22\b25c86d47d6b962b9cf0f8c3f320c8a10eea3dd1\kotlin-stdlib-jdk8-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk7\1.8.22\4dabb8248310d833bb6a8b516024a91fd3d275c\kotlin-stdlib-jdk7-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\23.0.0\8cc20c07506ec18e0834947b84a864bfc094484e\annotations-23.0.0.jar;E:\Projects\Tag\.toolchain\android-sdk\platforms\android-35\android.jar;E:\Projects\Tag\.toolchain\android-sdk\build-tools\35.0.0\core-lambda-stubs.jar -d E:\Projects\Tag\app\build\tmp\kotlin-classes\release -jvm-target 17 -module-name app_release -no-jdk -no-reflect -no-stdlib -Xplugin=E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-compose-compiler-plugin-embeddable\2.0.21\e14f003d962fb25693b461de59490c91072a7979\kotlin-compose-compiler-plugin-embeddable-2.0.21.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing\2.0.21-1.0.28\25530ee051cd46963eef72fdea489d5cbc4d971a\symbol-processing-2.0.21-1.0.28.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing-api\2.0.21-1.0.28\be0d4d8db16fcfcfe993750d10e390a0472614d4\symbol-processing-api-2.0.21-1.0.28.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-core-jvm\1.6.3\6b6c17d0312ba7192893adea9d52959941d0119b\kotlinx-serialization-core-jvm-1.6.3.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-json-jvm\1.6.3\2241746853abf04073e3ab0dcd9e6729d363b313\kotlinx-serialization-json-jvm-1.6.3.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar -P plugin:androidx.compose.compiler.plugins.kotlin:generateFunctionKeyMetaClasses=false,plugin:androidx.compose.compiler.plugins.kotlin:traceMarkersEnabled=true -opt-in=androidx.compose.material3.ExperimentalMaterial3Api -opt-in=androidx.compose.foundation.ExperimentalFoundationApi -opt-in=androidx.compose.animation.ExperimentalAnimationApi -opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi -Xallow-unstable-dependencies E:\Projects\Tag\app\build\generated\ksp\release\java\com\tag\routine\data\FocusDao_Impl.java E:\Projects\Tag\app\build\generated\ksp\release\java\com\tag\routine\data\LogDao_Impl.java E:\Projects\Tag\app\build\generated\ksp\release\java\com\tag\routine\data\RoutineDao_Impl.java E:\Projects\Tag\app\build\generated\ksp\release\java\com\tag\routine\data\TagDao_Impl.java E:\Projects\Tag\app\build\generated\ksp\release\java\com\tag\routine\data\TagDatabase_Impl.java E:\Projects\Tag\app\build\generated\ksp\release\java\com\tag\routine\data\TaskDao_Impl.java E:\Projects\Tag\app\build\generated\source\buildConfig\release\com\tag\routine\BuildConfig.java E:\Projects\Tag\app\src\main\java\com\tag\routine\data\AppConstants.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Receivers.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Reminders.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\TagApp.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\BackupFilePicker.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Charts.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Common.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Icons.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\PillNavBar.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\FocusController.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\i18n\LocalizedApp.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Color.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Theme.kt E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Type.kt
+2026-11-04 18:36:24.617 [daemon] INFO: Message: logging: using Kotlin home directory <no_path>
+2026-11-04 18:36:24.618 [daemon] INFO: Message: logging: exception on loading scripting plugin: java.lang.ClassNotFoundException: org.jetbrains.kotlin.scripting.compiler.plugin.ScriptingCompilerConfigurationComponentRegistrar
+2026-11-04 18:36:24.619 [daemon] INFO: Message: logging: scripting plugin will not be loaded: not all required jars are present in the classpath (missing files: [.\kotlin-scripting-compiler.jar, .\kotlin-scripting-compiler-impl.jar, .\kotlin-scripting-common.jar, .\kotlin-scripting-jvm.jar])
+2026-11-04 18:36:24.620 [daemon] INFO: Message: logging: using JVM IR backend
+2026-11-04 18:36:24.620 [daemon] INFO: Message: logging: configuring the compilation environment
+2026-11-04 18:36:24.621 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\AppViewModelFactory.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.623 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivity.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.625 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivity$special$$inlined$viewModels$default$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.627 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivity$special$$inlined$viewModels$default$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.630 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivity$special$$inlined$viewModels$default$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.632 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivity$onCreate$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.633 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivity$onCreate$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.635 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivity$onCreate$1$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.638 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.639 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.640 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.642 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$2$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.645 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$7$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.647 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$8$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.649 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$9$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.650 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$10$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.653 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$11$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.655 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$15$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.656 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$16$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.659 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$17$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.661 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$18$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.663 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$19$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.666 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$20$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.668 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$22$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.670 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$23$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.672 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$1$1$1$26$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.674 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$1$WhenMappings.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.676 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$7$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.679 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$8$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.682 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\MainActivityKt$TagRoot$offerUndo$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+2026-11-04 18:36:24.683 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\AppContainer.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\TagApp.kt
+2026-11-04 18:36:24.685 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\AppContainer$bootstrap$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\TagApp.kt
+2026-11-04 18:36:24.688 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\TagApp.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\TagApp.kt
+2026-11-04 18:36:24.689 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\TagApp$Companion.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\TagApp.kt
+2026-11-04 18:36:24.691 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\AppConstants.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\AppConstants.kt
+2026-11-04 18:36:24.692 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\RoutineEntity.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.695 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TaskEntity.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.697 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagEntity.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.700 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\RoutineLogEntity.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.701 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TaskLogEntity.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.704 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\FocusSessionEntity.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.705 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\RoutineDao.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.707 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TaskDao.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.709 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagDao.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.713 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\LogDao.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.716 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\FocusDao.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.717 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagDatabase.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.719 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagDatabase$Companion$MIGRATION_1_2$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.721 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagDatabase$Companion.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+2026-11-04 18:36:24.723 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\Groups.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt
+2026-11-04 18:36:24.724 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\Priorities.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt
+2026-11-04 18:36:24.725 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\RoutineIcons.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt
+2026-11-04 18:36:24.726 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\Palette.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt
+2026-11-04 18:36:24.729 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\AppSettings.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt
+2026-11-04 18:36:24.730 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\AppSettings$ThemeMode.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt
+2026-11-04 18:36:24.732 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\AppSettings$Palettes.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt
+2026-11-04 18:36:24.734 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\Dates.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt
+2026-11-04 18:36:24.735 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\DayStat.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt
+2026-11-04 18:36:24.736 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\Insights.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt
+2026-11-04 18:36:24.736 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\StatsEngine.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt
+2026-11-04 18:36:24.737 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\StatsEngine$routineRates$$inlined$sortedByDescending$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt
+2026-11-04 18:36:24.738 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.738 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$special$$inlined$map$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.739 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$special$$inlined$map$1$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.740 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$special$$inlined$map$1$2$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.742 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$special$$inlined$map$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.743 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$special$$inlined$map$2$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.744 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$special$$inlined$map$2$2$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.745 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$setSeeded$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.746 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$setThemeMode$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.748 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$setThemePalette$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.749 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$setLanguage$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.750 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$setUserName$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.751 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$setNotifications$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.752 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$setDigestEnabled$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.753 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$setDigestMinutes$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.755 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$setHaptics$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.755 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStore$Keys.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.756 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\SettingsStoreKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+2026-11-04 18:36:24.757 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\Snapshot.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.758 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\RestoreResult.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.760 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\ImportOutcome.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.762 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.763 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$deleteRoutine$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.765 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$newRoutineOrder$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.765 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$moveRoutine$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.767 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$setTaskDone$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.768 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$deleteTask$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.768 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$deleteTag$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.769 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$newTagOrder$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.770 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$totalFocusMinutes$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.771 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$resetProgress$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.771 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$importJson$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.772 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$purgeSeededRoutines$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.773 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$seedIfNeeded$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.773 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$snapshot$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.775 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$snapshot$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.775 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepository$snapshot$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.776 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\data\TagRepositoryKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.778 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\notifications\NotificationReceiver.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Receivers.kt
+2026-11-04 18:36:24.779 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\notifications\NotificationReceiver$onReceive$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Receivers.kt
+2026-11-04 18:36:24.780 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\notifications\NotificationReceiver$onReceive$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Receivers.kt
+2026-11-04 18:36:24.781 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\notifications\NotificationReceiver$handleMarkDone$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Receivers.kt
+2026-11-04 18:36:24.781 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\notifications\NotificationReceiver$rearm$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Receivers.kt
+2026-11-04 18:36:24.782 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\notifications\NotificationReceiver$Companion.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Receivers.kt
+2026-11-04 18:36:24.782 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\notifications\BootReceiver.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Receivers.kt
+2026-11-04 18:36:24.784 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\notifications\BootReceiver$onReceive$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Receivers.kt
+2026-11-04 18:36:24.785 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\notifications\Notifications.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Reminders.kt
+2026-11-04 18:36:24.786 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\notifications\ReminderScheduler.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Reminders.kt
+2026-11-04 18:36:24.787 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\Tab.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.787 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\TaskFilter.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.788 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\DueState.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.788 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\TaskRow.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.789 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\TodayRoutine.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.790 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\RoutineGroupSection.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.791 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\UiState.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.792 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\Filters.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.792 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.793 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$buildState$$inlined$sortedBy$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.795 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$buildState$lambda$7$$inlined$compareBy$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.796 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$buildState$lambda$7$$inlined$thenBy$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.797 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$buildState$$inlined$compareBy$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.798 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$buildState$$inlined$thenByDescending$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.799 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$buildState$$inlined$thenByDescending$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.800 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$buildState$$inlined$thenBy$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.801 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$toggleRoutine$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.802 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$toggleTask$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.803 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$deleteTask$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.804 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$deleteRoutine$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.805 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$restoreRoutine$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.806 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$restoreTask$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.807 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$restoreTag$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.808 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$moveRoutine$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.808 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$saveTask$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.809 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$saveRoutine$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.810 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$addTag$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.811 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$deleteTag$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.811 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$setThemeMode$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.813 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$setTheme$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.814 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$setLanguage$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.815 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$setUserName$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.815 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$setNotificationsEnabled$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.816 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$setDigestEnabled$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.817 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$setDigestMinutes$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.817 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$setHaptics$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.818 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$resetProgress$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.818 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$WhenMappings.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.819 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$filters$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.820 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\AppViewModel$state$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+2026-11-04 18:36:24.820 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\FocusState.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\FocusController.kt
+2026-11-04 18:36:24.821 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\FocusController.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\FocusController.kt
+2026-11-04 18:36:24.821 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\FocusController$finish$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\FocusController.kt
+2026-11-04 18:36:24.822 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\FocusController$tick$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\FocusController.kt
+2026-11-04 18:36:24.823 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\BackupFilePickerKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\BackupFilePicker.kt
+2026-11-04 18:36:24.824 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\BackupFilePickerKt$restoreBackup$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\BackupFilePicker.kt
+2026-11-04 18:36:24.825 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\BackupFilePickerKt$BackupFilePicker$launcher$1$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\BackupFilePicker.kt
+2026-11-04 18:36:24.825 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\BackupFilePickerKt$BackupFilePicker$launcher$1$1$1$outcome$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\BackupFilePicker.kt
+2026-11-04 18:36:24.828 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\ChartsKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Charts.kt
+2026-11-04 18:36:24.829 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\ChartsKt$WeeklyBarChart$2$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Charts.kt
+2026-11-04 18:36:24.830 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\ComposableSingletons$CommonKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Common.kt
+2026-11-04 18:36:24.831 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\ComposableSingletons$CommonKt$lambda-1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Common.kt
+2026-11-04 18:36:24.831 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\CommonKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Common.kt
+2026-11-04 18:36:24.832 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\CommonKt$SwipeToDelete$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Common.kt
+2026-11-04 18:36:24.832 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\CommonKt$AnimatedCheck$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Common.kt
+2026-11-04 18:36:24.833 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\CommonKt$MetaPill$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Common.kt
+2026-11-04 18:36:24.834 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\CommonKt$FilterPill$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Common.kt
+2026-11-04 18:36:24.835 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\CommonKt$StatTile$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Common.kt
+2026-11-04 18:36:24.835 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\RoutineIconMap.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Icons.kt
+2026-11-04 18:36:24.836 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\NavItem.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\PillNavBar.kt
+2026-11-04 18:36:24.836 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\PillNavBarKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\PillNavBar.kt
+2026-11-04 18:36:24.837 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\components\PillNavBarKt$PillNavBar$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\PillNavBar.kt
+2026-11-04 18:36:24.838 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$RoutineEditorSheetKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt
+2026-11-04 18:36:24.838 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$RoutineEditorSheetKt$lambda-1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt
+2026-11-04 18:36:24.839 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$RoutineEditorSheetKt$lambda-2$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt
+2026-11-04 18:36:24.839 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$RoutineEditorSheetKt$lambda-3$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt
+2026-11-04 18:36:24.841 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$RoutineEditorSheetKt$lambda-4$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt
+2026-11-04 18:36:24.842 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$RoutineEditorSheetKt$lambda-5$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt
+2026-11-04 18:36:24.842 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$RoutineEditorSheetKt$lambda-6$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt
+2026-11-04 18:36:24.844 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\RoutineEditorSheetKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt
+2026-11-04 18:36:24.845 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\RoutineEditorSheetKt$RoutineEditorSheet$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt
+2026-11-04 18:36:24.846 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$TaskEditorSheetKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.846 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$TaskEditorSheetKt$lambda-1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.847 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$TaskEditorSheetKt$lambda-2$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.847 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$TaskEditorSheetKt$lambda-3$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.848 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$TaskEditorSheetKt$lambda-4$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.850 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$TaskEditorSheetKt$lambda-5$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.851 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$TaskEditorSheetKt$lambda-6$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.851 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$TaskEditorSheetKt$lambda-7$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.852 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\ComposableSingletons$TaskEditorSheetKt$lambda-8$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.852 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\TaskEditorSheetKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.853 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\TaskEditorSheetKt$TaskEditorSheet$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.855 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\TaskEditorSheetKt$TaskEditorSheet$1$1$5$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.855 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\TaskEditorSheetKt$TaskEditorSheet$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.856 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\TaskEditorSheetKt$TaskEditorSheet$4.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.856 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\editors\TaskEditorSheetKt$TaskEditorSheet$5.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+2026-11-04 18:36:24.857 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\i18n\LocalizedContext.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\i18n\LocalizedApp.kt
+2026-11-04 18:36:24.857 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\i18n\AppLanguage.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\i18n\LocalizedApp.kt
+2026-11-04 18:36:24.858 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\i18n\AppLanguage$Entry.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\i18n\LocalizedApp.kt
+2026-11-04 18:36:24.859 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\i18n\LocalizedAppKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\i18n\LocalizedApp.kt
+2026-11-04 18:36:24.860 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$FocusSheetKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.861 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$FocusSheetKt$lambda-1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.861 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$FocusSheetKt$lambda-2$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.862 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\FocusSheetKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.862 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\FocusSheetKt$FocusSheet$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.864 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\FocusSheetKt$FocusSheet$1$1$2$1$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.864 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\FocusSheetKt$FocusSheet$1$1$1$1$2$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.865 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\FocusSheetKt$FocusSheet$1$1$1$1$2$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.865 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\FocusSheetKt$FocusSheet$1$invoke$lambda$12$lambda$4$lambda$3$$inlined$items$default$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.866 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\FocusSheetKt$FocusSheet$1$invoke$lambda$12$lambda$4$lambda$3$$inlined$items$default$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.867 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\FocusSheetKt$FocusSheet$1$invoke$lambda$12$lambda$4$lambda$3$$inlined$items$default$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.867 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\FocusSheetKt$FocusSheet$1$invoke$lambda$12$lambda$4$lambda$3$$inlined$items$default$4.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.868 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\FocusSheetKt$RunningFocus$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.868 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\FocusSheetKt$RunningFocus$1$2$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+2026-11-04 18:36:24.868 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$InsightsScreenKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.869 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$InsightsScreenKt$lambda-1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.871 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$InsightsScreenKt$lambda-2$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.871 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.872 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt$InsightsScreen$2$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.872 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt$InsightsScreen$2$1$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.873 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt$InsightsScreen$2$1$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.873 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt$InsightsScreen$2$1$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.874 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt$InsightsScreen$2$1$3$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.874 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt$InsightsScreen$2$1$4.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.875 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt$InsightsScreen$2$1$4$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.875 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt$InsightsScreen$2$1$5.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.876 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt$InsightsScreen$2$1$5$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.878 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt$InsightsScreen$2$1$6.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.878 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt$InsightsScreen$2$1$6$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.880 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt$InsightsScreen$2$1$7.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.880 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\InsightsScreenKt$InsightsScreen$2$1$7$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+2026-11-04 18:36:24.881 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\PaletteOption.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.881 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.882 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.882 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-2$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.883 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-3$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.884 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-4$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.884 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-5$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.886 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-6$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.886 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-7$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.887 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-8$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.887 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-9$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.888 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-10$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.888 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-11$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.889 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-12$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.889 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-13$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.889 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-14$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.890 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-15$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.890 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-16$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.891 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$SettingsScreenKt$lambda-17$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.892 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.893 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsScreen$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.895 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsScreen$1$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.896 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsScreen$1$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.897 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsScreen$1$4.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.898 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsScreen$1$5.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.899 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsScreen$1$6.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.899 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsScreen$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.900 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsScreen$4.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.900 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsScreen$5$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.902 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsScreen$5$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.902 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsScreen$6$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.903 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsScreen$6$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.904 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsScreen$6$4.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.904 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$SettingsSection$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.904 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$ThemeSelector$1$1$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.905 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\SettingsScreenKt$LanguageRow$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+2026-11-04 18:36:24.905 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TasksScreenKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.906 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TasksScreenKt$lambda-1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.906 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TasksScreenKt$lambda-2$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.908 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TasksScreenKt$lambda-3$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.908 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TasksScreenKt$lambda-4$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.909 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TasksScreenKt$lambda-5$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.909 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TasksScreenKt$lambda-6$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.910 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.910 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TaskRowCard$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.911 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$1$1$1$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.912 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$1$1$1$1$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.912 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$1$1$1$1$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.913 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$1$1$1$1$4.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.914 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$1$1$1$1$5.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.914 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$1$1$2$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.915 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$1$1$2$1$2$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.915 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$lambda$12$lambda$11$lambda$5$lambda$4$$inlined$items$default$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.916 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$lambda$12$lambda$11$lambda$5$lambda$4$$inlined$items$default$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.916 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$lambda$12$lambda$11$lambda$5$lambda$4$$inlined$items$default$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.917 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$lambda$12$lambda$11$lambda$5$lambda$4$$inlined$items$default$4.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.917 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$1$1$3$1$2$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.918 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$1$1$3$1$2$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.918 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$lambda$12$lambda$11$lambda$10$lambda$9$$inlined$items$default$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.918 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$lambda$12$lambda$11$lambda$10$lambda$9$$inlined$items$default$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.920 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$lambda$12$lambda$11$lambda$10$lambda$9$$inlined$items$default$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.921 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TasksScreenKt$TasksScreen$lambda$12$lambda$11$lambda$10$lambda$9$$inlined$items$default$4.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+2026-11-04 18:36:24.921 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.922 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.922 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-2$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.923 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-3$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.923 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-4$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.924 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-5$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.924 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-6$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.925 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-7$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.926 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-8$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.927 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-9$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.928 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-10$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.930 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-11$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.930 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-12$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.931 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-13$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.931 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\ComposableSingletons$TodayScreenKt$lambda-14$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.932 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TodayScreenKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.932 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TodayScreenKt$TodayScreen$1$1$1$1$1$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.933 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TodayScreenKt$TodayScreen$1$1$1$1$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.933 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TodayScreenKt$RoutineGroupCard$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.934 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TodayScreenKt$RoutineGroupCard$1$1$2$1$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.934 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TodayScreenKt$RoutineRow$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.935 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TodayScreenKt$RoutineRow$3$1$3$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.935 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TodayScreenKt$TodayScreen$lambda$18$lambda$17$lambda$16$lambda$15$$inlined$items$default$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.935 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TodayScreenKt$TodayScreen$lambda$18$lambda$17$lambda$16$lambda$15$$inlined$items$default$2.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.936 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TodayScreenKt$TodayScreen$lambda$18$lambda$17$lambda$16$lambda$15$$inlined$items$default$3.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.936 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\screens\TodayScreenKt$TodayScreen$lambda$18$lambda$17$lambda$16$lambda$15$$inlined$items$default$4.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+2026-11-04 18:36:24.938 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\theme\TagBrand.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Color.kt
+2026-11-04 18:36:24.938 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\theme\ColorKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Color.kt
+2026-11-04 18:36:24.939 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\theme\PaletteDef.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Theme.kt
+2026-11-04 18:36:24.939 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\theme\PaletteDef$Def.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Theme.kt
+2026-11-04 18:36:24.940 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\theme\ThemeKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Theme.kt
+2026-11-04 18:36:24.940 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\theme\ThemeKt$TagTheme$1.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Theme.kt
+2026-11-04 18:36:24.941 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\com\tag\routine\ui\theme\TypeKt.class
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Type.kt
+2026-11-04 18:36:24.941 [daemon] INFO: Message: output: output:
+E:\Projects\Tag\app\build\tmp\kotlin-classes\release\META-INF\app_release.kotlin_module
+Sources:
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\SettingsStore.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\PillNavBar.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Charts.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\BackupFilePicker.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\SettingsScreen.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TodayScreen.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\TagApp.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Reminders.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Common.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Color.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\FocusSheet.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Type.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\TaskEditorSheet.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\InsightsScreen.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\screens\TasksScreen.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\notifications\Receivers.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Model.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\FocusController.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\theme\Theme.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\MainActivity.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\Db.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\components\Icons.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\editors\RoutineEditorSheet.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\AppConstants.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\AppViewModel.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\ui\i18n\LocalizedApp.kt
+E:\Projects\Tag\app\src\main\java\com\tag\routine\data\TagRepository.kt
+2026-11-04 18:36:24.942 [daemon] INFO: Message: warning: 'val Icons.Rounded.DirectionsRun: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.DirectionsRun.
+        "run" to Icons.Rounded.DirectionsRun,
+                               ^^^^^^^^^^^^^
+2026-11-04 18:36:24.943 [daemon] INFO: Message: warning: 'val Icons.Rounded.MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.MenuBook.
+        "book" to Icons.Rounded.MenuBook,
+                                ^^^^^^^^
+2026-11-04 18:36:24.944 [daemon] INFO: Message: warning: 'val Icons.Rounded.DirectionsWalk: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.DirectionsWalk.
+        "walk" to Icons.Rounded.DirectionsWalk,
+                                ^^^^^^^^^^^^^^
+2026-11-04 18:36:24.946 [daemon] INFO: Message: warning: 'val Icons.Rounded.TrendingUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.TrendingUp.
+                    imageVector = Icons.Rounded.TrendingUp,
+                                                ^^^^^^^^^^
+2026-11-04 18:36:26.167 [compiler] INFO: Done with result 0
+2026-11-04 18:36:26.171 [compiler] INFO: cleaning after session 4
+2026-11-04 18:36:32.590 [compiler] INFO: getDaemonJVMOptions: DaemonJVMOptions(maxMemory=3072m, maxMetaspaceSize=1024m, reservedCodeCacheSize=320m, jvmParams=[-Djava.awt.headless=true, -Djava.rmi.server.hostname=127.0.0.1, -Dkotlin.environment.keepalive, -ea, -XX:+UseCodeCacheFlushing, -XX:+UseParallelGC, --add-exports=java.base/sun.nio.ch=ALL-UNNAMED, Dkotlin.environment.keepalive, ea])
+2026-11-04 18:36:32.594 [compiler] INFO: Registered a client alive file: E:\Projects\Tag\.tmp\ktmp\kotlin-compiler-in-ag-2462256140122396192.alive
+2026-11-04 18:36:32.595 [compiler] INFO: leased a new session 5, session alive file: E:\Projects\Tag\.kotlin\sessions\kotlin-compiler-3843253590777186447.salive
+2026-11-04 18:36:32.601 [compiler] INFO: Starting compilation with args: -Xallow-no-source-files -classpath E:\Projects\Tag\app\build\intermediates\compile_and_runtime_not_namespaced_r_class_jar\release\processReleaseResources\R.jar;E:\Projects\Tag\app\build\intermediates\compile_app_classes_jar\release\bundleReleaseClassesToCompileJar\classes.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\78ead6cde14372b644bbf7165211b1d0\transformed\activity-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\3d14c436efe9911c53175cf4adde1b40\transformed\activity-compose-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f3f633c4665bf26f77f2fe9bb9ee8b18\transformed\activity-ktx-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c68f666a63f8d665c14f79aba237c148\transformed\core-1.15.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\e7548e7872aa5ce1ee6d882bba98c9e7\transformed\material3-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\98a424e932425b0040f79ebf43a4c3a0\transformed\ui-util-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\338d79c1e5b1d60c05be2537bc4b3483\transformed\ui-unit-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\4527a70b9e9bf9ddf2cad67342b847a6\transformed\ui-text-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\bd98859ac052f36e8f5dc46efeb0eb6e\transformed\foundation-layout-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ae793998e0ebea1b58907fadd25c651b\transformed\material-ripple-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\85ff82fc0d536e6861179773d14f5842\transformed\foundation-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\138e0ab59051396fe94f2fcd4fcc3465\transformed\animation-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d4af6d34b12e65261d46c56415228735\transformed\animation-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7acc84fc16189557b7da815f780c6987\transformed\ui-geometry-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\5ca284661d0cae9b95d988ba8b3bb951\transformed\ui-tooling-preview-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c7f3134a19554a2c58805b6c79c5203f\transformed\ui-graphics-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\1b213d1681dab54b396483b0981f518e\transformed\material-icons-extended-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\bbdd315217cee6220e49944353507e8b\transformed\material-icons-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\1e00426fae452d0f5b87a1f712ca610f\transformed\ui-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7979776942bca41d471d83b2777895ff\transformed\lifecycle-runtime-compose-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\8e0802389ed87901a7e263676875ba64\transformed\lifecycle-livedata-core-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.lifecycle\lifecycle-common-jvm\2.8.7\7174a594afb73a9ad9ac9074ce78b94af3cc52a7\lifecycle-common-jvm-2.8.7.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f3f9d8eec99cda8e0b6770873d4c2c4b\transformed\lifecycle-runtime-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f67b4488eeceb1721508e48dbbe8f4dd\transformed\lifecycle-viewmodel-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f5ed638214986dbec1a59c6a68051604\transformed\lifecycle-viewmodel-ktx-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\05dd7602455823a7e38949a0c2ce883a\transformed\lifecycle-runtime-ktx-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ae70eabc672f677939d39c4991616a96\transformed\lifecycle-viewmodel-compose-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f039ef9096c6cbec75a1815a778a5dd7\transformed\lifecycle-viewmodel-savedstate-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7f44ca91583d8d33435b242c3861044d\transformed\core-ktx-1.15.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\e54b770d52b2a61bbc92ca62e115f558\transformed\core-splashscreen-1.0.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-common\2.6.1\ff1b9580850a9b7eef56554e356628d225785265\room-common-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\4080674f1340cee0b08b7badc0e677dc\transformed\room-runtime-2.6.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\6b032d49a9e7581e062ae22980a9c0f5\transformed\room-ktx-2.6.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.datastore\datastore-core-okio-jvm\1.1.1\cba5887aaa9316d650b3ebc667243ed3a05f4407\datastore-core-okio-jvm-1.1.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c34be7308248693d8ac7d98fa06169b3\transformed\datastore-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.datastore\datastore-preferences-core-jvm\1.1.1\e562d4a944240c0e67317f0b862da24aca3aabc\datastore-preferences-core-jvm-1.1.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\56422cedbf854e207f942971eef897bb\transformed\datastore-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\0223f96b4a81bb5b16d60543d9d3ea06\transformed\datastore-preferences-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ab569e66565763a517e39e2ac7eb9f75\transformed\sqlite-framework-2.4.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d281ac23017789e5ab706d043f1ab64a\transformed\sqlite-2.4.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c376f902ec565be1f863cc8bcf132884\transformed\versionedparcelable-1.1.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d2cee410679ad2a26995bb287ac56890\transformed\runtime-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ca8fcbc7b6437a5112884406f3dfd9e0\transformed\runtime-saveable-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d616abaa970d2fca8bbffbc5633e0f07\transformed\savedstate-ktx-1.2.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\a93798f75972b9813b40b9c16337fae6\transformed\savedstate-1.2.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.arch.core\core-common\2.2.0\5e1b8b81dfd5f52c56a8d53b18ca759c19a301f3\core-common-2.2.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.collection\collection-jvm\1.4.4\da13a7e557c430276b8cb490420effebc1398c0d\collection-jvm-1.4.4.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.annotation\annotation-jvm\1.8.1\b8a16fe526014b7941c1debaccaf9c5153692dbb\annotation-jvm-1.8.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\fafe2d9cc7756985d9bb89a1e599d505\transformed\annotation-experimental-1.4.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-core-jvm\1.7.3\2b09627576f0989a436a00a4a54b55fa5026fb86\kotlinx-coroutines-core-jvm-1.7.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-android\1.7.3\38d9cad3a0b03a10453b56577984bdeb48edeed5\kotlinx-coroutines-android-1.7.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup.okio\okio-jvm\3.4.0\4e8bd78a52ab935ce383d0092646922154295e54\okio-jvm-3.4.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk8\1.8.22\b25c86d47d6b962b9cf0f8c3f320c8a10eea3dd1\kotlin-stdlib-jdk8-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk7\1.8.22\4dabb8248310d833bb6a8b516024a91fd3d275c\kotlin-stdlib-jdk7-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\junit\junit\4.13.2\8ac9e16d933b6fb43bc7f576336b8f4d7eb5ba12\junit-4.13.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.hamcrest\hamcrest-core\1.3\42a25dc3219429f0e5d060061f71acb49bf010a0\hamcrest-core-1.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\23.0.0\8cc20c07506ec18e0834947b84a864bfc094484e\annotations-23.0.0.jar;E:\Projects\Tag\.toolchain\android-sdk\platforms\android-35\android.jar;E:\Projects\Tag\.toolchain\android-sdk\build-tools\35.0.0\core-lambda-stubs.jar -d E:\Projects\Tag\app\build\generated\ksp\releaseUnitTest -Xfriend-paths=E:\Projects\Tag\app\build\tmp\kotlin-classes\release,E:\Projects\Tag\app\build\intermediates\javac\release\compileReleaseJavaWithJavac\classes,E:\Projects\Tag\app\build\generated\ksp\release\classes,E:\Projects\Tag\app\build\intermediates\compile_app_classes_jar\release\bundleReleaseClassesToCompileJar\classes.jar -jvm-target 17 -module-name app_releaseUnitTest -no-jdk -no-reflect -no-stdlib -language-version 1.9 -Xplugin=E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing\2.0.21-1.0.28\25530ee051cd46963eef72fdea489d5cbc4d971a\symbol-processing-2.0.21-1.0.28.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing-api\2.0.21-1.0.28\be0d4d8db16fcfcfe993750d10e390a0472614d4\symbol-processing-api-2.0.21-1.0.28.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-core-jvm\1.6.3\6b6c17d0312ba7192893adea9d52959941d0119b\kotlinx-serialization-core-jvm-1.6.3.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-json-jvm\1.6.3\2241746853abf04073e3ab0dcd9e6729d363b313\kotlinx-serialization-json-jvm-1.6.3.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar -P plugin:com.google.devtools.ksp.symbol-processing:changedClasses=com.tag.routine.ui.screens.ComposableSingletons.TodayScreenKt.lambda-14.1:com.tag.routine.ui.screens.TodayScreenKt.RoutineRow.3:com.tag.routine.ui.screens.SettingsScreenKt:com.tag.routine.ui.screens.SettingsScreenKt.SettingsSection.1.1:com.tag.routine.R.string:com.tag.routine.ui.screens.ComposableSingletons.TodayScreenKt.lambda-2.1:com.tag.routine.ui.screens.ComposableSingletons.TodayScreenKt.lambda-12.1:com.tag.routine.ui.screens.ComposableSingletons.TodayScreenKt.lambda-4.1:com.tag.routine.ui.screens.ComposableSingletons.SettingsScreenKt.lambda-3.1:com.tag.routine.ui.screens.ComposableSingletons.TodayScreenKt.lambda-3.1:com.tag.routine.ui.i18n.AppLanguage:com.tag.routine.ui.screens.ComposableSingletons.SettingsScreenKt.lambda-6.1:com.tag.routine.ui.screens.ComposableSingletons.TodayScreenKt.lambda-6.1:com.tag.routine.ui.screens.ComposableSingletons.SettingsScreenKt.lambda-10.1:com.tag.routine.ui.screens.TodayScreenKt.TodayScreen.lambda.19.lambda.18.lambda.17.lambda.16..inlined.items.default.4:com.tag.routine.ui.screens.TodayScreenKt.TodayScreen.lambda.19.lambda.18.lambda.17.lambda.16..inlined.items.default.3:com.tag.routine.ui.screens.TodayScreenKt.TodayScreen.lambda.19.lambda.18.lambda.17.lambda.16..inlined.items.default.2:com.tag.routine.ui.screens.TodayScreenKt.TodayScreen.lambda.19.lambda.18.lambda.17.lambda.16..inlined.items.default.1:com.tag.routine.ui.screens.ComposableSingletons.SettingsScreenKt.lambda-8.1:com.tag.routine.ui.screens.ComposableSingletons.TodayScreenKt.lambda-8.1:com.tag.routine.ui.screens.SettingsScreenKt.ThemeSelector.1.1.2:com.tag.routine.ui.screens.ComposableSingletons.SettingsScreenKt.lambda-7.1:com.tag.routine.ui.screens.SettingsScreenKt.SettingsScreen.1.2:com.tag.routine.ui.screens.SettingsScreenKt.SettingsScreen.1.3:com.tag.routine.ui.screens.TodayScreenKt.RoutineGroupCard.1:com.tag.routine.ui.screens.SettingsScreenKt.SettingsScreen.1.5:com.tag.routine.ui.screens.SettingsScreenKt.SettingsScreen.1.6:com.tag.routine.ui.screens.ComposableSingletons.SettingsScreenKt.lambda-9.1:com.tag.routine.ui.screens.TodayScreenKt:com.tag.routine.ui.screens.ComposableSingletons.TodayScreenKt.lambda-10.1:com.tag.routine.ui.screens.SettingsScreenKt.SettingsScreen.3:com.tag.routine.ui.screens.SettingsScreenKt.SettingsScreen.4:com.tag.routine.ui.screens.SettingsScreenKt.SettingsScreen.6.2:com.tag.routine.ui.screens.TodayScreenKt.RoutineRow.3.1.3.3:com.tag.routine.ui.screens.SettingsScreenKt.LanguageSelector.1.1.2:com.tag.routine.ui.screens.SettingsScreenKt.SettingsScreen.5.2:com.tag.routine.BuildConfig:com.tag.routine.ui.i18n.LocalizedAppKt:com.tag.routine.ui.screens.TodayScreenKt.TodayScreen.lambda.18.lambda.17.lambda.16.lambda.15..inlined.items.default.4:com.tag.routine.ui.screens.TodayScreenKt.TodayScreen.lambda.18.lambda.17.lambda.16.lambda.15..inlined.items.default.1:com.tag.routine.ui.screens.TodayScreenKt.TodayScreen.lambda.18.lambda.17.lambda.16.lambda.15..inlined.items.default.3:com.tag.routine.ui.screens.TodayScreenKt.TodayScreen.lambda.18.lambda.17.lambda.16.lambda.15..inlined.items.default.2:com.tag.routine.ui.i18n.LocalizedContext:com.tag.routine.ui.screens.SettingsScreenKt.LanguageRow.1:com.tag.routine.ui.screens.TodayScreenKt.TodayScreen.1.1.1.1.1.1:com.tag.routine.ui.i18n.AppLanguage.Entry,plugin:com.google.devtools.ksp.symbol-processing:apclasspath=E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-migration\2.6.1\8d8218e4ccfe9b34485619a8ca68f8760840301d\room-migration-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-compiler-processing\2.6.1\64891dd45a3adbb4137f338563b6d716dca7c456\room-compiler-processing-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-common\2.6.1\ff1b9580850a9b7eef56554e356628d225785265\room-common-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-compiler\2.6.1\d789379e27b40fa5cc6e17f4c56988d6500a4036\room-compiler-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.auto\auto-common\0.11\345a7dc983e11c123c8000a53383cc2b83848caf\auto-common-0.11.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.auto.value\auto-value-annotations\1.6.3\b88c1bb7f149f6d2cc03898359283e57b08f39cc\auto-value-annotations-1.6.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing-api\1.9.0-1.0.13\c001c57ba3e093c65d23e124adfcdf5df9dde8a2\symbol-processing-api-1.9.0-1.0.13.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.intellij\annotations\12.0\bbcf6448f6d40abe506e2c83b70a3e8bfd2b4539\annotations-12.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup\kotlinpoet-javapoet\1.14.2\e4481d491afe47e3dcce952c87628141dc16454b\kotlinpoet-javapoet-1.14.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup\javapoet\1.13.0\d6562d385049f35eb50403fa86bb11cce76b866a\javapoet-1.13.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup\kotlinpoet\1.14.2\b6741951260d555a05932e39de177fc64ef450bd\kotlinpoet-1.14.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\commons-codec\commons-codec\1.15\49d94806b6e3dc933dacbd8acb0fdbab8ebd1e5d\commons-codec-1.15.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk8\1.8.22\b25c86d47d6b962b9cf0f8c3f320c8a10eea3dd1\kotlin-stdlib-jdk8-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-reflect\1.8.21\662838019bc1141f8a311180d93b9e13765c7f55\kotlin-reflect-1.8.21.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk7\1.8.22\4dabb8248310d833bb6a8b516024a91fd3d275c\kotlin-stdlib-jdk7-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\1.9.0\8ee15ef0c67dc83d874f412d84378d7f0eb50b63\kotlin-stdlib-1.9.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.xerial\sqlite-jdbc\3.41.2.2\ddeb8d3a3004f412ed19b4c98b3aec11d9452ab5\sqlite-jdbc-3.41.2.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.annotation\annotation\1.3.0\21f49f5f9b85fc49de712539f79123119740595\annotation-1.3.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.guava\guava\31.1-jre\60458f877d055d0c9114d9e1a2efb737b4bc282c\guava-31.1-jre.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.code.gson\gson\2.9.0\8a1167e089096758b49f9b34066ef98b2f4b37aa\gson-2.9.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.guava\failureaccess\1.0.1\1dcf1de382a0bf95a3d8b0849546c88bac1292c9\failureaccess-1.0.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.guava\listenablefuture\9999.0-empty-to-avoid-conflict-with-guava\b421526c5f297295adef1c886e5246c39d4ac629\listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.code.findbugs\jsr305\3.0.2\25ea2e8b0c338a877313bd4672d3fe056ea78f0d\jsr305-3.0.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.checkerframework\checker-qual\3.12.0\d5692f0526415fcc6de94bb5bfbd3afd9dd3b3e5\checker-qual-3.12.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.errorprone\error_prone_annotations\2.11.0\c5a0ace696d3f8b1c1d8cc036d8c03cc0cbe6b69\error_prone_annotations-2.11.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.j2objc\j2objc-annotations\1.3\ba035118bc8bac37d7eff77700720999acd9986d\j2objc-annotations-1.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-common\1.9.0\cd65c21cfd1eec4d44ef09f9f52b6d9f8a720636\kotlin-stdlib-common-1.9.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar,plugin:com.google.devtools.ksp.symbol-processing:classOutputDir=E:\Projects\Tag\app\build\generated\ksp\releaseUnitTest\classes,plugin:com.google.devtools.ksp.symbol-processing:javaOutputDir=E:\Projects\Tag\app\build\generated\ksp\releaseUnitTest\java,plugin:com.google.devtools.ksp.symbol-processing:kotlinOutputDir=E:\Projects\Tag\app\build\generated\ksp\releaseUnitTest\kotlin,plugin:com.google.devtools.ksp.symbol-processing:resourceOutputDir=E:\Projects\Tag\app\build\generated\ksp\releaseUnitTest\resources,plugin:com.google.devtools.ksp.symbol-processing:cachesDir=E:\Projects\Tag\app\build\kspCaches\releaseUnitTest,plugin:com.google.devtools.ksp.symbol-processing:kspOutputDir=E:\Projects\Tag\app\build\generated\ksp\releaseUnitTest,plugin:com.google.devtools.ksp.symbol-processing:incremental=true,plugin:com.google.devtools.ksp.symbol-processing:incrementalLog=false,plugin:com.google.devtools.ksp.symbol-processing:projectBaseDir=E:\Projects\Tag\app,plugin:com.google.devtools.ksp.symbol-processing:allWarningsAsErrors=false,plugin:com.google.devtools.ksp.symbol-processing:returnOkOnError=true,plugin:com.google.devtools.ksp.symbol-processing:apoption=room.schemaLocation=E:\Projects\Tag\app/schemas,plugin:com.google.devtools.ksp.symbol-processing:excludedProcessors=,plugin:com.google.devtools.ksp.symbol-processing:mapAnnotationArgumentsInJava=false -opt-in=androidx.compose.material3.ExperimentalMaterial3Api -opt-in=androidx.compose.foundation.ExperimentalFoundationApi -opt-in=androidx.compose.animation.ExperimentalAnimationApi -opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi -Xallow-unstable-dependencies E:\Projects\Tag\app\src\test\java\com\tag\routine\data\DatesTest.kt E:\Projects\Tag\app\src\test\java\com\tag\routine\data\RoutineOrderingTest.kt E:\Projects\Tag\app\src\test\java\com\tag\routine\data\StatsEngineTest.kt E:\Projects\Tag\app\src\test\java\com\tag\routine\i18n\LocaleResourcesTest.kt
+2026-11-04 18:36:32.603 [daemon] INFO: Message: logging: using Kotlin home directory <no_path>
+2026-11-04 18:36:32.603 [daemon] INFO: Message: logging: exception on loading scripting plugin: java.lang.ClassNotFoundException: org.jetbrains.kotlin.scripting.compiler.plugin.ScriptingCompilerConfigurationComponentRegistrar
+2026-11-04 18:36:32.603 [daemon] INFO: Message: logging: scripting plugin will not be loaded: not all required jars are present in the classpath (missing files: [.\kotlin-scripting-compiler.jar, .\kotlin-scripting-compiler-impl.jar, .\kotlin-scripting-common.jar, .\kotlin-scripting-jvm.jar])
+2026-11-04 18:36:32.608 [daemon] INFO: Message: logging: using JVM IR backend
+2026-11-04 18:36:32.609 [daemon] INFO: Message: logging: configuring the compilation environment
+2026-11-04 18:36:33.997 [daemon] INFO: Message: logging: [ksp] round 1 of processing
+2026-11-04 18:36:33.997 [daemon] INFO: Message: info: [ksp] loaded provider(s): [androidx.room.RoomKspProcessor$Provider]
+2026-11-04 18:36:34.012 [compiler] INFO: Done with result 0
+2026-11-04 18:36:34.014 [compiler] INFO: cleaning after session 5
+2026-11-04 18:36:34.085 [compiler] INFO: getDaemonJVMOptions: DaemonJVMOptions(maxMemory=3072m, maxMetaspaceSize=1024m, reservedCodeCacheSize=320m, jvmParams=[-Djava.awt.headless=true, -Djava.rmi.server.hostname=127.0.0.1, -Dkotlin.environment.keepalive, -ea, -XX:+UseCodeCacheFlushing, -XX:+UseParallelGC, --add-exports=java.base/sun.nio.ch=ALL-UNNAMED, Dkotlin.environment.keepalive, ea])
+2026-11-04 18:36:34.086 [compiler] INFO: Registered a client alive file: E:\Projects\Tag\.tmp\ktmp\kotlin-compiler-in-ag-2462256140122396192.alive
+2026-11-04 18:36:34.086 [compiler] INFO: leased a new session 6, session alive file: E:\Projects\Tag\.kotlin\sessions\kotlin-compiler-3843253590777186447.salive
+2026-11-04 18:36:34.097 [compiler] INFO: Starting compilation with args: -Xallow-no-source-files -classpath E:\Projects\Tag\app\build\intermediates\compile_and_runtime_not_namespaced_r_class_jar\release\processReleaseResources\R.jar;E:\Projects\Tag\app\build\intermediates\compile_app_classes_jar\release\bundleReleaseClassesToCompileJar\classes.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\78ead6cde14372b644bbf7165211b1d0\transformed\activity-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\3d14c436efe9911c53175cf4adde1b40\transformed\activity-compose-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f3f633c4665bf26f77f2fe9bb9ee8b18\transformed\activity-ktx-1.9.3-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c68f666a63f8d665c14f79aba237c148\transformed\core-1.15.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\e7548e7872aa5ce1ee6d882bba98c9e7\transformed\material3-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\98a424e932425b0040f79ebf43a4c3a0\transformed\ui-util-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\338d79c1e5b1d60c05be2537bc4b3483\transformed\ui-unit-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\4527a70b9e9bf9ddf2cad67342b847a6\transformed\ui-text-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\bd98859ac052f36e8f5dc46efeb0eb6e\transformed\foundation-layout-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ae793998e0ebea1b58907fadd25c651b\transformed\material-ripple-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\85ff82fc0d536e6861179773d14f5842\transformed\foundation-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\138e0ab59051396fe94f2fcd4fcc3465\transformed\animation-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d4af6d34b12e65261d46c56415228735\transformed\animation-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7acc84fc16189557b7da815f780c6987\transformed\ui-geometry-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\5ca284661d0cae9b95d988ba8b3bb951\transformed\ui-tooling-preview-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c7f3134a19554a2c58805b6c79c5203f\transformed\ui-graphics-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\1b213d1681dab54b396483b0981f518e\transformed\material-icons-extended-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\bbdd315217cee6220e49944353507e8b\transformed\material-icons-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\1e00426fae452d0f5b87a1f712ca610f\transformed\ui-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7979776942bca41d471d83b2777895ff\transformed\lifecycle-runtime-compose-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\8e0802389ed87901a7e263676875ba64\transformed\lifecycle-livedata-core-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.lifecycle\lifecycle-common-jvm\2.8.7\7174a594afb73a9ad9ac9074ce78b94af3cc52a7\lifecycle-common-jvm-2.8.7.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f3f9d8eec99cda8e0b6770873d4c2c4b\transformed\lifecycle-runtime-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f67b4488eeceb1721508e48dbbe8f4dd\transformed\lifecycle-viewmodel-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f5ed638214986dbec1a59c6a68051604\transformed\lifecycle-viewmodel-ktx-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\05dd7602455823a7e38949a0c2ce883a\transformed\lifecycle-runtime-ktx-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ae70eabc672f677939d39c4991616a96\transformed\lifecycle-viewmodel-compose-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\f039ef9096c6cbec75a1815a778a5dd7\transformed\lifecycle-viewmodel-savedstate-2.8.7-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\7f44ca91583d8d33435b242c3861044d\transformed\core-ktx-1.15.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\e54b770d52b2a61bbc92ca62e115f558\transformed\core-splashscreen-1.0.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.room\room-common\2.6.1\ff1b9580850a9b7eef56554e356628d225785265\room-common-2.6.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\4080674f1340cee0b08b7badc0e677dc\transformed\room-runtime-2.6.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\6b032d49a9e7581e062ae22980a9c0f5\transformed\room-ktx-2.6.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.datastore\datastore-core-okio-jvm\1.1.1\cba5887aaa9316d650b3ebc667243ed3a05f4407\datastore-core-okio-jvm-1.1.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c34be7308248693d8ac7d98fa06169b3\transformed\datastore-core-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.datastore\datastore-preferences-core-jvm\1.1.1\e562d4a944240c0e67317f0b862da24aca3aabc\datastore-preferences-core-jvm-1.1.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\56422cedbf854e207f942971eef897bb\transformed\datastore-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\0223f96b4a81bb5b16d60543d9d3ea06\transformed\datastore-preferences-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ab569e66565763a517e39e2ac7eb9f75\transformed\sqlite-framework-2.4.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d281ac23017789e5ab706d043f1ab64a\transformed\sqlite-2.4.0-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\c376f902ec565be1f863cc8bcf132884\transformed\versionedparcelable-1.1.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d2cee410679ad2a26995bb287ac56890\transformed\runtime-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\ca8fcbc7b6437a5112884406f3dfd9e0\transformed\runtime-saveable-release-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\d616abaa970d2fca8bbffbc5633e0f07\transformed\savedstate-ktx-1.2.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\a93798f75972b9813b40b9c16337fae6\transformed\savedstate-1.2.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.arch.core\core-common\2.2.0\5e1b8b81dfd5f52c56a8d53b18ca759c19a301f3\core-common-2.2.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.collection\collection-jvm\1.4.4\da13a7e557c430276b8cb490420effebc1398c0d\collection-jvm-1.4.4.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\androidx.annotation\annotation-jvm\1.8.1\b8a16fe526014b7941c1debaccaf9c5153692dbb\annotation-jvm-1.8.1.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\8.9\transforms\fafe2d9cc7756985d9bb89a1e599d505\transformed\annotation-experimental-1.4.1-api.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-core-jvm\1.7.3\2b09627576f0989a436a00a4a54b55fa5026fb86\kotlinx-coroutines-core-jvm-1.7.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-android\1.7.3\38d9cad3a0b03a10453b56577984bdeb48edeed5\kotlinx-coroutines-android-1.7.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.squareup.okio\okio-jvm\3.4.0\4e8bd78a52ab935ce383d0092646922154295e54\okio-jvm-3.4.0.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk8\1.8.22\b25c86d47d6b962b9cf0f8c3f320c8a10eea3dd1\kotlin-stdlib-jdk8-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk7\1.8.22\4dabb8248310d833bb6a8b516024a91fd3d275c\kotlin-stdlib-jdk7-1.8.22.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\junit\junit\4.13.2\8ac9e16d933b6fb43bc7f576336b8f4d7eb5ba12\junit-4.13.2.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.hamcrest\hamcrest-core\1.3\42a25dc3219429f0e5d060061f71acb49bf010a0\hamcrest-core-1.3.jar;E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\23.0.0\8cc20c07506ec18e0834947b84a864bfc094484e\annotations-23.0.0.jar;E:\Projects\Tag\.toolchain\android-sdk\platforms\android-35\android.jar;E:\Projects\Tag\.toolchain\android-sdk\build-tools\35.0.0\core-lambda-stubs.jar -d E:\Projects\Tag\app\build\tmp\kotlin-classes\releaseUnitTest -Xfriend-paths=E:\Projects\Tag\app\build\tmp\kotlin-classes\release,E:\Projects\Tag\app\build\intermediates\javac\release\compileReleaseJavaWithJavac\classes,E:\Projects\Tag\app\build\generated\ksp\release\classes,E:\Projects\Tag\app\build\intermediates\compile_app_classes_jar\release\bundleReleaseClassesToCompileJar\classes.jar -jvm-target 17 -module-name app_releaseUnitTest -no-jdk -no-reflect -no-stdlib -Xplugin=E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-compose-compiler-plugin-embeddable\2.0.21\e14f003d962fb25693b461de59490c91072a7979\kotlin-compose-compiler-plugin-embeddable-2.0.21.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing\2.0.21-1.0.28\25530ee051cd46963eef72fdea489d5cbc4d971a\symbol-processing-2.0.21-1.0.28.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\com.google.devtools.ksp\symbol-processing-api\2.0.21-1.0.28\be0d4d8db16fcfcfe993750d10e390a0472614d4\symbol-processing-api-2.0.21-1.0.28.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-core-jvm\1.6.3\6b6c17d0312ba7192893adea9d52959941d0119b\kotlinx-serialization-core-jvm-1.6.3.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-json-jvm\1.6.3\2241746853abf04073e3ab0dcd9e6729d363b313\kotlinx-serialization-json-jvm-1.6.3.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar,E:\Projects\Tag\.toolchain\gradle-home\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar -P plugin:androidx.compose.compiler.plugins.kotlin:generateFunctionKeyMetaClasses=false,plugin:androidx.compose.compiler.plugins.kotlin:traceMarkersEnabled=true -opt-in=androidx.compose.material3.ExperimentalMaterial3Api -opt-in=androidx.compose.foundation.ExperimentalFoundationApi -opt-in=androidx.compose.animation.ExperimentalAnimationApi -opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi -Xallow-unstable-dependencies E:\Projects\Tag\app\src\test\java\com\tag\routine\data\DatesTest.kt E:\Projects\Tag\app\src\test\java\com\tag\routine\data\RoutineOrderingTest.kt E:\Projects\Tag\app\src\test\java\com\tag\routine\data\StatsEngineTest.kt E:\Projects\Tag\app\src\test\java\com\tag\routine\i18n\LocaleResourcesTest.kt
+2026-11-04 18:36:34.262 [compiler] INFO: Done with result 0
+2026-11-04 18:36:34.264 [compiler] INFO: cleaning after session 6
