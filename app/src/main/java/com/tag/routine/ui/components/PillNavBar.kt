@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.Today
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,6 +47,7 @@ fun PillNavBar(
     val items = listOf(
         NavItem(Tab.TODAY, stringResource(R.string.nav_today), Icons.Rounded.Today),
         NavItem(Tab.TASKS, stringResource(R.string.nav_tasks), Icons.Rounded.CheckCircle),
+        NavItem(Tab.FOCUS, stringResource(R.string.nav_focus), Icons.Rounded.Timer),
         NavItem(Tab.INSIGHTS, stringResource(R.string.nav_insights), Icons.Rounded.BarChart),
         NavItem(Tab.SETTINGS, stringResource(R.string.nav_settings), Icons.Rounded.Settings),
     )

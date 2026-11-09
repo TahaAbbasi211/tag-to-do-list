@@ -15,6 +15,10 @@ keystore/
 # Bundled toolchain used only on this host.
 .toolchain/
 
+# Build scratch: the Kotlin/Gradle daemons are redirected here on this host.
+.tmp/
+.kotlin/
+
 # IDE
 .idea/
 *.iml

@@ -6,6 +6,8 @@ import com.tag.routine.AppContainer
 import com.tag.routine.data.AppConstants
 import com.tag.routine.data.AppSettings
 import com.tag.routine.data.Dates
+import com.tag.routine.data.FocusEngine
+import com.tag.routine.data.FocusStats
 import com.tag.routine.data.Groups
 import com.tag.routine.data.ImportOutcome
 import com.tag.routine.data.Insights
@@ -29,7 +31,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.util.UUID
 
-enum class Tab { TODAY, TASKS, INSIGHTS, SETTINGS }
+enum class Tab { TODAY, TASKS, FOCUS, INSIGHTS, SETTINGS }
 
 enum class TaskFilter { ALL, TODAY, UPCOMING, OVERDUE, DONE }
 
@@ -61,6 +63,7 @@ data class UiState(
     val allRoutines: List<RoutineEntity> = emptyList(),
     val totalTasks: Int = 0,
     val doneTasks: Int = 0,
+    val focusStats: FocusStats = FocusStats(),
 ) {
     val completedCount: Int get() = groups.sumOf { section -> section.items.count { it.done } }
     val routineCount: Int get() = groups.sumOf { it.items.size }
@@ -94,7 +97,11 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     /** Live focus-timer state, delegated to [FocusController]. */
     val focus: StateFlow<FocusState> = focusController.state
 
-    fun startFocus(routine: RoutineEntity, minutes: Int) = focusController.start(routine, minutes)
+    fun startFocus(routine: RoutineEntity, minutes: Int) {
+        val clamped = AppConstants.clampFocusMinutes(minutes)
+        viewModelScope.launch { repository.setFocusMinutes(clamped) }
+        focusController.start(routine, clamped)
+    }
 
     fun pauseFocus() = focusController.pause()
 
@@ -174,6 +181,12 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             .compute(snapshot.routines, snapshot.routineLogs, snapshot.taskLogs, today)
             .copy(focusMinutes = snapshot.focusMinutes)
 
+        val focusStats = FocusEngine.compute(
+            sessions = snapshot.focusSessions,
+            routines = snapshot.routines,
+            today = today,
+        )
+
         return UiState(
             loaded = snapshot.loaded,
             selectedDate = selected,
@@ -189,6 +202,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             allRoutines = snapshot.routines.filter { !it.archived },
             totalTasks = snapshot.tasks.size,
             doneTasks = snapshot.tasks.count { it.done },
+            focusStats = focusStats,
         )
     }
 
@@ -363,6 +377,14 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
 
     fun setUserName(name: String) = viewModelScope.launch { repository.setUserName(name) }
 
+    /** Completes first-launch onboarding, storing the name the user entered. */
+    fun completeOnboarding(name: String) = viewModelScope.launch {
+        repository.completeOnboarding(name)
+    }
+
+    /** Dismisses first-launch onboarding without a name. */
+    fun skipOnboarding() = viewModelScope.launch { repository.skipOnboarding() }
+
     fun setNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
         repository.setNotificationsEnabled(enabled)
         rescheduleReminders()
@@ -379,6 +401,11 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun setHaptics(enabled: Boolean) = viewModelScope.launch { repository.setHaptics(enabled) }
+
+    /** Stores the default focus length used when the Focus screen opens. */
+    fun setFocusMinutes(minutes: Int) = viewModelScope.launch {
+        repository.setFocusMinutes(AppConstants.clampFocusMinutes(minutes))
+    }
 
     fun resetProgress() = viewModelScope.launch { repository.resetProgress() }
 

@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Language
@@ -39,6 +40,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,10 +51,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tag.routine.BuildConfig
 import com.tag.routine.R
+import com.tag.routine.data.AppConstants
 import com.tag.routine.data.AppSettings
 import com.tag.routine.data.Dates
 import com.tag.routine.data.ImportOutcome
@@ -66,7 +70,6 @@ fun SettingsScreen(
     state: UiState,
     onThemeMode: (Int) -> Unit,
     onThemePalette: (String) -> Unit,
-    onLanguage: (String) -> Unit,
     onNotifications: (Boolean) -> Unit,
     onDigest: (Boolean) -> Unit,
     onDigestMinutes: (Int) -> Unit,
@@ -76,6 +79,8 @@ fun SettingsScreen(
     onAddTag: (String) -> Unit,
     onDeleteTag: (String) -> Unit,
     onSetName: (String) -> Unit,
+    onFocusMinutes: (Int) -> Unit,
+    onOpenLanguages: () -> Unit,
 ) {
     val settings = state.settings
     var showResetDialog by remember { mutableStateOf(false) }
@@ -83,9 +88,19 @@ fun SettingsScreen(
     var importResult by remember { mutableStateOf<ImportOutcome?>(null) }
     var newTag by remember { mutableStateOf("") }
     var nameInput by remember { mutableStateOf(settings.userName) }
+    var focusInput by remember { mutableStateOf(settings.focusMinutes.toString()) }
     val pickBackup = BackupFilePicker { outcome ->
         importResult = outcome
         onImported(outcome)
+    }
+
+    // The stored name can change elsewhere (first-launch onboarding), so mirror it
+    // into the field whenever the screen is not being edited.
+    LaunchedEffect(settings.userName) {
+        if (nameInput.isBlank()) nameInput = settings.userName
+    }
+    LaunchedEffect(settings.focusMinutes) {
+        focusInput = settings.focusMinutes.toString()
     }
 
     Column(
@@ -95,14 +110,6 @@ fun SettingsScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        // Languages — a dedicated section listing every language the app supports.
-        SettingsSection(title = stringResource(R.string.settings_languages)) {
-            LanguageSelector(
-                current = settings.language,
-                onSelect = onLanguage,
-            )
-        }
-
         // Profile
         SettingsSection(title = stringResource(R.string.settings_profile)) {
             OutlinedTextField(
@@ -146,6 +153,48 @@ fun SettingsScreen(
                 currentPalette = settings.themePalette,
                 onSelect = onThemePalette,
             )
+        }
+
+        // Focus
+        SettingsSection(title = stringResource(R.string.settings_focus)) {
+            Text(
+                text = stringResource(R.string.settings_focus_default),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+            )
+            Text(
+                text = stringResource(R.string.settings_focus_default_sub),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                OutlinedTextField(
+                    value = focusInput,
+                    onValueChange = { focusInput = it.filter { ch -> ch.isDigit() }.take(3) },
+                    label = { Text(stringResource(R.string.focus_custom_minutes)) },
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Number,
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1f),
+                )
+                val parsed = focusInput.toIntOrNull()
+                val valid = parsed != null &&
+                    parsed in AppConstants.MIN_FOCUS_MINUTES..AppConstants.MAX_FOCUS_MINUTES
+                Button(
+                    onClick = { parsed?.let(onFocusMinutes) },
+                    enabled = valid,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Text(stringResource(R.string.action_save))
+                }
+            }
         }
 
         // Notifications
@@ -310,6 +359,52 @@ fun SettingsScreen(
             }
         }
 
+        // Languages — kept last, as a single row that opens the dedicated language page.
+        SettingsSection(title = stringResource(R.string.settings_languages)) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                onClick = onOpenLanguages,
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Language,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp),
+                    )
+                    Spacer(Modifier.size(14.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.settings_language_open),
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.settings_language_current,
+                                currentLanguageLabel(settings.language),
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.Rounded.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+            }
+        }
+
         Spacer(Modifier.height(16.dp))
     }
 
@@ -458,96 +553,13 @@ private fun ThemeSelector(
     }
 }
 
+/** Human-readable name of the active language, for the Settings summary row. */
 @Composable
-private fun LanguageSelector(
-    current: String,
-    onSelect: (String) -> Unit,
-) {
-    // Sanitize so a stale or unknown stored tag can never leave the list without a
-    // selection, and drive the rows from AppLanguage so the list can never drift
-    // away from the languages the app actually ships.
-    val selectedTag = AppLanguage.sanitize(current)
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        LanguageRow(
-            label = stringResource(R.string.settings_language_system),
-            subtitle = null,
-            selected = selectedTag == AppLanguage.SYSTEM,
-            onSelect = { onSelect(AppLanguage.SYSTEM) },
-        )
-        AppLanguage.supported.forEach { entry ->
-            LanguageRow(
-                label = entry.nativeName,
-                subtitle = entry.englishName,
-                selected = selectedTag == entry.tag,
-                onSelect = { onSelect(entry.tag) },
-            )
-        }
-    }
-}
-
-@Composable
-private fun LanguageRow(
-    label: String,
-    subtitle: String?,
-    selected: Boolean,
-    onSelect: () -> Unit,
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = if (selected) {
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
-        } else {
-            Color.Transparent
-        },
-        onClick = onSelect,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 9.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Language,
-                contentDescription = null,
-                tint = if (selected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                modifier = Modifier.size(18.dp),
-            )
-            Spacer(Modifier.size(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (selected) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
-                )
-                if (subtitle != null) {
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            if (selected) {
-                Icon(
-                    imageVector = Icons.Rounded.Check,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-        }
-    }
+private fun currentLanguageLabel(tag: String): String {
+    val sanitized = AppLanguage.sanitize(tag)
+    if (sanitized == AppLanguage.SYSTEM) return stringResource(R.string.settings_language_system)
+    return AppLanguage.supported.firstOrNull { it.tag == sanitized }?.nativeName
+        ?: stringResource(R.string.settings_language_system)
 }
 
 @Composable

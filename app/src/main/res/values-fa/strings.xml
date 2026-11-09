@@ -6,6 +6,7 @@
     <!-- Navigation -->
     <string name="nav_today">امروز</string>
     <string name="nav_tasks">کارها</string>
+    <string name="nav_focus">تمرکز</string>
     <string name="nav_insights">آمار</string>
     <string name="nav_settings">تنظیمات</string>
 
@@ -22,6 +23,7 @@
     <string name="action_edit">ویرایش</string>
     <string name="action_move_up">انتقال به بالا</string>
     <string name="action_move_down">انتقال به پایین</string>
+    <string name="action_back">بازگشت</string>
 
     <!-- Today screen -->
     <string name="today_perfect_day">روز کامل</string>
@@ -134,6 +136,11 @@
     <string name="settings_profile">پروفایل شما</string>
     <string name="settings_your_name">نام شما</string>
     <string name="settings_save_name">ذخیره نام</string>
+    <string name="settings_language_current">زبان فعلی: %1$s</string>
+    <string name="settings_language_open">انتخاب زبان</string>
+    <string name="settings_focus">تمرکز</string>
+    <string name="settings_focus_default">طول پیش‌فرض تمرکز</string>
+    <string name="settings_focus_default_sub">هنگام باز کردن تایمر تمرکز استفاده می‌شود</string>
     <string name="settings_notifications">اعلان‌ها</string>
     <string name="settings_enable_reminders">فعال بودن یادآورها</string>
     <string name="settings_enable_reminders_sub">برای روتین‌های زمان‌بندی‌شده اعلان بگیر</string>
@@ -191,6 +198,11 @@
     <string name="notif_digest_remaining">%1$d از %2$d روتین هنوز برای امروز مانده.</string>
     <string name="notif_action_done">انجام شد</string>
     <string name="notif_action_snooze">۱۵ دقیقه بعد</string>
+    <string name="notif_channel_focus">تایمر تمرکز</string>
+    <string name="notif_channel_focus_desc">نمایش تایمر تمرکز در حال اجرا وقتی اپ بسته است.</string>
+    <string name="notif_focus_running">%1$s مانده، در پس‌زمینه ادامه می‌دهد</string>
+    <string name="notif_focus_paused">متوقف، %1$s مانده</string>
+    <string name="notif_focus_starting">در حال شروع تایمر تمرکز…</string>
 
     <!-- Focus timer -->
     <string name="focus_title">تمرکز</string>
@@ -205,6 +217,38 @@
     <string name="focus_minutes">%1$d دقیقه</string>
     <string name="focus_session_done">جلسه تمرکز کامل شد</string>
     <string name="focus_total">مجموع تمرکز: %1$s</string>
+
+    <!-- Focus screen -->
+    <string name="focus_subtitle">کار عمیق، هر بار یک بازه</string>
+    <string name="focus_duration">مدت زمان</string>
+    <string name="focus_custom_minutes">دقیقه دلخواه</string>
+    <string name="focus_custom_hint">هر مدت دلخواه از %1$d تا %2$d دقیقه</string>
+    <string name="focus_start_session">شروع جلسه تمرکز</string>
+    <string name="focus_stat_today">تمرکز امروز</string>
+    <string name="focus_stat_week">این هفته</string>
+    <string name="focus_stat_total">کل</string>
+    <string name="focus_stat_sessions">جلسه‌ها</string>
+    <string name="focus_stat_streak">زنجیره روز</string>
+    <string name="focus_stat_average">میانگین جلسه</string>
+    <string name="focus_history">جلسه‌های اخیر</string>
+    <string name="focus_history_empty">یک جلسه را کامل کن تا اینجا نمایش داده شود.</string>
+    <string name="focus_history_abandoned">نیمه‌کاره</string>
+    <string name="focus_history_completed">کامل‌شده</string>
+    <string name="focus_history_untitled">جلسه تمرکز</string>
+    <string name="focus_needs_routine">برای شروع تمرکز اول یک روتین اضافه کن.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">به Tag خوش آمدید</string>
+    <string name="onboarding_body">تو را چه صدا کنیم؟</string>
+    <string name="onboarding_name_hint">نام شما</string>
+    <string name="onboarding_continue">ادامه</string>
+    <string name="onboarding_skip">فعلاً رد کن</string>
+    <string name="onboarding_greeting_preview">از آشنایی خوشحالم، %1$s</string>
+
+    <!-- Language screen -->
+    <string name="language_title">زبان</string>
+    <string name="language_subtitle">زبانی را که می‌خواهی Tag با آن نمایش داده شود انتخاب کن.</string>
+    <string name="language_current">انتخاب‌شده</string>
 
     <!-- Content descriptions -->
     <string name="cd_delete">حذف</string>

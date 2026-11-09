@@ -6,6 +6,7 @@
     <!-- Gezinme -->
     <string name="nav_today">Bugün</string>
     <string name="nav_tasks">Görevler</string>
+    <string name="nav_focus">Odak</string>
     <string name="nav_insights">İstatistikler</string>
     <string name="nav_settings">Ayarlar</string>
 
@@ -22,6 +23,7 @@
     <string name="action_edit">Düzenle</string>
     <string name="action_move_up">Yukarı taşı</string>
     <string name="action_move_down">Aşağı taşı</string>
+    <string name="action_back">Geri</string>
 
     <!-- BugÃ¼n ekranÄ± -->
     <string name="today_perfect_day">Kusursuz gün</string>
@@ -134,6 +136,11 @@
     <string name="settings_profile">Profilin</string>
     <string name="settings_your_name">Adın</string>
     <string name="settings_save_name">Adı kaydet</string>
+    <string name="settings_language_current">Geçerli dil: %1$s</string>
+    <string name="settings_language_open">Dil seç</string>
+    <string name="settings_focus">Odak</string>
+    <string name="settings_focus_default">Varsayılan odak süresi</string>
+    <string name="settings_focus_default_sub">Odak zamanlayıcısı açıldığında kullanılır</string>
     <string name="settings_notifications">Bildirimler</string>
     <string name="settings_enable_reminders">Hatırlatıcıları aç</string>
     <string name="settings_enable_reminders_sub">Planlanan rutinler için bildirim al</string>
@@ -191,6 +198,11 @@
     <string name="notif_digest_remaining">Bugün yapılacak %2$d rutinden %1$d tanesi kaldı.</string>
     <string name="notif_action_done">Tamamlandı olarak işaretle</string>
     <string name="notif_action_snooze">15 dk ertele</string>
+    <string name="notif_channel_focus">Odaklanma zamanlayıcısı</string>
+    <string name="notif_channel_focus_desc">Uygulama kapalıyken çalışan odaklanma zamanlayıcısını gösterir.</string>
+    <string name="notif_focus_running">%1$s kaldı · arka planda devam eder</string>
+    <string name="notif_focus_paused">Duraklatıldı · %1$s kaldı</string>
+    <string name="notif_focus_starting">Odaklanma zamanlayıcısı başlatılıyor…</string>
 
     <!-- Odaklanma zamanlayÄ±cÄ±sÄ± -->
     <string name="focus_title">Odaklanma</string>
@@ -205,6 +217,38 @@
     <string name="focus_minutes">%1$d dk</string>
     <string name="focus_session_done">Odaklanma oturumu tamamlandı</string>
     <string name="focus_total">Toplam odaklanma: %1$s</string>
+
+    <!-- Odak ekranı -->
+    <string name="focus_subtitle">Derin çalışma, her seferinde bir blok</string>
+    <string name="focus_duration">Süre</string>
+    <string name="focus_custom_minutes">Özel dakika</string>
+    <string name="focus_custom_hint">%1$d ile %2$d dakika arasında istediğin süre</string>
+    <string name="focus_start_session">Odak oturumunu başlat</string>
+    <string name="focus_stat_today">Bugün odaklanılan</string>
+    <string name="focus_stat_week">Bu hafta</string>
+    <string name="focus_stat_total">Toplam</string>
+    <string name="focus_stat_sessions">Oturumlar</string>
+    <string name="focus_stat_streak">Gün serisi</string>
+    <string name="focus_stat_average">Ortalama oturum</string>
+    <string name="focus_history">Son oturumlar</string>
+    <string name="focus_history_empty">Bir oturumu bitir, burada görünsün.</string>
+    <string name="focus_history_abandoned">Yarıda bırakıldı</string>
+    <string name="focus_history_completed">Tamamlandı</string>
+    <string name="focus_history_untitled">Odak oturumu</string>
+    <string name="focus_needs_routine">Başlamak için önce bir rutin ekle.</string>
+
+    <!-- İlk açılış -->
+    <string name="onboarding_title">Tag\'a hoş geldin</string>
+    <string name="onboarding_body">Sana ne diyelim?</string>
+    <string name="onboarding_name_hint">Adın</string>
+    <string name="onboarding_continue">Devam</string>
+    <string name="onboarding_skip">Şimdilik atla</string>
+    <string name="onboarding_greeting_preview">Memnun oldum, %1$s</string>
+
+    <!-- Dil ekranı -->
+    <string name="language_title">Dil</string>
+    <string name="language_subtitle">Tag\'ı kullanmak istediğin dili seç.</string>
+    <string name="language_current">Seçili</string>
 
     <!-- Ä°Ã§erik aÃ§Ä±klamalarÄ± -->
     <string name="cd_delete">Sil</string>

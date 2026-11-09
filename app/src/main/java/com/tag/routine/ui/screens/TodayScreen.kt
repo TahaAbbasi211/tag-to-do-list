@@ -365,15 +365,21 @@ private fun RoutineRow(
                 onClick = { onToggleRoutine(routine.id, !done) },
                 onLongClick = { menuOpen = true },
             ),
-        color = if (done) {
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-        } else {
-            MaterialTheme.colorScheme.surfaceContainerHigh
-        },
+        // A completed row is tinted with the accent. The tint is painted over an
+        // opaque base rather than used as a translucent fill: a translucent row let
+        // the swipe-to-delete panel stacked behind it show through.
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .then(
+                    if (done) {
+                        Modifier.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f))
+                    } else {
+                        Modifier
+                    },
+                )
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {

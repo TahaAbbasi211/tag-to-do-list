@@ -113,6 +113,10 @@ data class AppSettings(
     val dailyDigestEnabled: Boolean = true,
     val dailyDigestMinutes: Int = 8 * 60,
     val hapticsEnabled: Boolean = true,
+    /** True once the first-launch onboarding has been completed or skipped. */
+    val onboarded: Boolean = false,
+    /** Last focus length the user chose, in minutes. Drives the Focus section default. */
+    val focusMinutes: Int = AppConstants.DEFAULT_FOCUS_MINUTES,
 ) {
     object ThemeMode {
         const val SYSTEM = 0
@@ -128,6 +132,107 @@ data class AppSettings(
         const val PINK = "pink"
         const val TEAL = "teal"
         const val SUNSET = "sunset"
+    }
+}
+
+// ---------------------------------------------------------------- focus run
+
+/**
+ * A focus run that is still in progress, exactly as it is stored on disk.
+ *
+ * The timer is described by wall-clock timestamps rather than a tick counter, because
+ * the app process can be frozen or killed at any moment while the user is away. The
+ * only durable truth is *when* the current segment began and how many seconds earlier
+ * segments accumulated, so elapsed time is always recomputed from the clock.
+ *
+ * [id] makes finishing idempotent: the foreground service and the backup alarm can both
+ * try to close the same run, and only the first one to still find it on disk records it.
+ */
+data class ActiveFocusRun(
+    val id: String,
+    val routineId: String?,
+    val routineTitle: String?,
+    val plannedMinutes: Int,
+    /** Epoch millis the running segment began, or null while paused. */
+    val segmentStartedAt: Long?,
+    /** Seconds banked by segments that already ended (i.e. before the last pause). */
+    val accumulatedSeconds: Int,
+    /** Epoch millis the run was first started, used to date the recorded session. */
+    val startedAt: Long,
+) {
+    val running: Boolean get() = segmentStartedAt != null
+
+    val totalSeconds: Int get() = plannedMinutes * 60
+
+    /**
+     * Seconds elapsed by [now], counting the live segment when the run is running.
+     * Clamped so a backwards clock jump can never produce a negative time.
+     */
+    fun elapsedSeconds(now: Long = System.currentTimeMillis()): Int {
+        val segmentStart = segmentStartedAt ?: return accumulatedSeconds
+        val live = ((now - segmentStart) / 1000L).coerceIn(0L, Int.MAX_VALUE.toLong())
+        return (accumulatedSeconds + live).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+    }
+
+    fun remainingSeconds(now: Long = System.currentTimeMillis()): Int =
+        (totalSeconds - elapsedSeconds(now)).coerceAtLeast(0)
+
+    /** True once the run has reached its planned length. */
+    fun isComplete(now: Long = System.currentTimeMillis()): Boolean =
+        elapsedSeconds(now) >= totalSeconds
+}
+
+/**
+ * Serialises [ActiveFocusRun] to a single preferences string.
+ *
+ * The free-text fields are Base64-encoded so a routine title containing the field
+ * separator can never corrupt the record. A run that fails to parse is treated as
+ * absent rather than crashing the app on launch.
+ */
+object ActiveFocusRunCodec {
+
+    private const val VERSION = "1"
+    private const val SEPARATOR = "\t"
+
+    fun encode(run: ActiveFocusRun): String = listOf(
+        VERSION,
+        run.id,
+        encodeText(run.routineId),
+        encodeText(run.routineTitle),
+        run.plannedMinutes.toString(),
+        (run.segmentStartedAt ?: 0L).toString(),
+        run.accumulatedSeconds.toString(),
+        run.startedAt.toString(),
+    ).joinToString(SEPARATOR)
+
+    fun decode(raw: String?): ActiveFocusRun? {
+        if (raw.isNullOrBlank()) return null
+        val parts = raw.split(SEPARATOR)
+        if (parts.size != 8 || parts[0] != VERSION) return null
+        return runCatching {
+            ActiveFocusRun(
+                id = parts[1],
+                routineId = decodeText(parts[2]),
+                routineTitle = decodeText(parts[3]),
+                plannedMinutes = AppConstants.clampFocusMinutes(parts[4].toInt()),
+                segmentStartedAt = parts[5].toLong().takeIf { it > 0L },
+                accumulatedSeconds = parts[6].toInt().coerceAtLeast(0),
+                startedAt = parts[7].toLong(),
+            )
+        }.getOrNull()?.takeIf { it.id.isNotBlank() }
+    }
+
+    private fun encodeText(value: String?): String {
+        if (value.isNullOrEmpty()) return ""
+        val bytes = value.toByteArray(Charsets.UTF_8)
+        return java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
+    }
+
+    private fun decodeText(value: String): String? {
+        if (value.isEmpty()) return null
+        return runCatching {
+            String(java.util.Base64.getUrlDecoder().decode(value), Charsets.UTF_8)
+        }.getOrNull()
     }
 }
 

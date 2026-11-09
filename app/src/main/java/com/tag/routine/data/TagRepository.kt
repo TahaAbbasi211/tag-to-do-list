@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import org.json.JSONArray
 import org.json.JSONObject
@@ -20,6 +21,8 @@ data class Snapshot(
     val settings: AppSettings = AppSettings(),
     /** Total completed focus time, in minutes. */
     val focusMinutes: Int = 0,
+    /** All recorded focus runs, newest first. */
+    val focusSessions: List<FocusSessionEntity> = emptyList(),
     val loaded: Boolean = false,
 )
 
@@ -96,7 +99,10 @@ class TagRepository(
             focusDao.observeAll(),
         ) { snap, sessions ->
             val millis = sessions.filter { it.completed }.sumOf { it.endedAt - it.startedAt }
-            snap.copy(focusMinutes = (millis / 60_000L).toInt())
+            snap.copy(
+                focusMinutes = (millis / 60_000L).toInt(),
+                focusSessions = sessions,
+            )
         },
         settingsStore.settings,
     ) { snap, settings -> snap.copy(settings = settings) }
@@ -201,6 +207,15 @@ class TagRepository(
 
     suspend fun setUserName(name: String) = settingsStore.setUserName(name)
 
+    /** Saves the first-launch name and marks onboarding complete in one write. */
+    suspend fun completeOnboarding(name: String) {
+        settingsStore.setUserName(name.trim())
+        settingsStore.setOnboarded(true)
+    }
+
+    /** Marks onboarding complete without setting a name (the user skipped it). */
+    suspend fun skipOnboarding() = settingsStore.setOnboarded(true)
+
     suspend fun setNotificationsEnabled(enabled: Boolean) = settingsStore.setNotifications(enabled)
 
     suspend fun setDigestEnabled(enabled: Boolean) = settingsStore.setDigestEnabled(enabled)
@@ -209,21 +224,44 @@ class TagRepository(
 
     suspend fun setHaptics(enabled: Boolean) = settingsStore.setHaptics(enabled)
 
+    /** Remembers the focus length the user last chose. */
+    suspend fun setFocusMinutes(minutes: Int) = settingsStore.setFocusMinutes(minutes)
+
     suspend fun markSeeded() = settingsStore.setSeeded(true)
 
     // ------------------------------------------------------------ focus timer
 
-    /** Records one focus run so it can show up in the insights screen. */
+    /**
+     * The focus run currently in progress, restored from disk. This is what makes the
+     * timer survive the user closing the app: the foreground service and the UI both
+     * read the same durable record.
+     */
+    val activeFocusRun: Flow<ActiveFocusRun?> = settingsStore.activeFocusRun
+
+    suspend fun currentActiveFocusRun(): ActiveFocusRun? = activeFocusRun.first()
+
+    suspend fun setActiveFocusRun(run: ActiveFocusRun) = settingsStore.setActiveFocusRun(run)
+
+    suspend fun clearActiveFocusRun() = settingsStore.clearActiveFocusRun()
+
+    /**
+     * Records one focus run so it can show up in the insights screen.
+     *
+     * [id] is normally the id of the run that produced this session, which makes the
+     * write idempotent: the foreground service finishing a run and a later alarm firing
+     * for the same run both upsert the same row instead of recording it twice.
+     */
     suspend fun recordFocusSession(
         routineId: String?,
         startedAt: Long,
         endedAt: Long,
         plannedMinutes: Int,
         completed: Boolean,
+        id: String = java.util.UUID.randomUUID().toString(),
     ) {
         focusDao.upsert(
             FocusSessionEntity(
-                id = java.util.UUID.randomUUID().toString(),
+                id = id,
                 routineId = routineId,
                 startedAt = startedAt,
                 endedAt = endedAt,

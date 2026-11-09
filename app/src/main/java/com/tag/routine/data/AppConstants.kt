@@ -27,8 +27,25 @@ object AppConstants {
     /** Default focus length offered in the timer sheet, in minutes. */
     const val DEFAULT_FOCUS_MINUTES = 25
 
-    /** Focus lengths offered as quick choices, in minutes. */
-    val FOCUS_PRESETS = listOf(15, 25, 45, 60)
+    /** Shortest custom focus length the user may enter, in minutes. */
+    const val MIN_FOCUS_MINUTES = 1
+
+    /**
+     * Longest custom focus length the user may enter, in minutes. Deliberately far
+     * above the old 60-minute ceiling so the timer is not capped at an hour.
+     */
+    const val MAX_FOCUS_MINUTES = 600
+
+    /**
+     * Focus lengths offered as one-tap quick choices, in minutes. These are only
+     * shortcuts: the user can always type any value between [MIN_FOCUS_MINUTES] and
+     * [MAX_FOCUS_MINUTES].
+     */
+    val FOCUS_PRESETS = listOf(10, 15, 25, 45, 60, 90)
+
+    /** Clamps an arbitrary user-entered duration into the supported range. */
+    fun clampFocusMinutes(minutes: Int): Int =
+        minutes.coerceIn(MIN_FOCUS_MINUTES, MAX_FOCUS_MINUTES)
 
     /** How far ahead a snoozed reminder is re-armed, in minutes. */
     const val SNOOZE_MINUTES = 15

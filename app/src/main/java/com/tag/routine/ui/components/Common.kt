@@ -33,7 +33,9 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +57,14 @@ import com.tag.routine.ui.theme.tagBrand
  * Wraps [content] so the user can swipe it away to delete. Works in both directions and
  * reveals a red delete affordance behind the row. The caller is responsible for showing
  * an undo action, so a stray swipe never destroys data irrecoverably.
+ *
+ * The red panel is only painted while a swipe is actually in progress. `SwipeToDismissBox`
+ * stacks `backgroundContent` *behind* `content` and sizes it with `matchParentSize`, so a
+ * permanently-drawn red panel shows through any row whose own background is translucent —
+ * which is exactly the "three red trash cans" artefact: a completed row paints
+ * `primary.copy(alpha = 0.08f)`, so the delete panel behind it stayed visible and its
+ * centred trash icon appeared once per stacked row. Fading the panel out at rest keeps
+ * the swipe affordance without ever leaking colour into a settled row.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,34 +73,47 @@ fun SwipeToDelete(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    // Fire the delete once the box is confirmed dismissed. `confirmValueChange` is the
+    // hook Material 3 1.3.x exposes for this; the guard makes sure a drag that crosses
+    // the threshold more than once still only deletes (and offers one undo) once.
+    var dismissHandled by remember { mutableStateOf(false) }
     val state = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
-            if (value != SwipeToDismissBoxValue.Settled) {
+            if (value != SwipeToDismissBoxValue.Settled && !dismissHandled) {
+                dismissHandled = true
                 onDelete()
-                true
-            } else {
-                false
             }
+            true
         },
     )
+
+    // `progress` is 0 at rest and 1 once fully swiped, in either direction. It can
+    // overshoot past 1 mid-fling, so clamp it: an alpha above 1 wraps the ARGB byte
+    // and would flip the panel back to semi-transparent.
+    val reveal = state.progress.coerceIn(0f, 1f)
+    val deleteColor = MaterialTheme.colorScheme.errorContainer
 
     SwipeToDismissBox(
         state = state,
         modifier = modifier,
+        enableDismissFromStartToEnd = true,
+        enableDismissFromEndToStart = true,
         backgroundContent = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.errorContainer)
-                    .padding(horizontal = 20.dp),
-                contentAlignment = Alignment.CenterEnd,
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Delete,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onErrorContainer,
-                )
+            if (reveal > 0.001f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(deleteColor.copy(alpha = reveal))
+                        .padding(horizontal = 20.dp),
+                    contentAlignment = Alignment.CenterEnd,
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Delete,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = reveal),
+                    )
+                }
             }
         },
     ) {

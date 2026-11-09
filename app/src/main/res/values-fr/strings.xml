@@ -6,6 +6,7 @@
     <!-- Navigation -->
     <string name="nav_today">Aujourd\'hui</string>
     <string name="nav_tasks">Tâches</string>
+    <string name="nav_focus">Concentration</string>
     <string name="nav_insights">Statistiques</string>
     <string name="nav_settings">Réglages</string>
 
@@ -22,6 +23,7 @@
     <string name="action_edit">Modifier</string>
     <string name="action_move_up">Monter</string>
     <string name="action_move_down">Descendre</string>
+    <string name="action_back">Retour</string>
 
     <!-- Ã‰cran Aujourd hui -->
     <string name="today_perfect_day">Journée parfaite</string>
@@ -134,6 +136,11 @@
     <string name="settings_profile">Ton profil</string>
     <string name="settings_your_name">Ton nom</string>
     <string name="settings_save_name">Enregistrer le nom</string>
+    <string name="settings_language_current">Langue actuelle : %1$s</string>
+    <string name="settings_language_open">Choisir la langue</string>
+    <string name="settings_focus">Concentration</string>
+    <string name="settings_focus_default">Durée de concentration par défaut</string>
+    <string name="settings_focus_default_sub">Utilisée à l\'ouverture du minuteur de concentration</string>
     <string name="settings_notifications">Notifications</string>
     <string name="settings_enable_reminders">Activer les rappels</string>
     <string name="settings_enable_reminders_sub">Reçois une notification pour les routines planifiées</string>
@@ -191,6 +198,11 @@
     <string name="notif_digest_remaining">%1$d routines sur %2$d restent à faire aujourd\'hui.</string>
     <string name="notif_action_done">Marquer comme fait</string>
     <string name="notif_action_snooze">Reporter de 15 min</string>
+    <string name="notif_channel_focus">Minuteur de concentration</string>
+    <string name="notif_channel_focus_desc">Affiche le minuteur de concentration en cours quand l\'app est fermée.</string>
+    <string name="notif_focus_running">%1$s restant · continue en arrière-plan</string>
+    <string name="notif_focus_paused">En pause · %1$s restant</string>
+    <string name="notif_focus_starting">Démarrage du minuteur…</string>
 
     <!-- Minuteur de concentration -->
     <string name="focus_title">Concentration</string>
@@ -205,6 +217,38 @@
     <string name="focus_minutes">%1$d min</string>
     <string name="focus_session_done">Session de concentration terminée</string>
     <string name="focus_total">Temps de concentration total : %1$s</string>
+
+    <!-- Écran de concentration -->
+    <string name="focus_subtitle">Travail profond, un bloc à la fois</string>
+    <string name="focus_duration">Durée</string>
+    <string name="focus_custom_minutes">Minutes personnalisées</string>
+    <string name="focus_custom_hint">N\'importe quelle durée de %1$d à %2$d minutes</string>
+    <string name="focus_start_session">Démarrer la session</string>
+    <string name="focus_stat_today">Aujourd\'hui</string>
+    <string name="focus_stat_week">Cette semaine</string>
+    <string name="focus_stat_total">Total</string>
+    <string name="focus_stat_sessions">Sessions</string>
+    <string name="focus_stat_streak">Jours d\'affilée</string>
+    <string name="focus_stat_average">Session moyenne</string>
+    <string name="focus_history">Sessions récentes</string>
+    <string name="focus_history_empty">Termine une session et elle apparaîtra ici.</string>
+    <string name="focus_history_abandoned">Interrompue</string>
+    <string name="focus_history_completed">Terminée</string>
+    <string name="focus_history_untitled">Session de concentration</string>
+    <string name="focus_needs_routine">Ajoute d\'abord une routine pour commencer.</string>
+
+    <!-- Première ouverture -->
+    <string name="onboarding_title">Bienvenue dans Tag</string>
+    <string name="onboarding_body">Comment doit-on t\'appeler ?</string>
+    <string name="onboarding_name_hint">Ton nom</string>
+    <string name="onboarding_continue">Continuer</string>
+    <string name="onboarding_skip">Passer pour l\'instant</string>
+    <string name="onboarding_greeting_preview">Enchanté, %1$s</string>
+
+    <!-- Écran de langue -->
+    <string name="language_title">Langue</string>
+    <string name="language_subtitle">Choisis la langue dans laquelle utiliser Tag.</string>
+    <string name="language_current">Sélectionnée</string>
 
     <!-- Descriptions de contenu -->
     <string name="cd_delete">Supprimer</string>
