@@ -1,5 +1,6 @@
 package com.tag.routine.ui.editors
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,6 +42,7 @@ import com.tag.routine.data.Priorities
 import com.tag.routine.data.TagEntity
 import com.tag.routine.data.TaskEntity
 import com.tag.routine.ui.components.FilterPill
+import com.tag.routine.ui.i18n.ProvideAppLocale
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -49,6 +51,7 @@ import java.time.LocalDate
 fun TaskEditorSheet(
     existing: TaskEntity?,
     tags: List<TagEntity>,
+    localizedContext: Context,
     onDismiss: () -> Unit,
     onSave: (
         title: String,
@@ -74,178 +77,183 @@ fun TaskEditorSheet(
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Text(
-                text = stringResource(
-                    if (existing == null) R.string.task_editor_new else R.string.task_editor_edit,
-                ),
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-            )
-
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                label = { Text(stringResource(R.string.task_editor_title)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-            )
-
-            OutlinedTextField(
-                value = note,
-                onValueChange = { note = it },
-                label = { Text(stringResource(R.string.task_editor_note)) },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2,
-                shape = RoundedCornerShape(12.dp),
-            )
-
-            // Tag selector
-            if (tags.isNotEmpty()) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.task_editor_tag),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Medium,
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        FilterPill(
-                            text = stringResource(R.string.task_editor_tag_none),
-                            selected = selectedTagId == null,
-                            onClick = { selectedTagId = null },
-                        )
-                        tags.forEach { tag ->
-                            FilterPill(
-                                text = tag.name,
-                                selected = selectedTagId == tag.id,
-                                onClick = {
-                                    selectedTagId = if (selectedTagId == tag.id) null else tag.id
-                                },
-                                dotColor = Color(tag.colorHex),
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Priority selector
-            Column {
+        // The sheet lives in its own window, which resets LocalContext to the Activity's
+        // (system-locale) context. Re-provide the app's language so the editor is not
+        // rendered in English while the rest of the app is in the chosen language.
+        ProvideAppLocale(localizedContext) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
                 Text(
-                    text = stringResource(R.string.task_editor_priority),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium,
+                    text = stringResource(
+                        if (existing == null) R.string.task_editor_new else R.string.task_editor_edit,
+                    ),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
                 )
-                Spacer(Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(
-                        Triple(Priorities.LOW, stringResource(R.string.priority_low), Color(0xFF4FD9C0)),
-                        Triple(Priorities.NORMAL, stringResource(R.string.priority_medium), Color(0xFFFFB65C)),
-                        Triple(Priorities.HIGH, stringResource(R.string.priority_high), Color(0xFFFF6B6B)),
-                    ).forEach { (value, label, color) ->
-                        FilterPill(
-                            text = label,
-                            selected = priority == value,
-                            onClick = { priority = value },
-                            dotColor = color,
-                        )
-                    }
-                }
-            }
 
-            // Due date: a read-only field that opens the Material date picker, plus
-            // one-tap shortcuts for the dates people actually pick.
-            Column {
-                Text(
-                    text = stringResource(R.string.task_editor_due_date),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium,
-                )
-                Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
-                    value = dueDate?.let { Dates.parse(it)?.let(Dates::dayMonth) ?: it } ?: "",
-                    onValueChange = { },
-                    readOnly = true,
-                    placeholder = { Text(stringResource(R.string.task_editor_due_none)) },
-                    trailingIcon = {
-                        if (dueDate == null) {
-                            Icon(
-                                imageVector = Icons.Rounded.CalendarMonth,
-                                contentDescription = stringResource(R.string.task_editor_pick_date),
-                            )
-                        } else {
-                            androidx.compose.material3.IconButton(onClick = { dueDate = null }) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Close,
-                                    contentDescription = stringResource(R.string.action_clear),
-                                )
-                            }
-                        }
-                    },
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text(stringResource(R.string.task_editor_title)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                 )
-                Spacer(Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    QuickDateChip(
-                        label = stringResource(R.string.task_editor_quick_today),
-                        active = dueDate == Dates.iso(Dates.today()),
-                        onClick = { dueDate = Dates.iso(Dates.today()) },
-                    )
-                    QuickDateChip(
-                        label = stringResource(R.string.task_editor_quick_tomorrow),
-                        active = dueDate == Dates.iso(Dates.today().plusDays(1)),
-                        onClick = { dueDate = Dates.iso(Dates.today().plusDays(1)) },
-                    )
-                    QuickDateChip(
-                        label = stringResource(R.string.task_editor_quick_weekend),
-                        active = false,
-                        onClick = { dueDate = Dates.iso(nextSaturday()) },
-                    )
-                    QuickDateChip(
-                        label = stringResource(R.string.task_editor_pick_date),
-                        active = false,
-                        onClick = { showDatePicker = true },
-                    )
-                }
-            }
 
-            Spacer(Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                TextButton(onClick = onDismiss, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.action_cancel))
-                }
-                Button(
-                    onClick = {
-                        if (title.isNotBlank()) {
-                            onSave(title, note, selectedTagId, priority, dueDate, dueTimeMinutes, null)
-                            onDismiss()
-                        }
-                    },
-                    modifier = Modifier.weight(1f),
-                    enabled = title.isNotBlank(),
+                OutlinedTextField(
+                    value = note,
+                    onValueChange = { note = it },
+                    label = { Text(stringResource(R.string.task_editor_note)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 2,
                     shape = RoundedCornerShape(12.dp),
-                ) {
-                    Text(stringResource(R.string.action_save))
-                }
-            }
+                )
 
-            Spacer(Modifier.height(16.dp))
+                // Tag selector
+                if (tags.isNotEmpty()) {
+                    Column {
+                        Text(
+                            text = stringResource(R.string.task_editor_tag),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            FilterPill(
+                                text = stringResource(R.string.task_editor_tag_none),
+                                selected = selectedTagId == null,
+                                onClick = { selectedTagId = null },
+                            )
+                            tags.forEach { tag ->
+                                FilterPill(
+                                    text = tag.name,
+                                    selected = selectedTagId == tag.id,
+                                    onClick = {
+                                        selectedTagId = if (selectedTagId == tag.id) null else tag.id
+                                    },
+                                    dotColor = Color(tag.colorHex),
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Priority selector
+                Column {
+                    Text(
+                        text = stringResource(R.string.task_editor_priority),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(
+                            Triple(Priorities.LOW, stringResource(R.string.priority_low), Color(0xFF4FD9C0)),
+                            Triple(Priorities.NORMAL, stringResource(R.string.priority_medium), Color(0xFFFFB65C)),
+                            Triple(Priorities.HIGH, stringResource(R.string.priority_high), Color(0xFFFF6B6B)),
+                        ).forEach { (value, label, color) ->
+                            FilterPill(
+                                text = label,
+                                selected = priority == value,
+                                onClick = { priority = value },
+                                dotColor = color,
+                            )
+                        }
+                    }
+                }
+
+                // Due date: a read-only field that opens the Material date picker, plus
+                // one-tap shortcuts for the dates people actually pick.
+                Column {
+                    Text(
+                        text = stringResource(R.string.task_editor_due_date),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = dueDate?.let { Dates.parse(it)?.let(Dates::dayMonth) ?: it } ?: "",
+                        onValueChange = { },
+                        readOnly = true,
+                        placeholder = { Text(stringResource(R.string.task_editor_due_none)) },
+                        trailingIcon = {
+                            if (dueDate == null) {
+                                Icon(
+                                    imageVector = Icons.Rounded.CalendarMonth,
+                                    contentDescription = stringResource(R.string.task_editor_pick_date),
+                                )
+                            } else {
+                                androidx.compose.material3.IconButton(onClick = { dueDate = null }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Close,
+                                        contentDescription = stringResource(R.string.action_clear),
+                                    )
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        QuickDateChip(
+                            label = stringResource(R.string.task_editor_quick_today),
+                            active = dueDate == Dates.iso(Dates.today()),
+                            onClick = { dueDate = Dates.iso(Dates.today()) },
+                        )
+                        QuickDateChip(
+                            label = stringResource(R.string.task_editor_quick_tomorrow),
+                            active = dueDate == Dates.iso(Dates.today().plusDays(1)),
+                            onClick = { dueDate = Dates.iso(Dates.today().plusDays(1)) },
+                        )
+                        QuickDateChip(
+                            label = stringResource(R.string.task_editor_quick_weekend),
+                            active = false,
+                            onClick = { dueDate = Dates.iso(nextSaturday()) },
+                        )
+                        QuickDateChip(
+                            label = stringResource(R.string.task_editor_pick_date),
+                            active = false,
+                            onClick = { showDatePicker = true },
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    TextButton(onClick = onDismiss, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.action_cancel))
+                    }
+                    Button(
+                        onClick = {
+                            if (title.isNotBlank()) {
+                                onSave(title, note, selectedTagId, priority, dueDate, dueTimeMinutes, null)
+                                onDismiss()
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        enabled = title.isNotBlank(),
+                        shape = RoundedCornerShape(12.dp),
+                    ) {
+                        Text(stringResource(R.string.action_save))
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+            }
         }
     }
 
@@ -271,16 +279,24 @@ fun TaskEditorSheet(
                         showDatePicker = false
                     },
                 ) {
-                    Text(stringResource(R.string.action_ok))
+                    ProvideAppLocale(localizedContext) {
+                        Text(stringResource(R.string.action_ok))
+                    }
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text(stringResource(R.string.action_cancel))
+                    ProvideAppLocale(localizedContext) {
+                        Text(stringResource(R.string.action_cancel))
+                    }
                 }
             },
         ) {
-            DatePicker(state = pickerState)
+            // Same window problem as the sheet: the picker's own month and weekday names
+            // come from Material's resources and follow LocalContext.
+            ProvideAppLocale(localizedContext) {
+                DatePicker(state = pickerState)
+            }
         }
     }
 }

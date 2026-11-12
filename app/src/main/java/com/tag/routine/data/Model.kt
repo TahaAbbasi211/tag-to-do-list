@@ -267,6 +267,19 @@ object Dates {
     fun shortDayName(date: LocalDate): String =
         date.format(formatter("EEEEE")).uppercase(Locale.getDefault())
 
+    /**
+     * Monday-first single-letter weekday labels for the routine editor's day picker.
+     *
+     * These used to be a hardcoded `listOf("M","T","W","T","F","S","S")`, which stayed
+     * English in every language. They are derived from the active locale instead, so a
+     * Persian user sees the Persian initials. Monday comes first because the stored
+     * `daysMask` uses bit 0 for Monday (see [weekdayBit]).
+     */
+    fun weekdayInitials(): List<String> {
+        val monday = LocalDate.of(2024, 1, 1) // a Monday, used only as a label source
+        return (0..6).map { offset -> shortDayName(monday.plusDays(offset.toLong())) }
+    }
+
     fun shortDate(date: LocalDate): String = date.format(formatter("d MMM"))
 
     fun formatMinutes(minutes: Int): String {

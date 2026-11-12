@@ -65,6 +65,7 @@ import com.tag.routine.ui.components.RoutineIconMap
 import com.tag.routine.ui.components.SectionHeader
 import com.tag.routine.ui.components.SwipeToDelete
 import com.tag.routine.ui.components.WeekStrip
+import com.tag.routine.ui.i18n.ProvideAppLocale
 import com.tag.routine.ui.theme.tagBrand
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -432,7 +433,12 @@ private fun RoutineRow(
                         modifier = Modifier.size(18.dp),
                     )
                 }
+                // The menu is a popup window that swaps LocalContext for the Activity's
+                // system-locale context; capture the app-language context here and
+                // re-provide it inside so the items follow the chosen language.
+                val localizedContext = LocalContext.current
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                    ProvideAppLocale(localizedContext) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.action_move_up)) },
                         leadingIcon = {
@@ -493,6 +499,7 @@ private fun RoutineRow(
                             onDeleteRoutine(routine)
                         },
                     )
+                    }
                 }
             }
 

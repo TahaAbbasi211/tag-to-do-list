@@ -27,7 +27,6 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Restore
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -63,6 +63,8 @@ import com.tag.routine.data.ImportOutcome
 import com.tag.routine.ui.UiState
 import com.tag.routine.ui.components.BackupFilePicker
 import com.tag.routine.ui.i18n.AppLanguage
+import com.tag.routine.ui.i18n.LocalizedAlertDialog
+import com.tag.routine.ui.i18n.ProvideAppLocale
 import com.tag.routine.ui.theme.PaletteDef
 
 @Composable
@@ -83,6 +85,10 @@ fun SettingsScreen(
     onOpenLanguages: () -> Unit,
 ) {
     val settings = state.settings
+    // Dialogs are hosted in their own window, which resets LocalContext to the Activity's
+    // system-locale context. Capture the app-localized one here so dialog text stays in
+    // the language the user picked.
+    val localizedContext = LocalContext.current
     var showResetDialog by remember { mutableStateOf(false) }
     var exportPath by remember { mutableStateOf<String?>(null) }
     var importResult by remember { mutableStateOf<ImportOutcome?>(null) }
@@ -410,7 +416,8 @@ fun SettingsScreen(
 
     // Reset confirmation dialog
     if (showResetDialog) {
-        AlertDialog(
+        LocalizedAlertDialog(
+            localizedContext = localizedContext,
             onDismissRequest = { showResetDialog = false },
             title = { Text(stringResource(R.string.dialog_reset_title)) },
             text = { Text(stringResource(R.string.dialog_reset_body)) },
@@ -437,7 +444,8 @@ fun SettingsScreen(
 
     // Export result dialog
     exportPath?.let { path ->
-        AlertDialog(
+        LocalizedAlertDialog(
+            localizedContext = localizedContext,
             onDismissRequest = { exportPath = null },
             title = { Text(stringResource(R.string.dialog_export_title)) },
             text = { Text(stringResource(R.string.dialog_export_body, path)) },
@@ -451,7 +459,8 @@ fun SettingsScreen(
 
     // Import result dialog
     importResult?.let { result ->
-        AlertDialog(
+        LocalizedAlertDialog(
+            localizedContext = localizedContext,
             onDismissRequest = { importResult = null },
             title = {
                 Text(
@@ -461,18 +470,18 @@ fun SettingsScreen(
                 )
             },
             text = {
-                Text(
-                    if (result.ok) {
+                if (result.ok) {
+                    Text(
                         stringResource(
                             R.string.dialog_import_body,
                             result.routines,
                             result.tasks,
                             result.tags,
-                        )
-                    } else {
-                        result.error.orEmpty()
-                    },
-                )
+                        ),
+                    )
+                }
+                // On failure the raw parser message is English-only, so it is not shown;
+                // the localized title already says the file could not be read.
             },
             confirmButton = {
                 TextButton(onClick = { importResult = null }) {

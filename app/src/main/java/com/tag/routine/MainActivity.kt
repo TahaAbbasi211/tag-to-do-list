@@ -37,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -282,6 +283,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
         TaskEditorSheet(
             existing = editingTask,
             tags = state.tags,
+            localizedContext = LocalContext.current,
             onDismiss = {
                 creatingTask = false
                 editingTask = null
@@ -304,6 +306,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
     if (creatingRoutine || editingRoutine != null) {
         RoutineEditorSheet(
             existing = editingRoutine,
+            localizedContext = LocalContext.current,
             onDismiss = {
                 creatingRoutine = false
                 editingRoutine = null

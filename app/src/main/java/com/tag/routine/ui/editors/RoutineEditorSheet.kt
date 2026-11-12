@@ -42,15 +42,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.tag.routine.R
 import com.tag.routine.data.AppConstants
+import com.tag.routine.data.Dates
 import com.tag.routine.data.Groups
 import com.tag.routine.data.RoutineEntity
 import com.tag.routine.ui.components.FilterPill
 import com.tag.routine.ui.components.RoutineIconMap
+import com.tag.routine.ui.i18n.ProvideAppLocale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoutineEditorSheet(
     existing: RoutineEntity?,
+    localizedContext: android.content.Context,
     onDismiss: () -> Unit,
     onSave: (
         title: String,
@@ -92,6 +95,10 @@ fun RoutineEditorSheet(
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
     ) {
+        // The sheet is hosted in its own window, which replaces LocalContext with the
+        // Activity's system-locale context. Re-provide the app language so the editor
+        // matches the rest of the app instead of falling back to English.
+        ProvideAppLocale(localizedContext) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -219,7 +226,7 @@ fun RoutineEditorSheet(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    val dayLabels = listOf("M", "T", "W", "T", "F", "S", "S")
+                    val dayLabels = Dates.weekdayInitials()
                     dayLabels.forEachIndexed { index, label ->
                         val bit = 1 shl index
                         val selected = (daysMask and bit) != 0
@@ -359,6 +366,7 @@ fun RoutineEditorSheet(
             }
 
             Spacer(Modifier.height(16.dp))
+        }
         }
     }
 }

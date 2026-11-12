@@ -23,6 +23,7 @@ keystore/
 .idea/
 *.iml
 .vscode/
+.perch/
 
 # OS
 .DS_Store
