@@ -28,8 +28,8 @@
     <!-- Today screen -->
     <string name="today_perfect_day">روز کامل</string>
     <string name="today_complete_count">%1$d از %2$d انجام شد</string>
-    <string name="today_empty_title">هنوز روتینی نداری</string>
-    <string name="today_empty_message">روی + بزن و اولین روتین روزانه‌ات را اضافه کن</string>
+    <string name="today_empty_title">آماده‌ای برای یک روز عالی؟</string>
+    <string name="today_empty_message">با دکمه پایین روتین‌هایت را اضافه کن و با انگیزه پیش برو!</string>
     <string name="today_add_routine">افزودن روتین</string>
     <string name="today_search_hint">جست‌وجوی روتین‌ها…</string>
     <string name="today_streak_days">زنجیره %1$d روزه</string>
@@ -131,6 +131,8 @@
     <string name="settings_appearance">ظاهر</string>
     <string name="settings_theme_mode">حالت نمایش</string>
     <string name="settings_theme_colour">رنگ برنامه</string>
+    <string name="settings_dynamic_color">رنگ پویا</string>
+    <string name="settings_dynamic_color_sub">هماهنگ‌سازی رنگ‌ها با تصویر پس‌زمینه دستگاه</string>
     <string name="settings_languages">زبان‌ها</string>
     <string name="settings_language_system">زبان دستگاه</string>
     <string name="settings_profile">پروفایل شما</string>
@@ -257,5 +259,37 @@
     <string name="tasks_no_matches">موردی یافت نشد</string>
     <string name="tasks_try_different_search">جستجوی دیگری را امتحان کنید</string>
     <string name="insights_percent_completion">%1$d%% تکمیل شده</string>
+
+    <!-- قالب‌های روتین -->
+    <string name="templates_card_title">شروع سریع با قالب‌های آماده</string>
+    <string name="templates_card_subtitle">یک مجموعه روتین آماده برای صبح، مطالعه، ورزش یا خواب اضافه کن</string>
+    <string name="templates_card_dismiss">بستن</string>
+    <string name="routine_editor_from_template">افزودن از قالب</string>
+    <string name="templates_sheet_title">انتخاب قالب آماده</string>
+    <string name="templates_sheet_subtitle">روتین‌ها به برنامه اضافه می‌شوند و بعداً قابل ویرایش‌اند.</string>
+    <string name="templates_routine_count">%1$d روتین</string>
+    <string name="templates_add_pack">افزودن</string>
+    <string name="template_morning_name">صبح</string>
+    <string name="template_morning_sub">روزت را با انرژی شروع کن</string>
+    <string name="template_morning_water">نوشیدن یک لیوان آب</string>
+    <string name="template_morning_stretch">کشش صبحگاهی</string>
+    <string name="template_morning_breakfast">صبحانه سالم</string>
+    <string name="template_morning_plan">برنامه‌ریزی روز</string>
+    <string name="template_study_name">مطالعه</string>
+    <string name="template_study_sub">بازه یادگیری متمرکز</string>
+    <string name="template_study_focus">جلسه مطالعه عمیق</string>
+    <string name="template_study_notes">مرور یادداشت‌ها</string>
+    <string name="template_study_review">تمرین و فلش‌کارت</string>
+    <string name="template_workout_name">ورزش</string>
+    <string name="template_workout_sub">فعال و قوی بمان</string>
+    <string name="template_workout_warmup">گرم کردن</string>
+    <string name="template_workout_main">تمرین قدرتی یا هوازی</string>
+    <string name="template_workout_cooldown">سرد کردن و آبرسانی</string>
+    <string name="template_sleep_name">خواب</string>
+    <string name="template_sleep_sub">آرامش برای خواب باکیفیت</string>
+    <string name="template_sleep_winddown">دوری از صفحه‌نمایش</string>
+    <string name="template_sleep_journal">یادداشت شبانه یا مطالعه سبک</string>
+    <string name="template_sleep_lightsout">خاموش کردن چراغ‌ها</string>
+    <string name="group_complete_badge">کامل</string>
 </resources>
 
