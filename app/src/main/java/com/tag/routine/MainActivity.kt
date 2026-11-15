@@ -51,6 +51,7 @@ import com.tag.routine.ui.UiState
 import com.tag.routine.ui.components.PillNavBar
 import com.tag.routine.ui.editors.RoutineEditorSheet
 import com.tag.routine.ui.editors.TaskEditorSheet
+import com.tag.routine.ui.editors.TemplatePickerSheet
 import com.tag.routine.ui.i18n.LocalizedApp
 import com.tag.routine.ui.screens.FocusScreen
 import com.tag.routine.ui.screens.InsightsScreen
@@ -94,6 +95,7 @@ class MainActivity : ComponentActivity() {
                 TagTheme(
                     themeMode = state.settings.themeMode,
                     paletteKey = state.settings.themePalette,
+                    dynamicColor = state.settings.dynamicColor,
                 ) {
                     // First launch: ask for a name before showing the app itself.
                     // The flag lives in the settings store, so this only ever shows once.
@@ -124,6 +126,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
     var creatingTask by remember { mutableStateOf(false) }
     var editingRoutine by remember { mutableStateOf<RoutineEntity?>(null) }
     var creatingRoutine by remember { mutableStateOf(false) }
+    var showTemplatesSheet by remember { mutableStateOf(false) }
     // Settings owns a small sub-page stack: null means the settings list.
     var showLanguagePage by remember { mutableStateOf(false) }
 
@@ -194,6 +197,8 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                                 // section, which owns duration selection and history.
                                 onStartFocus = { tab = Tab.FOCUS },
                                 onMoveRoutine = viewModel::moveRoutine,
+                                onOpenTemplates = { showTemplatesSheet = true },
+                                onDismissTemplatesCard = viewModel::dismissTemplatesCard,
                             )
 
                             Tab.TASKS -> TasksScreen(
@@ -233,6 +238,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                                 state = state,
                                 onThemeMode = viewModel::setThemeMode,
                                 onThemePalette = viewModel::setTheme,
+                                onDynamicColor = viewModel::setDynamicColor,
                                 onNotifications = viewModel::setNotificationsEnabled,
                                 onDigest = viewModel::setDigestEnabled,
                                 onDigestMinutes = viewModel::setDigestMinutes,
@@ -304,14 +310,20 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
     }
 
     if (creatingRoutine || editingRoutine != null) {
+        val localizedContext = LocalContext.current
         RoutineEditorSheet(
             existing = editingRoutine,
-            localizedContext = LocalContext.current,
+            localizedContext = localizedContext,
             onDismiss = {
                 creatingRoutine = false
                 editingRoutine = null
             },
-            onSave = { title, group, icon, timeMinutes, daysMask, reminder, colorHex ->
+            onOpenTemplates = if (editingRoutine == null) {
+                { showTemplatesSheet = true }
+            } else {
+                null
+            },
+            onSave = { title, group, icon, timeMinutes, daysMask, reminder, colorHex, colorId ->
                 viewModel.saveRoutine(
                     existing = editingRoutine,
                     title = title,
@@ -321,7 +333,20 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                     daysMask = daysMask,
                     reminder = reminder,
                     colorHex = colorHex,
+                    colorId = colorId,
                 )
+            },
+        )
+    }
+
+    if (showTemplatesSheet) {
+        val localizedContext = LocalContext.current
+        TemplatePickerSheet(
+            localizedContext = localizedContext,
+            onDismiss = { showTemplatesSheet = false },
+            onSelectTemplate = { template ->
+                viewModel.applyTemplate(template, localizedContext.resources)
+                viewModel.dismissTemplatesCard()
             },
         )
     }
