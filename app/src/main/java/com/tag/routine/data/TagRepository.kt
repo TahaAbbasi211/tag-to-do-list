@@ -203,6 +203,8 @@ class TagRepository(
 
     suspend fun setTheme(palette: String) = settingsStore.setThemePalette(palette)
 
+    suspend fun setDynamicColor(enabled: Boolean) = settingsStore.setDynamicColor(enabled)
+
     suspend fun setLanguage(tag: String) = settingsStore.setLanguage(tag)
 
     suspend fun setUserName(name: String) = settingsStore.setUserName(name)
@@ -215,6 +217,12 @@ class TagRepository(
 
     /** Marks onboarding complete without setting a name (the user skipped it). */
     suspend fun skipOnboarding() = settingsStore.setOnboarded(true)
+
+    suspend fun ensureFirstLaunchDate(todayIso: String) =
+        settingsStore.ensureFirstLaunchDate(todayIso)
+
+    suspend fun setTemplatesCardDismissed(dismissed: Boolean) =
+        settingsStore.setTemplatesCardDismissed(dismissed)
 
     suspend fun setNotificationsEnabled(enabled: Boolean) = settingsStore.setNotifications(enabled)
 
@@ -297,7 +305,7 @@ class TagRepository(
                     .put("id", r.id).put("title", r.title).put("group", r.groupName)
                     .put("icon", r.icon).put("timeMinutes", r.timeMinutes ?: JSONObject.NULL)
                     .put("daysMask", r.daysMask).put("reminder", r.reminder)
-                    .put("colorHex", r.colorHex).put("archived", r.archived)
+                    .put("colorHex", r.colorHex).put("colorId", r.colorId).put("archived", r.archived)
                     .put("sortOrder", r.sortOrder).put("createdAt", r.createdAt),
             )
         }
@@ -371,6 +379,7 @@ class TagRepository(
                     daysMask = o.optInt("daysMask", Dates.EVERY_DAY),
                     reminder = o.optBoolean("reminder", false),
                     colorHex = o.optLong("colorHex", Palette.at(0)),
+                    colorId = o.optInt("colorId", 0),
                     sortOrder = o.optInt("sortOrder", i),
                     archived = o.optBoolean("archived", false),
                     createdAt = o.optLong("createdAt", System.currentTimeMillis()),
