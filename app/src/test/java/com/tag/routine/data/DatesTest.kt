@@ -2,10 +2,12 @@ package com.tag.routine.data
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
+import java.util.Locale
 
 /**
  * Unit tests for the pure date helpers. These run on the JVM, so they must not
@@ -43,5 +45,35 @@ class DatesTest {
             val bit = Dates.weekdayBit(monday.plusDays(offset.toLong()))
             assertTrue("day $offset not in EVERY_DAY", (Dates.EVERY_DAY and bit) != 0)
         }
+    }
+
+    @Test
+    fun `formatDigits renders Persian digits only for fa locale and Latin otherwise`() {
+        val fa = Locale.forLanguageTag("fa")
+        val en = Locale.ENGLISH
+        val de = Locale.GERMAN
+
+        assertEquals("۱۰۰\u066A", Dates.formatDigits("100%", fa))
+        assertEquals("۱۰۰\u066A", Dates.formatPercent(100, fa))
+        assertEquals("\u066A", Dates.percentSymbol(fa))
+        assertEquals("۳ / ۳", Dates.formatDigits("3 / 3", fa))
+        assertEquals("۰۷:۳۰", Dates.timeLabel(7 * 60 + 30, fa))
+
+        assertEquals("100%", Dates.formatDigits("۱۰۰\u066A", en))
+        assertEquals("100%", Dates.formatPercent(100, en))
+        assertEquals("%", Dates.percentSymbol(en))
+        assertEquals("3 / 3", Dates.formatDigits("۳ / ۳", de))
+        assertEquals("07:30", Dates.timeLabel(7 * 60 + 30, en))
+    }
+
+    @Test
+    fun `dayOfWeekLabel follows explicit locale instead of phone default`() {
+        val monday = LocalDate.of(2026, 3, 9)
+        val faLabel = Dates.dayOfWeekLabel(monday, Locale.forLanguageTag("fa"))
+        val enLabel = Dates.dayOfWeekLabel(monday, Locale.ENGLISH)
+
+        assertNotEquals(enLabel, faLabel)
+        assertTrue(enLabel.startsWith("M", ignoreCase = true))
+        assertTrue(faLabel.startsWith("د"))
     }
 }
