@@ -28,8 +28,8 @@
     <!-- Today screen -->
     <string name="today_perfect_day">Perfect day</string>
     <string name="today_complete_count">%1$d of %2$d complete</string>
-    <string name="today_empty_title">No routines yet</string>
-    <string name="today_empty_message">Tap + to add your first daily routine</string>
+    <string name="today_empty_title">Ready to build your day?</string>
+    <string name="today_empty_message">Add your routines with the button below and stay consistent!</string>
     <string name="today_add_routine">Add routine</string>
     <string name="today_search_hint">Search routines…</string>
     <string name="today_streak_days">%1$d day streak</string>
@@ -131,6 +131,8 @@
     <string name="settings_appearance">Appearance</string>
     <string name="settings_theme_mode">Theme</string>
     <string name="settings_theme_colour">Theme colour</string>
+    <string name="settings_dynamic_color">Dynamic colour</string>
+    <string name="settings_dynamic_color_sub">Adapt colours to your device wallpaper</string>
     <string name="settings_languages">Languages</string>
     <string name="settings_language_system">System default</string>
     <string name="settings_profile">Your profile</string>
@@ -257,4 +259,36 @@
     <string name="tasks_no_matches">No matches</string>
     <string name="tasks_try_different_search">Try a different search</string>
     <string name="insights_percent_completion">%1$d%% completion</string>
+
+    <!-- Routine templates & first-day prompt -->
+    <string name="templates_card_title">Quick-start with templates</string>
+    <string name="templates_card_subtitle">Pick a ready-made routine set for morning, study, workout, or sleep</string>
+    <string name="templates_card_dismiss">Dismiss</string>
+    <string name="routine_editor_from_template">Add from template</string>
+    <string name="templates_sheet_title">Choose a template</string>
+    <string name="templates_sheet_subtitle">Routines are added to your schedule and can be edited anytime.</string>
+    <string name="templates_routine_count">%1$d routines</string>
+    <string name="templates_add_pack">Add</string>
+    <string name="template_morning_name">Morning</string>
+    <string name="template_morning_sub">Start your day energized</string>
+    <string name="template_morning_water">Drink a glass of water</string>
+    <string name="template_morning_stretch">Morning stretch</string>
+    <string name="template_morning_breakfast">Healthy breakfast</string>
+    <string name="template_morning_plan">Plan the day</string>
+    <string name="template_study_name">Study</string>
+    <string name="template_study_sub">Focused learning block</string>
+    <string name="template_study_focus">Deep study session</string>
+    <string name="template_study_notes">Review notes</string>
+    <string name="template_study_review">Practice &amp; flashcards</string>
+    <string name="template_workout_name">Workout</string>
+    <string name="template_workout_sub">Stay active and strong</string>
+    <string name="template_workout_warmup">Warm-up</string>
+    <string name="template_workout_main">Strength or cardio</string>
+    <string name="template_workout_cooldown">Cool-down &amp; hydrate</string>
+    <string name="template_sleep_name">Sleep</string>
+    <string name="template_sleep_sub">Unwind for restful sleep</string>
+    <string name="template_sleep_winddown">Screen-free wind-down</string>
+    <string name="template_sleep_journal">Evening journal or reading</string>
+    <string name="template_sleep_lightsout">Lights out</string>
+    <string name="group_complete_badge">Complete</string>
 </resources>
