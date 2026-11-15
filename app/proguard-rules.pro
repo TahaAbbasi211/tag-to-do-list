@@ -3,14 +3,17 @@
 # Room generates implementations reflectively referenced by the runtime.
 -keep class * extends androidx.room.RoomDatabase { <init>(); }
 -keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao class * { *; }
 -dontwarn androidx.room.paging.**
 
 # Entity/DAO members are accessed through generated code and reflection.
 -keepclassmembers class com.tag.routine.data.** { *; }
 
-# Receivers are instantiated by the framework from the manifest.
+# Receivers and services are instantiated by the framework from the manifest.
 -keep class com.tag.routine.notifications.NotificationReceiver { *; }
 -keep class com.tag.routine.notifications.BootReceiver { *; }
+-keep class com.tag.routine.notifications.FocusTimerReceiver { *; }
+-keep class com.tag.routine.notifications.FocusTimerService { *; }
 -keep class com.tag.routine.TagApp { *; }
 -keep class com.tag.routine.MainActivity { *; }
 
