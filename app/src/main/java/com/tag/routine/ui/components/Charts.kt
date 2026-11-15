@@ -1,10 +1,13 @@
 package com.tag.routine.ui.components
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,12 +35,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tag.routine.data.Dates
 import com.tag.routine.data.DayStat
 import com.tag.routine.ui.theme.tagBrand
 import java.time.LocalDate
+import java.util.Locale
 
 /** Horizontal seven-day selector showing completion dots. */
 @Composable
@@ -50,6 +55,7 @@ fun WeekStrip(
     days: Int = 7,
 ) {
     val brand = tagBrand()
+    val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
     val start = today.minusDays(3)
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -61,33 +67,53 @@ fun WeekStrip(
             val isToday = date == today
             val isFuture = date.isAfter(today)
             val ratio = dotFor(date)
-            val container = when {
-                isSelected -> MaterialTheme.colorScheme.primary
-                isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
-                else -> MaterialTheme.colorScheme.surfaceContainer
-            }
-            val contentColor = when {
-                isSelected -> MaterialTheme.colorScheme.onPrimary
-                isFuture -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
-                else -> MaterialTheme.colorScheme.onSurfaceVariant
-            }
+            val container by animateColorAsState(
+                targetValue = when {
+                    isSelected -> MaterialTheme.colorScheme.primary
+                    isToday -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+                    else -> MaterialTheme.colorScheme.surfaceContainer
+                },
+                animationSpec = tween(220),
+                label = "week-bg",
+            )
+            val contentColor by animateColorAsState(
+                targetValue = when {
+                    isSelected -> MaterialTheme.colorScheme.onPrimary
+                    isFuture -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
+                    isToday -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                animationSpec = tween(220),
+                label = "week-fg",
+            )
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(18.dp))
+                    .clip(RoundedCornerShape(20.dp))
                     .background(container)
+                    .then(
+                        if (!isSelected) {
+                            Modifier.border(
+                                1.dp,
+                                if (isToday) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
+                                else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                RoundedCornerShape(20.dp),
+                            )
+                        } else Modifier
+                    )
                     .clickable { onSelect(date) }
                     .padding(vertical = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = Dates.dayOfWeekLabel(date).take(1),
+                    text = Dates.dayOfWeekLabel(date, appLocale).take(1).uppercase(appLocale),
                     style = MaterialTheme.typography.labelSmall,
-                    color = contentColor.copy(alpha = 0.8f),
+                    color = contentColor.copy(alpha = 0.85f),
+                    fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Medium,
                 )
-                Spacer(Modifier.height(3.dp))
+                Spacer(Modifier.height(4.dp))
                 Text(
-                    text = date.dayOfMonth.toString(),
+                    text = Dates.formatDigits(date.dayOfMonth.toString(), appLocale),
                     style = MaterialTheme.typography.titleMedium,
                     color = contentColor,
                     fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.SemiBold,
@@ -100,7 +126,7 @@ fun WeekStrip(
                         .background(
                             when {
                                 ratio >= 0.999f -> if (isSelected) contentColor else brand.success
-                                ratio > 0f -> if (isSelected) contentColor.copy(alpha = 0.6f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.65f)
+                                ratio > 0f -> if (isSelected) contentColor.copy(alpha = 0.7f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
                                 else -> Color.Transparent
                             },
                         ),
@@ -119,6 +145,7 @@ fun WeeklyBarChart(
     barHeight: androidx.compose.ui.unit.Dp = 132.dp,
 ) {
     val brand = tagBrand()
+    val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
     val data = stats.takeLast(7)
     val reveal = remember { Animatable(0f) }
     LaunchedEffect(data.map { it.ratio to it.date }) {
@@ -143,7 +170,7 @@ fun WeeklyBarChart(
                     verticalArrangement = Arrangement.Bottom,
                 ) {
                     Text(
-                        text = if (stat.hasData) "${(stat.ratio * 100).toInt()}%" else "–",
+                        text = if (stat.hasData) Dates.formatPercent((stat.ratio * 100).toInt(), appLocale) else "–",
                         style = MaterialTheme.typography.labelSmall,
                         color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
