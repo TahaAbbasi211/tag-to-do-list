@@ -1,5 +1,9 @@
 package com.tag.routine.ui.screens
 
+import android.os.Build
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +23,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ChevronRight
@@ -62,16 +67,21 @@ import com.tag.routine.data.Dates
 import com.tag.routine.data.ImportOutcome
 import com.tag.routine.ui.UiState
 import com.tag.routine.ui.components.BackupFilePicker
+import com.tag.routine.ui.components.AppButton
+import com.tag.routine.ui.components.AppButtonVariant
+import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.i18n.AppLanguage
 import com.tag.routine.ui.i18n.LocalizedAlertDialog
 import com.tag.routine.ui.i18n.ProvideAppLocale
 import com.tag.routine.ui.theme.PaletteDef
+import com.tag.routine.ui.theme.spacing
 
 @Composable
 fun SettingsScreen(
     state: UiState,
     onThemeMode: (Int) -> Unit,
     onThemePalette: (String) -> Unit,
+    onDynamicColor: (Boolean) -> Unit = {},
     onNotifications: (Boolean) -> Unit,
     onDigest: (Boolean) -> Unit,
     onDigestMinutes: (Int) -> Unit,
@@ -124,16 +134,15 @@ fun SettingsScreen(
                 label = { Text(stringResource(R.string.settings_your_name)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
             )
             Spacer(Modifier.height(10.dp))
-            Button(
+            AppButton(
+                text = stringResource(R.string.settings_save_name),
                 onClick = { onSetName(nameInput.trim()); nameInput = nameInput.trim() },
                 enabled = nameInput.isNotBlank(),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Text(stringResource(R.string.settings_save_name))
-            }
+                shape = RoundedCornerShape(14.dp),
+            )
         }
 
         // Appearance
@@ -148,17 +157,29 @@ fun SettingsScreen(
                 currentMode = settings.themeMode,
                 onSelect = onThemeMode,
             )
-            Spacer(Modifier.height(16.dp))
-            Text(
-                text = stringResource(R.string.settings_theme_colour),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(8.dp))
-            PaletteSelector(
-                currentPalette = settings.themePalette,
-                onSelect = onThemePalette,
-            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                Spacer(Modifier.height(16.dp))
+                SettingsToggle(
+                    icon = Icons.Rounded.AutoAwesome,
+                    title = stringResource(R.string.settings_dynamic_color),
+                    subtitle = stringResource(R.string.settings_dynamic_color_sub),
+                    checked = settings.dynamicColor,
+                    onCheckedChange = onDynamicColor,
+                )
+            }
+            if (!settings.dynamicColor || Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    text = stringResource(R.string.settings_theme_colour),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(8.dp))
+                PaletteSelector(
+                    currentPalette = settings.themePalette,
+                    onSelect = onThemePalette,
+                )
+            }
         }
 
         // Focus
@@ -187,19 +208,18 @@ fun SettingsScreen(
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                         keyboardType = androidx.compose.ui.text.input.KeyboardType.Number,
                     ),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.weight(1f),
                 )
                 val parsed = focusInput.toIntOrNull()
                 val valid = parsed != null &&
                     parsed in AppConstants.MIN_FOCUS_MINUTES..AppConstants.MAX_FOCUS_MINUTES
-                Button(
+                AppButton(
+                    text = stringResource(R.string.action_save),
                     onClick = { parsed?.let(onFocusMinutes) },
                     enabled = valid,
-                    shape = RoundedCornerShape(12.dp),
-                ) {
-                    Text(stringResource(R.string.action_save))
-                }
+                    shape = RoundedCornerShape(14.dp),
+                )
             }
         }
 
@@ -276,9 +296,10 @@ fun SettingsScreen(
                         label = { Text(stringResource(R.string.settings_new_tag)) },
                         modifier = Modifier.weight(1f),
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                     )
-                    Button(
+                    AppButton(
+                        text = stringResource(R.string.action_add),
                         onClick = {
                             if (newTag.isNotBlank()) {
                                 onAddTag(newTag)
@@ -286,58 +307,60 @@ fun SettingsScreen(
                             }
                         },
                         enabled = newTag.isNotBlank(),
-                        shape = RoundedCornerShape(12.dp),
-                    ) {
-                        Text(stringResource(R.string.action_add))
-                    }
+                        shape = RoundedCornerShape(14.dp),
+                    )
                 }
             }
         }
 
         // Data
         SettingsSection(title = stringResource(R.string.settings_data)) {
-            OutlinedButton(
+            AppButton(
+                text = stringResource(R.string.settings_export),
                 onClick = { exportPath = onExport() },
+                variant = AppButtonVariant.Secondary,
+                leadingIcon = {
+                    Icon(Icons.Rounded.Backup, contentDescription = null, modifier = Modifier.size(18.dp))
+                },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Icon(Icons.Rounded.Backup, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.size(8.dp))
-                Text(stringResource(R.string.settings_export))
-            }
-            Spacer(Modifier.height(8.dp))
-            OutlinedButton(
+                shape = RoundedCornerShape(14.dp),
+            )
+            Spacer(Modifier.height(10.dp))
+            AppButton(
+                text = stringResource(R.string.settings_import),
                 onClick = { pickBackup() },
+                variant = AppButtonVariant.Secondary,
+                leadingIcon = {
+                    Icon(Icons.Rounded.Restore, contentDescription = null, modifier = Modifier.size(18.dp))
+                },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Icon(Icons.Rounded.Restore, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.size(8.dp))
-                Text(stringResource(R.string.settings_import))
-            }
-            Spacer(Modifier.height(8.dp))
-            OutlinedButton(
+                shape = RoundedCornerShape(14.dp),
+            )
+            Spacer(Modifier.height(10.dp))
+            AppButton(
+                text = stringResource(R.string.settings_reset),
                 onClick = { showResetDialog = true },
+                variant = AppButtonVariant.Secondary,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Rounded.DeleteForever,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(18.dp),
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.DeleteForever,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(18.dp),
-                )
-                Spacer(Modifier.size(8.dp))
-                Text(stringResource(R.string.settings_reset), color = MaterialTheme.colorScheme.error)
-            }
+                shape = RoundedCornerShape(14.dp),
+            )
         }
 
         // About
         SettingsSection(title = stringResource(R.string.settings_about)) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(18.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
@@ -369,28 +392,29 @@ fun SettingsScreen(
         SettingsSection(title = stringResource(R.string.settings_languages)) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
                 onClick = onOpenLanguages,
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 14.dp),
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Language,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(24.dp),
                     )
                     Spacer(Modifier.size(14.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = stringResource(R.string.settings_language_open),
                             style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium,
+                            fontWeight = FontWeight.SemiBold,
                         )
                         Text(
                             text = stringResource(
@@ -503,14 +527,16 @@ private fun SettingsSection(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(bottom = 8.dp),
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(start = 4.dp, bottom = 8.dp),
         )
-        Surface(
+        AppCard(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.surfaceContainer,
+            shape = MaterialTheme.shapes.extraLarge,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(MaterialTheme.spacing.lg)) {
                 content()
             }
         }
@@ -533,29 +559,32 @@ private fun ThemeSelector(
     ) {
         modes.forEach { (mode, label) ->
             val selected = currentMode == mode
+            val bg by animateColorAsState(
+                targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
+                animationSpec = tween(220),
+                label = "theme-bg",
+            )
+            val fg by animateColorAsState(
+                targetValue = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                animationSpec = tween(220),
+                label = "theme-fg",
+            )
             Surface(
                 modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(12.dp),
-                color = if (selected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainerHigh
-                },
+                shape = RoundedCornerShape(14.dp),
+                color = bg,
+                border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
                 onClick = { onSelect(mode) },
             ) {
                 Text(
                     text = label,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 10.dp),
+                        .padding(vertical = 12.dp),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.labelLarge,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                    color = if (selected) {
-                        MaterialTheme.colorScheme.onPrimary
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                    color = fg,
                 )
             }
         }
