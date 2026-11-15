@@ -1,22 +1,35 @@
 package com.tag.routine.ui.theme
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import com.tag.routine.data.AppSettings
 
 // ------------------------------------------------------------------ palette definitions
 
 internal object PaletteDef {
-    // Violet (default), Sky, Purple, Pink, Teal, Sunset
+    // Each palette defines 1 clear primary color, 1 accent color (secondary), and 1 tertiary accent
     data class Def(
         val primary: Color,
         val primaryDeep: Color,
-        val secondary: Color,
+        val secondary: Color,        // Accent color
         val secondaryDeep: Color,
         val tertiary: Color,
         val onHeroLight: Color,
@@ -44,8 +57,8 @@ internal object PaletteDef {
     val PURPLE = Def(
         primary = RoyalPurple,
         primaryDeep = RoyalPurpleDeep,
-        secondary = Violet,
-        secondaryDeep = VioletDeep,
+        secondary = Pink,
+        secondaryDeep = PinkDeep,
         tertiary = Rose,
         onHeroLight = Color(0xFF22093C),
         onHeroMuted = Color(0xFF4F217F),
@@ -70,105 +83,134 @@ internal object PaletteDef {
     )
     val SUNSET = Def(
         primary = Coral,
-        primaryDeep = Color(0xFFE65A3A),
+        primaryDeep = CoralDeep,
         secondary = Amber,
-        secondaryDeep = Color(0xFFD48A2E),
+        secondaryDeep = AmberDeep,
         tertiary = Pink,
         onHeroLight = Color(0xFF3E160A),
         onHeroMuted = Color(0xFF8A3D1D),
     )
 }
 
-// ------------------------------------------------------------------ color schemes
+// ------------------------------------------------------------------ color schemes with depth surfaces
 
-private fun darkScheme(def: PaletteDef.Def): androidx.compose.material3.ColorScheme =
+private fun darkScheme(def: PaletteDef.Def): ColorScheme =
     darkColorScheme(
         primary = def.primary,
-        onPrimary = Color(0xFF15102E),
-        primaryContainer = def.primary.copy(alpha = 0.24f),
-        onPrimaryContainer = def.onHeroLight,
+        onPrimary = Color(0xFF0B091B),
+        primaryContainer = def.primary.copy(alpha = 0.22f),
+        onPrimaryContainer = Color(0xFFEDE9FE),
         secondary = def.secondary,
-        onSecondary = Color(0xFF04241E),
-        secondaryContainer = def.secondary.copy(alpha = 0.24f),
-        onSecondaryContainer = Color(0xFFBFF3E8),
+        onSecondary = Color(0xFF021B17),
+        secondaryContainer = def.secondary.copy(alpha = 0.20f),
+        onSecondaryContainer = Color(0xFFCCFBF1),
         tertiary = def.tertiary,
-        onTertiary = Color(0xFF2C1B00),
+        onTertiary = Color(0xFF241600),
+        tertiaryContainer = def.tertiary.copy(alpha = 0.20f),
+        onTertiaryContainer = Color(0xFFFEF3C7),
         background = NightBg,
         onBackground = NightOn,
         surface = NightSurface,
         onSurface = NightOn,
-        surfaceVariant = NightVariant,
+        surfaceVariant = NightSurfaceHigh,
         onSurfaceVariant = NightOnVariant,
-        surfaceContainerLowest = Color(0xFF0C111C),
-        surfaceContainerLow = Color(0xFF101623),
-        surfaceContainer = Color(0xFF141B2A),
-        surfaceContainerHigh = Color(0xFF191F31),
-        surfaceContainerHighest = Color(0xFF1E2537),
+        surfaceContainerLowest = NightSurfaceLowest,
+        surfaceContainerLow = NightSurfaceLow,
+        surfaceContainer = NightSurfaceContainer,
+        surfaceContainerHigh = NightSurfaceHigh,
+        surfaceContainerHighest = NightSurfaceHighest,
         outline = NightOutline,
-        outlineVariant = Color(0xFF232B3E),
+        outlineVariant = NightOutlineVariant,
         error = Coral,
         onError = Color(0xFF2B0A06),
+        errorContainer = Coral.copy(alpha = 0.22f),
+        onErrorContainer = Color(0xFFFFD4D0),
     )
 
-private fun lightScheme(def: PaletteDef.Def): androidx.compose.material3.ColorScheme =
+private fun lightScheme(def: PaletteDef.Def): ColorScheme =
     lightColorScheme(
         primary = def.primaryDeep,
         onPrimary = Color.White,
-        primaryContainer = def.primary.copy(alpha = 0.17f),
+        primaryContainer = def.primary.copy(alpha = 0.14f),
         onPrimaryContainer = def.primaryDeep,
         secondary = def.secondaryDeep,
         onSecondary = Color.White,
-        secondaryContainer = def.secondary.copy(alpha = 0.17f),
-        onSecondaryContainer = Color(0xFF00382E),
-        tertiary = Color(0xFFB77414),
+        secondaryContainer = def.secondary.copy(alpha = 0.14f),
+        onSecondaryContainer = Color(0xFF064E3B),
+        tertiary = Color(0xFFB45309),
         onTertiary = Color.White,
+        tertiaryContainer = Amber.copy(alpha = 0.18f),
+        onTertiaryContainer = Color(0xFF451A03),
         background = DayBg,
         onBackground = DayOn,
         surface = DaySurface,
         onSurface = DayOn,
-        surfaceVariant = DayVariant,
+        surfaceVariant = DaySurfaceHigh,
         onSurfaceVariant = DayOnVariant,
-        surfaceContainerLowest = Color(0xFFFFFFFF),
-        surfaceContainerLow = Color(0xFFFAFBFF),
-        surfaceContainer = Color(0xFFF6F7FD),
-        surfaceContainerHigh = Color(0xFFF1F3FB),
-        surfaceContainerHighest = Color(0xFFEBEEF8),
+        surfaceContainerLowest = DaySurfaceLowest,
+        surfaceContainerLow = DaySurfaceLow,
+        surfaceContainer = DaySurfaceContainer,
+        surfaceContainerHigh = DaySurfaceHigh,
+        surfaceContainerHighest = DaySurfaceHighest,
         outline = DayOutline,
-        outlineVariant = Color(0xFFE6E9F3),
-        error = Color(0xFFD64535),
+        outlineVariant = DayOutlineVariant,
+        error = Color(0xFFDC2626),
         onError = Color.White,
+        errorContainer = Color(0xFFFEE2E2),
+        onErrorContainer = Color(0xFF7F1D1D),
     )
 
-// ------------------------------------------------------------------ themes
+// ------------------------------------------------------------------ brand & dynamic adapter
 
-private fun brandFor(def: PaletteDef.Def, dark: Boolean): TagBrand {
-    val tint = if (dark) 0.22f else 0.30f
-    val bg = if (dark) NightSurface else DaySurface
-    val muted = if (dark) 0.7f else 0.55f
+private fun ensureDarkHeroStop(color: Color, maxLuminance: Float = 0.085f): Color {
+    var result = color
+    var step = 0
+    while (result.luminance() > maxLuminance && step < 12) {
+        result = lerp(result, Color(0xFF0B1020), 0.25f)
+        step++
+    }
+    return result
+}
+
+private fun brandFor(def: PaletteDef.Def, dark: Boolean, dynamicScheme: ColorScheme? = null): TagBrand {
+    val primary = dynamicScheme?.primary ?: (if (dark) def.primary else def.primaryDeep)
+    val secondary = dynamicScheme?.secondary ?: (if (dark) def.secondary else def.secondaryDeep)
+    val tertiary = dynamicScheme?.tertiary ?: def.tertiary
+
+    val heroBase = Color(0xFF0E1426)
+    val heroStart = ensureDarkHeroStop(lerp(primary, heroBase, if (dark) 0.56f else 0.42f))
+    val heroMid = ensureDarkHeroStop(lerp(primary, heroBase, if (dark) 0.46f else 0.34f))
+    val heroEnd = ensureDarkHeroStop(lerp(secondary, Color(0xFF0A1D2C), if (dark) 0.62f else 0.48f))
+
     return TagBrand(
-        heroStart = bg.copy(alpha = tint),
-        heroMid = if (dark) Color(0xFF3B2E7A) else def.primaryDeep,
-        heroEnd = if (dark) Color(0xFF1D3A54) else def.primary,
-        ringStart = def.primary,
-        ringEnd = def.secondary,
-        streak = def.tertiary,
-        success = def.secondary,
-        priorityLow = Color(0xFF6E7B96),
-        priorityNormal = def.primary,
+        heroStart = heroStart,
+        heroMid = heroMid,
+        heroEnd = heroEnd,
+        ringStart = lerp(primary, Color.White, 0.45f),
+        ringEnd = lerp(secondary, Color.White, 0.28f),
+        streak = tertiary,
+        success = secondary,
+        priorityLow = Color(0xFF718096),
+        priorityNormal = primary,
         priorityHigh = Coral,
-        chartTrack = if (dark) Color(0xFF232B3E) else Color(0xFFE3E7F3),
-        gridEmpty = if (dark) Color(0xFF1A2131) else Color(0xFFE8EBF5),
-        onHero = if (dark) Color(0xFFF3F1FF) else Color(0xFF1E1450),
-        onHeroMuted = if (dark) Color(0xFFC3BEE8) else def.onHeroMuted,
-        cardBorder = if (dark) Color(0x14FFFFFF) else Color(0x14000000),
+        chartTrack = if (dark) NightOutlineVariant else Color(0xFFE2E8F0),
+        gridEmpty = if (dark) NightSurfaceContainer else Color(0xFFF1F5F9),
+        onHero = Color(0xFFFFFFFF),
+        onHeroMuted = Color(0xFFE2E8F0),
+        cardBorder = if (dark) Color(0x1FFFFFFF) else Color(0x1A0F172A),
         isDark = dark,
     )
 }
 
+/**
+ * Root theme composable supporting Light, Dark, custom brand palettes,
+ * Material You Dynamic Color (on Android 12+), and the unified spacing system.
+ */
 @Composable
 fun TagTheme(
     themeMode: Int = AppSettings.ThemeMode.SYSTEM,
     paletteKey: String = AppSettings.Palettes.VIOLET,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val dark = when (themeMode) {
@@ -176,10 +218,36 @@ fun TagTheme(
         AppSettings.ThemeMode.DARK -> true
         else -> isSystemInDarkTheme()
     }
+    val context = LocalContext.current
     val def = paletteFor(paletteKey)
-    val brand = brandFor(def, dark)
-    val scheme = if (dark) darkScheme(def) else lightScheme(def)
-    CompositionLocalProvider(LocalTagBrand provides brand) {
+
+    val scheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+        dark -> darkScheme(def)
+        else -> lightScheme(def)
+    }
+
+    val dynamicScheme = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) scheme else null
+    val brand = brandFor(def, dark, dynamicScheme)
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val activity = view.context.findActivity() ?: context.findActivity()
+            activity?.window?.let { window ->
+                val controller = WindowCompat.getInsetsController(window, view)
+                controller.isAppearanceLightStatusBars = !dark
+                controller.isAppearanceLightNavigationBars = !dark
+            }
+        }
+    }
+
+    CompositionLocalProvider(
+        LocalTagBrand provides brand,
+        LocalAppSpacing provides AppSpacing(),
+    ) {
         MaterialTheme(
             colorScheme = scheme,
             typography = TagTypography,
@@ -202,3 +270,9 @@ internal fun paletteFor(key: String): PaletteDef.Def =
 /** Convenience accessor for the brand palette. */
 @Composable
 fun tagBrand(): TagBrand = LocalTagBrand.current
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
