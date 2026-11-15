@@ -15,6 +15,7 @@ import com.tag.routine.data.Palette
 import com.tag.routine.data.Priorities
 import com.tag.routine.data.RoutineEntity
 import com.tag.routine.data.RoutineIcons
+import com.tag.routine.data.RoutineTemplate
 import com.tag.routine.data.Snapshot
 import com.tag.routine.data.StatsEngine
 import com.tag.routine.data.TagEntity
@@ -332,6 +333,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
         daysMask: Int,
         reminder: Boolean,
         colorHex: Long,
+        colorId: Int = 0,
     ) = viewModelScope.launch {
         val entity = (existing ?: RoutineEntity(
             id = UUID.randomUUID().toString(),
@@ -342,6 +344,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             daysMask = daysMask,
             reminder = reminder,
             colorHex = colorHex,
+            colorId = colorId,
             sortOrder = repository.newRoutineOrder(),
             archived = false,
             createdAt = System.currentTimeMillis(),
@@ -353,10 +356,41 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             daysMask = daysMask,
             reminder = reminder,
             colorHex = colorHex,
+            colorId = colorId,
         )
         repository.saveRoutine(entity)
         rescheduleReminders()
     }
+
+    fun dismissTemplatesCard() = viewModelScope.launch {
+        repository.setTemplatesCardDismissed(true)
+    }
+
+    fun applyTemplate(template: RoutineTemplate, resources: android.content.res.Resources) =
+        viewModelScope.launch {
+            var order = repository.newRoutineOrder()
+            val now = System.currentTimeMillis()
+            template.items.forEachIndexed { idx, item ->
+                val spec = com.tag.routine.data.RoutineColors.byId(item.colorId)
+                repository.saveRoutine(
+                    RoutineEntity(
+                        id = UUID.randomUUID().toString(),
+                        title = resources.getString(item.titleRes),
+                        groupName = item.groupName,
+                        icon = item.icon,
+                        timeMinutes = item.timeMinutes,
+                        daysMask = Dates.EVERY_DAY,
+                        reminder = false,
+                        colorHex = spec.lightHex,
+                        colorId = item.colorId,
+                        sortOrder = order + idx,
+                        archived = false,
+                        createdAt = now + idx,
+                    ),
+                )
+            }
+            rescheduleReminders()
+        }
 
     fun addTag(name: String): String {
         val id = UUID.randomUUID().toString()
@@ -372,6 +406,8 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     fun setThemeMode(mode: Int) = viewModelScope.launch { repository.setThemeMode(mode) }
 
     fun setTheme(palette: String) = viewModelScope.launch { repository.setTheme(palette) }
+
+    fun setDynamicColor(enabled: Boolean) = viewModelScope.launch { repository.setDynamicColor(enabled) }
 
     fun setLanguage(tag: String) = viewModelScope.launch { repository.setLanguage(tag) }
 
