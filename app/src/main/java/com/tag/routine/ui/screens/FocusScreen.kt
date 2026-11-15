@@ -1,5 +1,6 @@
 package com.tag.routine.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,12 +51,17 @@ import com.tag.routine.data.AppConstants
 import com.tag.routine.data.FocusStats
 import com.tag.routine.data.RoutineEntity
 import com.tag.routine.ui.FocusState
+import com.tag.routine.ui.components.AppButton
+import com.tag.routine.ui.components.AppButtonVariant
+import com.tag.routine.ui.components.AppCard
+import com.tag.routine.ui.components.AppChip
 import com.tag.routine.ui.components.EmptyState
 import com.tag.routine.ui.components.FilterPill
 import com.tag.routine.ui.components.RingWithLabel
 import com.tag.routine.ui.components.RoutineIconMap
 import com.tag.routine.ui.components.SectionHeader
 import com.tag.routine.ui.components.StatTile
+import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
 import java.time.Instant
 import java.time.ZoneId
@@ -133,12 +140,13 @@ fun FocusScreen(
 
         if (stats.recent.isNotEmpty()) {
             item {
-                Surface(
+                AppCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    shape = MaterialTheme.shapes.extraLarge,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(MaterialTheme.spacing.lg)) {
                         SectionHeader(title = stringResource(R.string.focus_history))
                         Spacer(Modifier.height(10.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -188,12 +196,13 @@ private fun DurationCard(
     effectiveMinutes: Int,
     onStart: () -> Unit,
 ) {
-    Surface(
+    AppCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.surfaceContainer,
+        shape = MaterialTheme.shapes.extraLarge,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(MaterialTheme.spacing.lg)) {
             SectionHeader(
                 title = stringResource(R.string.focus_title),
                 subtitle = stringResource(R.string.focus_subtitle),
@@ -222,43 +231,19 @@ private fun DurationCard(
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(routines, key = { it.id }) { routine ->
                     val isSelected = selectedId == routine.id
-                    Surface(
-                        shape = RoundedCornerShape(14.dp),
-                        color = if (isSelected) {
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
-                        } else {
-                            MaterialTheme.colorScheme.surfaceContainerHigh
-                        },
+                    AppChip(
+                        text = routine.title,
+                        selected = isSelected,
                         onClick = { onSelect(if (isSelected) null else routine.id) },
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
+                        leadingIcon = {
                             Icon(
                                 imageVector = RoutineIconMap.icon(routine.icon),
                                 contentDescription = null,
-                                tint = if (isSelected) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    Color(routine.colorHex)
-                                },
+                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else Color(routine.colorHex),
                                 modifier = Modifier.size(18.dp),
                             )
-                            Text(
-                                text = routine.title,
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface
-                                },
-                                maxLines = 1,
-                            )
-                        }
-                    }
+                        },
+                    )
                 }
             }
 
@@ -272,7 +257,7 @@ private fun DurationCard(
 
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(AppConstants.FOCUS_PRESETS) { option ->
-                    FilterPill(
+                    AppChip(
                         text = stringResource(R.string.focus_minutes, option),
                         selected = minutesText == option.toString(),
                         onClick = { onMinutesText(option.toString()) },
@@ -304,27 +289,28 @@ private fun DurationCard(
                     imeAction = ImeAction.Done,
                 ),
                 keyboardActions = KeyboardActions(onDone = { if (validMinutes) onStart() }),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                ),
                 modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(Modifier.height(14.dp))
 
-            Button(
+            AppButton(
+                text = stringResource(R.string.focus_start_session),
                 onClick = onStart,
                 enabled = selectedId != null && validMinutes,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(14.dp),
-            ) {
-                Icon(Icons.Rounded.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.size(8.dp))
-                Text(
-                    text = stringResource(R.string.focus_start_session),
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
+                leadingIcon = {
+                    Icon(Icons.Rounded.PlayArrow, contentDescription = null, modifier = Modifier.size(20.dp))
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+            )
         }
     }
 }
@@ -338,10 +324,11 @@ private fun RunningSession(
     onFinish: () -> Unit,
 ) {
     val brand = tagBrand()
-    Surface(
+    AppCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surfaceContainer,
+        shape = MaterialTheme.shapes.extraLarge,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
     ) {
         Column(
             modifier = Modifier
@@ -383,19 +370,20 @@ private fun RunningSession(
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = onFinish, shape = RoundedCornerShape(12.dp)) {
-                    Text(stringResource(R.string.focus_give_up))
-                }
-                Button(
+                AppButton(
+                    text = stringResource(R.string.focus_give_up),
+                    onClick = onFinish,
+                    variant = AppButtonVariant.Secondary,
+                    shape = RoundedCornerShape(14.dp),
+                )
+                AppButton(
+                    text = stringResource(
+                        if (focus.running) R.string.focus_pause else R.string.focus_resume,
+                    ),
                     onClick = { if (focus.running) onPause() else onResume() },
-                    shape = RoundedCornerShape(12.dp),
-                ) {
-                    Text(
-                        stringResource(
-                            if (focus.running) R.string.focus_pause else R.string.focus_resume,
-                        ),
-                    )
-                }
+                    variant = AppButtonVariant.Primary,
+                    shape = RoundedCornerShape(14.dp),
+                )
             }
 
             Box(
