@@ -107,6 +107,7 @@ object Palette {
 data class AppSettings(
     val themeMode: Int = ThemeMode.SYSTEM,
     val themePalette: String = Palettes.VIOLET,
+    val dynamicColor: Boolean = false,
     val language: String = "",
     val userName: String = "",
     val notificationsEnabled: Boolean = true,
@@ -117,6 +118,10 @@ data class AppSettings(
     val onboarded: Boolean = false,
     /** Last focus length the user chose, in minutes. Drives the Focus section default. */
     val focusMinutes: Int = AppConstants.DEFAULT_FOCUS_MINUTES,
+    /** ISO date ("yyyy-MM-dd") of the first day the app was launched with templates support. */
+    val firstLaunchDate: String = "",
+    /** True once the user explicitly dismissed the first-day templates card on Today. */
+    val templatesCardDismissed: Boolean = false,
 ) {
     object ThemeMode {
         const val SYSTEM = 0
@@ -259,13 +264,15 @@ object Dates {
     private fun formatter(pattern: String, locale: Locale = Locale.getDefault()): DateTimeFormatter =
         DateTimeFormatter.ofPattern(pattern, locale)
 
-    fun dayMonth(date: LocalDate): String = date.format(formatter("EEE, d MMM"))
+    fun dayMonth(date: LocalDate, locale: Locale = Locale.getDefault()): String =
+        date.format(formatter("EEE, d MMM", locale))
 
-    fun full(date: LocalDate): String = date.format(formatter("EEEE, d MMMM"))
+    fun full(date: LocalDate, locale: Locale = Locale.getDefault()): String =
+        date.format(formatter("EEEE, d MMMM", locale))
 
     /** Single-letter weekday used by the compact week strip. */
-    fun shortDayName(date: LocalDate): String =
-        date.format(formatter("EEEEE")).uppercase(Locale.getDefault())
+    fun shortDayName(date: LocalDate, locale: Locale = Locale.getDefault()): String =
+        date.format(formatter("EEEEE", locale)).uppercase(locale)
 
     /**
      * Monday-first single-letter weekday labels for the routine editor's day picker.
@@ -275,21 +282,52 @@ object Dates {
      * Persian user sees the Persian initials. Monday comes first because the stored
      * `daysMask` uses bit 0 for Monday (see [weekdayBit]).
      */
-    fun weekdayInitials(): List<String> {
+    fun weekdayInitials(locale: Locale = Locale.getDefault()): List<String> {
         val monday = LocalDate.of(2024, 1, 1) // a Monday, used only as a label source
-        return (0..6).map { offset -> shortDayName(monday.plusDays(offset.toLong())) }
+        return (0..6).map { offset -> shortDayName(monday.plusDays(offset.toLong()), locale) }
     }
 
-    fun shortDate(date: LocalDate): String = date.format(formatter("d MMM"))
+    fun shortDate(date: LocalDate, locale: Locale = Locale.getDefault()): String =
+        date.format(formatter("d MMM", locale))
 
-    fun formatMinutes(minutes: Int): String {
+    /**
+     * Normalises all digits and percent signs in [text]: Persian digits (`۰..۹`) and
+     * Persian percent sign (`٪`, U+066A) when [locale] is Persian, or Latin ASCII
+     * digits (`0..9`) and `%` for every other language.
+     */
+    fun formatDigits(text: String, locale: Locale = Locale.getDefault()): String {
+        val usePersian = locale.language.equals("fa", ignoreCase = true)
+        return buildString(text.length) {
+            for (ch in text) {
+                when {
+                    usePersian && ch in '0'..'9' -> append(('۰'.code + (ch - '0')).toChar())
+                    usePersian && ch in '\u0660'..'\u0669' -> append(('۰'.code + (ch - '\u0660')).toChar())
+                    usePersian && ch == '%' -> append('\u066A')
+                    !usePersian && ch in '۰'..'۹' -> append(('0'.code + (ch - '۰')).toChar())
+                    !usePersian && ch in '\u0660'..'\u0669' -> append(('0'.code + (ch - '\u0660')).toChar())
+                    !usePersian && ch == '\u066A' -> append('%')
+                    else -> append(ch)
+                }
+            }
+        }
+    }
+
+    /** Locale-appropriate percent symbol (`٪` for Persian, `%` otherwise). */
+    fun percentSymbol(locale: Locale = Locale.getDefault()): String =
+        if (locale.language.equals("fa", ignoreCase = true)) "\u066A" else "%"
+
+    /** Formats an integer percentage using [formatDigits] for the active [locale]. */
+    fun formatPercent(value: Int, locale: Locale = Locale.getDefault()): String =
+        formatDigits("$value%", locale)
+
+    fun formatMinutes(minutes: Int, locale: Locale = Locale.ROOT): String {
         val h = (minutes / 60) % 24
         val m = minutes % 60
-        return "%02d:%02d".format(h, m)
+        return formatDigits("%02d:%02d".format(Locale.ROOT, h, m), locale)
     }
 
     /** Alias kept for call sites that describe a clock label rather than an offset. */
-    fun timeLabel(minutes: Int): String = formatMinutes(minutes)
+    fun timeLabel(minutes: Int, locale: Locale = Locale.ROOT): String = formatMinutes(minutes, locale)
 
     /**
      * Relative label for [date] compared with [today].
@@ -303,6 +341,7 @@ object Dates {
         resources: Resources? = null,
     ): String {
         val days = ChronoUnit.DAYS.between(today, date)
+        val resLocale = resources?.configuration?.locales?.get(0) ?: Locale.getDefault()
         return when {
             days == 0L -> str(resources, R.string.day_today, "Today")
             days == 1L -> str(resources, R.string.day_tomorrow, "Tomorrow")
@@ -310,11 +349,12 @@ object Dates {
             days in 2..6 -> str(resources, R.string.day_in_days, "In $days days", days.toInt())
             days in -6..-2 ->
                 str(resources, R.string.day_days_ago, "${-days} days ago", (-days).toInt())
-            else -> dayMonth(date)
+            else -> dayMonth(date, resLocale)
         }
     }
 
-    fun dayOfWeekLabel(date: LocalDate): String = date.format(formatter("EEE"))
+    fun dayOfWeekLabel(date: LocalDate, locale: Locale = Locale.getDefault()): String =
+        date.format(formatter("EEE", locale))
 
     fun greeting(
         hour: Int = java.time.LocalTime.now().hour,
