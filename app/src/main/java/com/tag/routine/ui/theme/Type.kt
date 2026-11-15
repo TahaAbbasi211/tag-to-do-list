@@ -31,53 +31,70 @@ private val lineHeightStyle = LineHeightStyle(
     trim = LineHeightStyle.Trim.None,
 )
 
+/**
+ * Modern typography system with clear typographic hierarchy:
+ * - Display: Large numeric counters, hero metrics, celebratory callouts
+ * - Headline & Title: Section headers, card titles, dialog headings
+ * - Body: Primary and secondary narrative and explanatory content
+ * - Label: Actionable chips, tags, navigation indicators, and metadata pills
+ *
+ * Font fallback to Android system fonts preserves clean Persian/Arabic and RTL rendering.
+ */
 val TagTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = InterDisplay,
         fontWeight = FontWeight.Bold,
-        fontSize = 44.sp,
-        lineHeight = 48.sp,
-        letterSpacing = (-1.2).sp,
+        fontSize = 40.sp,
+        lineHeight = 46.sp,
+        letterSpacing = (-1.0).sp,
         lineHeightStyle = lineHeightStyle,
     ),
     displayMedium = TextStyle(
         fontFamily = InterDisplay,
         fontWeight = FontWeight.Bold,
-        fontSize = 34.sp,
+        fontSize = 32.sp,
         lineHeight = 38.sp,
-        letterSpacing = (-0.8).sp,
+        letterSpacing = (-0.6).sp,
         lineHeightStyle = lineHeightStyle,
     ),
     displaySmall = TextStyle(
         fontFamily = InterDisplay,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 28.sp,
+        fontSize = 26.sp,
         lineHeight = 32.sp,
-        letterSpacing = (-0.5).sp,
+        letterSpacing = (-0.4).sp,
+        lineHeightStyle = lineHeightStyle,
+    ),
+    headlineLarge = TextStyle(
+        fontFamily = InterDisplay,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 24.sp,
+        lineHeight = 30.sp,
+        letterSpacing = (-0.3).sp,
         lineHeightStyle = lineHeightStyle,
     ),
     headlineMedium = TextStyle(
         fontFamily = InterDisplay,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 24.sp,
-        lineHeight = 30.sp,
-        letterSpacing = (-0.4).sp,
+        fontSize = 22.sp,
+        lineHeight = 28.sp,
+        letterSpacing = (-0.2).sp,
         lineHeightStyle = lineHeightStyle,
     ),
     headlineSmall = TextStyle(
         fontFamily = Inter,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 20.sp,
-        lineHeight = 26.sp,
-        letterSpacing = (-0.2).sp,
+        fontSize = 19.sp,
+        lineHeight = 25.sp,
+        letterSpacing = (-0.1).sp,
         lineHeightStyle = lineHeightStyle,
     ),
     titleLarge = TextStyle(
         fontFamily = Inter,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 17.sp,
+        fontSize = 17.5.sp,
         lineHeight = 24.sp,
-        letterSpacing = (-0.1).sp,
+        letterSpacing = 0.sp,
         lineHeightStyle = lineHeightStyle,
     ),
     titleMedium = TextStyle(
@@ -91,7 +108,7 @@ val TagTypography = Typography(
     titleSmall = TextStyle(
         fontFamily = Inter,
         fontWeight = FontWeight.Medium,
-        fontSize = 13.sp,
+        fontSize = 13.5.sp,
         lineHeight = 18.sp,
         letterSpacing = 0.1.sp,
         lineHeightStyle = lineHeightStyle,
@@ -101,7 +118,7 @@ val TagTypography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 15.sp,
         lineHeight = 22.sp,
-        letterSpacing = 0.1.sp,
+        letterSpacing = 0.15.sp,
         lineHeightStyle = lineHeightStyle,
     ),
     bodyMedium = TextStyle(
@@ -109,7 +126,7 @@ val TagTypography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 13.5.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.1.sp,
+        letterSpacing = 0.15.sp,
         lineHeightStyle = lineHeightStyle,
     ),
     bodySmall = TextStyle(
@@ -117,7 +134,7 @@ val TagTypography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 17.sp,
-        letterSpacing = 0.15.sp,
+        letterSpacing = 0.2.sp,
         lineHeightStyle = lineHeightStyle,
     ),
     labelLarge = TextStyle(
@@ -133,7 +150,7 @@ val TagTypography = Typography(
         fontWeight = FontWeight.SemiBold,
         fontSize = 11.5.sp,
         lineHeight = 15.sp,
-        letterSpacing = 0.4.sp,
+        letterSpacing = 0.3.sp,
         lineHeightStyle = lineHeightStyle,
     ),
     labelSmall = TextStyle(
@@ -141,15 +158,18 @@ val TagTypography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 10.5.sp,
         lineHeight = 14.sp,
-        letterSpacing = 0.5.sp,
+        letterSpacing = 0.4.sp,
         lineHeightStyle = lineHeightStyle,
     ),
 )
 
+/**
+ * Modern shapes with larger, smoother rounded corners for an elevated and soft tactile aesthetic.
+ */
 val TagShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(18.dp),
-    large = RoundedCornerShape(24.dp),
-    extraLarge = RoundedCornerShape(30.dp),
+    extraSmall = RoundedCornerShape(10.dp),
+    small = RoundedCornerShape(14.dp),
+    medium = RoundedCornerShape(20.dp),
+    large = RoundedCornerShape(28.dp),
+    extraLarge = RoundedCornerShape(36.dp),
 )
