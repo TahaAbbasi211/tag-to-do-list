@@ -1,5 +1,6 @@
 package com.tag.routine.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -112,6 +113,11 @@ private fun LanguageOptionRow(
         } else {
             MaterialTheme.colorScheme.surfaceContainer
         },
+        border = BorderStroke(
+            1.dp,
+            if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+            else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        ),
         onClick = onClick,
     ) {
         Row(
