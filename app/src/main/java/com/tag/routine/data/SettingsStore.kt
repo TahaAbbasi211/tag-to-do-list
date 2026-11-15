@@ -18,6 +18,7 @@ class SettingsStore(private val context: Context) {
     private object Keys {
         val themeMode = intPreferencesKey("theme_mode")
         val themePalette = stringPreferencesKey("theme_palette")
+        val dynamicColor = booleanPreferencesKey("dynamic_color")
         val language = stringPreferencesKey("language")
         val userName = stringPreferencesKey("user_name")
         val notifications = booleanPreferencesKey("notifications")
@@ -28,6 +29,8 @@ class SettingsStore(private val context: Context) {
         val onboarded = booleanPreferencesKey("onboarded")
         val focusMinutes = intPreferencesKey("focus_minutes")
         val activeFocusRun = stringPreferencesKey("active_focus_run")
+        val firstLaunchDate = stringPreferencesKey("first_launch_date")
+        val templatesCardDismissed = booleanPreferencesKey("templates_card_dismissed")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -35,6 +38,7 @@ class SettingsStore(private val context: Context) {
         AppSettings(
             themeMode = prefs[Keys.themeMode] ?: AppSettings.ThemeMode.SYSTEM,
             themePalette = prefs[Keys.themePalette] ?: AppSettings.Palettes.VIOLET,
+            dynamicColor = prefs[Keys.dynamicColor] ?: false,
             language = prefs[Keys.language] ?: "",
             userName = storedName,
             notificationsEnabled = prefs[Keys.notifications] ?: true,
@@ -48,6 +52,8 @@ class SettingsStore(private val context: Context) {
             focusMinutes = AppConstants.clampFocusMinutes(
                 prefs[Keys.focusMinutes] ?: AppConstants.DEFAULT_FOCUS_MINUTES,
             ),
+            firstLaunchDate = prefs[Keys.firstLaunchDate] ?: "",
+            templatesCardDismissed = prefs[Keys.templatesCardDismissed] ?: false,
         )
     }
 
@@ -79,6 +85,9 @@ class SettingsStore(private val context: Context) {
     suspend fun setThemePalette(palette: String) =
         context.settingsStore.edit { it[Keys.themePalette] = palette }
 
+    suspend fun setDynamicColor(enabled: Boolean) =
+        context.settingsStore.edit { it[Keys.dynamicColor] = enabled }
+
     suspend fun setLanguage(tag: String) =
         context.settingsStore.edit { it[Keys.language] = tag }
 
@@ -100,5 +109,16 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setFocusMinutes(minutes: Int) = context.settingsStore.edit {
         it[Keys.focusMinutes] = AppConstants.clampFocusMinutes(minutes)
+    }
+
+    /** Records [todayIso] as the first launch date if none has been stored yet. */
+    suspend fun ensureFirstLaunchDate(todayIso: String) = context.settingsStore.edit { prefs ->
+        if (prefs[Keys.firstLaunchDate].isNullOrBlank()) {
+            prefs[Keys.firstLaunchDate] = todayIso
+        }
+    }
+
+    suspend fun setTemplatesCardDismissed(dismissed: Boolean) = context.settingsStore.edit {
+        it[Keys.templatesCardDismissed] = dismissed
     }
 }
