@@ -3,6 +3,7 @@ package com.tag.routine
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
+import com.tag.routine.data.Dates
 import com.tag.routine.data.SettingsStore
 import com.tag.routine.data.TagDatabase
 import com.tag.routine.data.TagRepository
@@ -20,7 +21,7 @@ class AppContainer(context: Context) {
     val database: TagDatabase = Room.databaseBuilder(appContext, TagDatabase::class.java, TagDatabase.NAME)
         // Real migrations instead of a destructive fallback: an upgrade must never drop
         // the user's routines, tasks or history.
-        .addMigrations(TagDatabase.MIGRATION_1_2)
+        .addMigrations(TagDatabase.MIGRATION_1_2, TagDatabase.MIGRATION_2_3)
         .build()
 
     val settingsStore = SettingsStore(appContext)
@@ -34,6 +35,7 @@ class AppContainer(context: Context) {
             // Upgrade path: drop the demo routines that 1.0.0 seeded on first launch.
             repository.purgeSeededRoutines()
             repository.seedIfNeeded()
+            repository.ensureFirstLaunchDate(Dates.iso(Dates.today()))
             // A focus run that reached its planned length while the app (and possibly its
             // service) was gone still deserves to be recorded. The write is keyed by the
             // run's own id, so this can never double-count a session the service already
