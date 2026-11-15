@@ -60,6 +60,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -69,19 +70,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tag.routine.R
 import com.tag.routine.ui.theme.tagBrand
+import kotlin.math.abs
 
 /**
  * Wraps [content] so the user can swipe it away to delete. Works in both directions and
  * reveals a red delete affordance behind the row. The caller is responsible for showing
  * an undo action, so a stray swipe never destroys data irrecoverably.
  *
- * The red panel is only painted while a swipe is actually in progress. `SwipeToDismissBox`
- * stacks `backgroundContent` *behind* `content` and sizes it with `matchParentSize`, so a
- * permanently-drawn red panel shows through any row whose own background is translucent —
- * which is exactly the "three red trash cans" artefact: a completed row paints
- * `primary.copy(alpha = 0.08f)`, so the delete panel behind it stayed visible and its
- * centred trash icon appeared once per stacked row. Fading the panel out at rest keeps
- * the swipe affordance without ever leaking colour into a settled row.
+ * The delete panel is strictly hidden while settled (`dismissDirection == Settled` or zero
+ * offset), avoiding Material3's `progress == 1f` at rest, and aligns the trash icon on the
+ * exposed side in both LTR and RTL.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,10 +102,16 @@ fun SwipeToDelete(
         },
     )
 
-    // `progress` is 0 at rest and 1 once fully swiped, in either direction. It can
-    // overshoot past 1 mid-fling, so clamp it: an alpha above 1 wraps the ARGB byte
-    // and would flip the panel back to semi-transparent.
-    val reveal = state.progress.coerceIn(0f, 1f)
+    val density = LocalDensity.current
+    val revealThresholdPx = remember(density) { with(density) { 84.dp.toPx() } }
+    val direction = state.dismissDirection
+    val offset = try {
+        state.requireOffset()
+    } catch (_: IllegalStateException) {
+        0f
+    }
+    val isSwiping = direction != SwipeToDismissBoxValue.Settled && abs(offset) > 0.5f
+    val reveal = if (isSwiping) (abs(offset) / revealThresholdPx).coerceIn(0.15f, 1f) else 0f
     val deleteColor = MaterialTheme.colorScheme.errorContainer
 
     SwipeToDismissBox(
@@ -116,14 +120,19 @@ fun SwipeToDelete(
         enableDismissFromStartToEnd = true,
         enableDismissFromEndToStart = true,
         backgroundContent = {
-            if (reveal > 0.001f) {
+            if (isSwiping) {
+                val iconAlignment = when (direction) {
+                    SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+                    SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
+                    SwipeToDismissBoxValue.Settled -> Alignment.CenterEnd
+                }
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxSize()
                         .clip(RoundedCornerShape(16.dp))
                         .background(deleteColor.copy(alpha = reveal))
                         .padding(horizontal = 20.dp),
-                    contentAlignment = Alignment.CenterEnd,
+                    contentAlignment = iconAlignment,
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Delete,
