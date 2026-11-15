@@ -49,6 +49,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -81,6 +82,7 @@ import com.tag.routine.ui.components.ConfettiEffect
 import com.tag.routine.ui.components.RingWithLabel
 import com.tag.routine.ui.components.SectionHeader
 import com.tag.routine.ui.components.SwipeToDelete
+import com.tag.routine.ui.components.TimelineRoutineItem
 import com.tag.routine.ui.components.TodayEmptyState
 import com.tag.routine.ui.components.WeekStrip
 import com.tag.routine.ui.i18n.ProvideAppLocale
@@ -416,25 +418,165 @@ private fun RoutineGroupSectionBlock(
             },
         )
         Spacer(Modifier.height(MaterialTheme.spacing.sm))
-        Column(verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             section.items.forEachIndexed { index, item ->
-                SwipeToDelete(onDelete = { onDeleteRoutine(item.routine) }) {
-                    RoutineRow(
-                        item = item,
-                        appLocale = appLocale,
-                        canMoveUp = index > 0,
-                        canMoveDown = index < section.items.lastIndex,
-                        onToggleRoutine = onToggleRoutine,
-                        onEditRoutine = onEditRoutine,
-                        onDeleteRoutine = onDeleteRoutine,
-                        onMoveRoutine = onMoveRoutine,
-                    )
+                key(item.routine.id) {
+                    SwipeToDelete(onDelete = { onDeleteRoutine(item.routine) }) {
+                        TimelineRoutineRow(
+                            item = item,
+                            appLocale = appLocale,
+                            isFirst = index == 0,
+                            isLast = index == section.items.lastIndex,
+                            canMoveUp = index > 0,
+                            canMoveDown = index < section.items.lastIndex,
+                            onToggleRoutine = onToggleRoutine,
+                            onEditRoutine = onEditRoutine,
+                            onDeleteRoutine = onDeleteRoutine,
+                            onMoveRoutine = onMoveRoutine,
+                        )
+                    }
                 }
             }
         }
     }
 }
 
+@Composable
+private fun TimelineRoutineRow(
+    item: TodayRoutine,
+    appLocale: Locale,
+    isFirst: Boolean,
+    isLast: Boolean,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
+    onToggleRoutine: (String, Boolean) -> Unit,
+    onEditRoutine: (RoutineEntity) -> Unit,
+    onDeleteRoutine: (RoutineEntity) -> Unit,
+    onMoveRoutine: (String, Boolean) -> Unit,
+) {
+    val routine = item.routine
+    val done = item.done
+    val emoji = remember(routine.icon) { RoutineEmojis.resolve(routine.icon) }
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val accentColor = Color(RoutineColors.hexFor(routine.colorId, isDark))
+    val timeLabel = routine.timeMinutes?.let { Dates.formatDigits(Dates.timeLabel(it, appLocale), appLocale) }
+    var menuOpen by remember { mutableStateOf(false) }
+    val view = LocalView.current
+
+    fun performHaptic() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+            } else {
+                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+            }
+        } catch (_: Exception) {}
+    }
+
+    TimelineRoutineItem(
+        title = routine.title,
+        emoji = emoji,
+        accentColor = accentColor,
+        done = done,
+        timeLabel = timeLabel,
+        isFirst = isFirst,
+        isLast = isLast,
+        onToggle = {
+            performHaptic()
+            onToggleRoutine(routine.id, !done)
+        },
+        onClick = {
+            performHaptic()
+            onToggleRoutine(routine.id, !done)
+        },
+        onLongClick = { menuOpen = true },
+        trailingContent = {
+            Box {
+                IconButton(
+                    onClick = { menuOpen = true },
+                    modifier = Modifier.size(32.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.MoreVert,
+                        contentDescription = stringResource(R.string.cd_more),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+                // The menu is a popup window that swaps LocalContext for the Activity's
+                // system-locale context; capture the app-language context here and
+                // re-provide it inside so the items follow the chosen language.
+                val localizedContext = LocalContext.current
+                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                    ProvideAppLocale(localizedContext) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_move_up)) },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Rounded.ArrowUpward,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            },
+                            enabled = canMoveUp,
+                            onClick = {
+                                menuOpen = false
+                                onMoveRoutine(routine.id, true)
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_move_down)) },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Rounded.ArrowDownward,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            },
+                            enabled = canMoveDown,
+                            onClick = {
+                                menuOpen = false
+                                onMoveRoutine(routine.id, false)
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_edit)) },
+                            leadingIcon = {
+                                Icon(Icons.Rounded.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+                            },
+                            onClick = {
+                                menuOpen = false
+                                onEditRoutine(routine)
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = stringResource(R.string.action_delete),
+                                    color = MaterialTheme.colorScheme.error,
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.Delete,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            },
+                            onClick = {
+                                menuOpen = false
+                                onDeleteRoutine(routine)
+                            },
+                        )
+                    }
+                }
+            }
+        },
+    )
+}
+
+@Suppress("unused")
 @Composable
 private fun RoutineRow(
     item: TodayRoutine,
