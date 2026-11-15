@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -14,23 +16,37 @@ android {
         applicationId = "com.tag.routine"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
-        versionName = "1.0.7"
+        versionCode = 9
+        versionName = "1.0.9"
 
         vectorDrawables { useSupportLibrary = true }
         resourceConfigurations += listOf("en", "fa", "fr", "de", "tr")
     }
 
     signingConfigs {
-        // The release keystore is intentionally not checked into version control, so
-        // CI and other machines fall back to an unsigned build instead of failing.
-        val releaseKeystore = file("../keystore/tag-release.jks")
-        if (releaseKeystore.exists()) {
+        // Signing credentials live outside version control in root keystore.properties
+        // (or environment variables on CI). No credentials are hardcoded here.
+        val keystorePropsFile = rootProject.file("keystore.properties")
+        val keystoreProps = Properties().apply {
+            if (keystorePropsFile.exists()) {
+                keystorePropsFile.inputStream().use { load(it) }
+            }
+        }
+        val storePath = keystoreProps.getProperty("storeFile") ?: "keystore/tag-release.jks"
+        val releaseKeystore = rootProject.file(storePath)
+        val ksStorePassword = keystoreProps.getProperty("storePassword") ?: System.getenv("TAG_STORE_PASSWORD")
+        val ksKeyAlias = keystoreProps.getProperty("keyAlias") ?: System.getenv("TAG_KEY_ALIAS")
+        val ksKeyPassword = keystoreProps.getProperty("keyPassword") ?: System.getenv("TAG_KEY_PASSWORD")
+        if (releaseKeystore.exists() &&
+            !ksStorePassword.isNullOrBlank() &&
+            !ksKeyAlias.isNullOrBlank() &&
+            !ksKeyPassword.isNullOrBlank()
+        ) {
             create("release") {
                 storeFile = releaseKeystore
-                storePassword = System.getenv("TAG_STORE_PASSWORD") ?: "tagroutine"
-                keyAlias = System.getenv("TAG_KEY_ALIAS") ?: "tag"
-                keyPassword = System.getenv("TAG_KEY_PASSWORD") ?: "tagroutine"
+                storePassword = ksStorePassword
+                keyAlias = ksKeyAlias
+                keyPassword = ksKeyPassword
             }
         }
     }
