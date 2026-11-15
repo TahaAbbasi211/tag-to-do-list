@@ -16,8 +16,8 @@ android {
         applicationId = "com.tag.routine"
         minSdk = 26
         targetSdk = 35
-        versionCode = 9
-        versionName = "1.0.9"
+        versionCode = 10
+        versionName = "1.1"
 
         vectorDrawables { useSupportLibrary = true }
         resourceConfigurations += listOf("en", "fa", "fr", "de", "tr")
