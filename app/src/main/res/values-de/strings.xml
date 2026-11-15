@@ -28,8 +28,8 @@
     <!-- Heute-Bildschirm -->
     <string name="today_perfect_day">Perfekter Tag</string>
     <string name="today_complete_count">%1$d von %2$d erledigt</string>
-    <string name="today_empty_title">Noch keine Routinen</string>
-    <string name="today_empty_message">Tippe auf +, um deine erste tägliche Routine anzulegen</string>
+    <string name="today_empty_title">Bereit für einen produktiven Tag?</string>
+    <string name="today_empty_message">Füge deine Routinen mit der Schaltfläche unten hinzu und bleib dran!</string>
     <string name="today_add_routine">Routine hinzufügen</string>
     <string name="today_search_hint">Routinen suchen…</string>
     <string name="today_streak_days">%1$d Tage Serie</string>
@@ -131,6 +131,8 @@
     <string name="settings_appearance">Darstellung</string>
     <string name="settings_theme_mode">Design</string>
     <string name="settings_theme_colour">Farbschema</string>
+    <string name="settings_dynamic_color">Dynamische Farben</string>
+    <string name="settings_dynamic_color_sub">Farben an das Hintergrundbild des Geräts anpassen</string>
     <string name="settings_languages">Sprachen</string>
     <string name="settings_language_system">Systemstandard</string>
     <string name="settings_profile">Dein Profil</string>
@@ -257,5 +259,37 @@
     <string name="tasks_no_matches">Keine Treffer</string>
     <string name="tasks_try_different_search">Versuche eine andere Suche</string>
     <string name="insights_percent_completion">%1$d%% abgeschlossen</string>
+
+    <!-- Routinen-Vorlagen -->
+    <string name="templates_card_title">Schnellstart mit Vorlagen</string>
+    <string name="templates_card_subtitle">Wähle ein fertiges Set für Morgen, Lernen, Sport oder Schlaf</string>
+    <string name="templates_card_dismiss">Schließen</string>
+    <string name="routine_editor_from_template">Aus Vorlage hinzufügen</string>
+    <string name="templates_sheet_title">Vorlage auswählen</string>
+    <string name="templates_sheet_subtitle">Routinen werden hinzugefügt und lassen sich jederzeit bearbeiten.</string>
+    <string name="templates_routine_count">%1$d Routinen</string>
+    <string name="templates_add_pack">Hinzufügen</string>
+    <string name="template_morning_name">Morgen</string>
+    <string name="template_morning_sub">Voller Energie in den Tag</string>
+    <string name="template_morning_water">Ein Glas Wasser trinken</string>
+    <string name="template_morning_stretch">Morgendliches Dehnen</string>
+    <string name="template_morning_breakfast">Gesundes Frühstück</string>
+    <string name="template_morning_plan">Tag planen</string>
+    <string name="template_study_name">Lernen</string>
+    <string name="template_study_sub">Fokussierte Lerneinheit</string>
+    <string name="template_study_focus">Intensive Lerneinheit</string>
+    <string name="template_study_notes">Notizen durchgehen</string>
+    <string name="template_study_review">Übung &amp; Karteikarten</string>
+    <string name="template_workout_name">Training</string>
+    <string name="template_workout_sub">Aktiv und stark bleiben</string>
+    <string name="template_workout_warmup">Aufwärmen</string>
+    <string name="template_workout_main">Kraft oder Ausdauer</string>
+    <string name="template_workout_cooldown">Abkühlen &amp; trinken</string>
+    <string name="template_sleep_name">Schlaf</string>
+    <string name="template_sleep_sub">Entspannt in die Nacht</string>
+    <string name="template_sleep_winddown">Bildschirmfreie Auszeit</string>
+    <string name="template_sleep_journal">Abendjournal oder Lesen</string>
+    <string name="template_sleep_lightsout">Licht aus</string>
+    <string name="group_complete_badge">Erledigt</string>
 </resources>
 
