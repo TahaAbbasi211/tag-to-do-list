@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +19,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -36,25 +40,31 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.tag.routine.R
 import com.tag.routine.data.AppConstants
 import com.tag.routine.data.Dates
 import com.tag.routine.data.Groups
+import com.tag.routine.data.RoutineColors
+import com.tag.routine.data.RoutineEmojis
 import com.tag.routine.data.RoutineEntity
+import com.tag.routine.ui.components.AppButton
+import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.FilterPill
-import com.tag.routine.ui.components.RoutineIconMap
 import com.tag.routine.ui.i18n.ProvideAppLocale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun RoutineEditorSheet(
     existing: RoutineEntity?,
     localizedContext: android.content.Context,
     onDismiss: () -> Unit,
+    onOpenTemplates: (() -> Unit)? = null,
     onSave: (
         title: String,
         group: String,
@@ -63,26 +73,23 @@ fun RoutineEditorSheet(
         daysMask: Int,
         reminder: Boolean,
         colorHex: Long,
+        colorId: Int,
     ) -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     var title by remember { mutableStateOf(existing?.title ?: "") }
     var group by remember { mutableStateOf(existing?.groupName ?: Groups.MORNING) }
-    var icon by remember { mutableStateOf(existing?.icon ?: "sunrise") }
+    var icon by remember { mutableStateOf(RoutineEmojis.resolve(existing?.icon ?: RoutineEmojis.DEFAULT)) }
     var timeMinutes by remember { mutableStateOf(existing?.timeMinutes) }
     var daysMask by remember { mutableStateOf(existing?.daysMask ?: 0b1111111) } // all days
     var reminder by remember { mutableStateOf(existing?.reminder ?: false) }
-    var colorHex by remember { mutableStateOf(existing?.colorHex ?: 0xFF7C6CFF) }
+    var colorId by remember { mutableStateOf(existing?.colorId ?: 0) }
+    var colorHex by remember {
+        mutableStateOf(existing?.colorHex ?: RoutineColors.hexFor(0, isDark))
+    }
 
     val groups = listOf(Groups.MORNING, Groups.AFTERNOON, Groups.EVENING)
-    val colors = listOf(
-        0xFF7C6CFF, // violet
-        0xFF4FD9C0, // mint
-        0xFFFFB65C, // amber
-        0xFFFF6B6B, // coral
-        0xFF4CC9F0, // sky
-        0xFFB39DFF, // lavender
-    )
     var hourText by remember {
         mutableStateOf(existing?.timeMinutes?.let { "%02d".format(it / 60) } ?: "07")
     }
@@ -113,6 +120,26 @@ fun RoutineEditorSheet(
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
             )
+
+            if (existing == null && onOpenTemplates != null) {
+                AppButton(
+                    text = stringResource(R.string.routine_editor_from_template),
+                    onClick = {
+                        onDismiss()
+                        onOpenTemplates()
+                    },
+                    variant = AppButtonVariant.Tonal,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Rounded.AutoAwesome,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                )
+            }
 
             // Title
             OutlinedTextField(
@@ -145,7 +172,7 @@ fun RoutineEditorSheet(
                 }
             }
 
-            // Icon selector
+            // Emoji icon selector
             Column {
                 Text(
                     text = stringResource(R.string.routine_editor_icon),
@@ -153,15 +180,16 @@ fun RoutineEditorSheet(
                     fontWeight = FontWeight.Medium,
                 )
                 Spacer(Modifier.height(8.dp))
-                Row(
+                FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    RoutineIconMap.keys.take(8).forEach { key ->
-                        val isSelected = icon == key
+                    RoutineEmojis.all.forEach { emoji ->
+                        val isSelected = icon == emoji
                         Box(
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(46.dp)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
                                     if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
@@ -172,21 +200,16 @@ fun RoutineEditorSheet(
                                     color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
                                     shape = RoundedCornerShape(12.dp),
                                 )
-                                .clickable { icon = key },
+                                .clickable { icon = emoji },
                             contentAlignment = Alignment.Center,
                         ) {
-                            Icon(
-                                imageVector = RoutineIconMap.icon(key),
-                                contentDescription = key,
-                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(24.dp),
-                            )
+                            Text(text = emoji, fontSize = 22.sp)
                         }
                     }
                 }
             }
 
-            // Color selector
+            // 8-Color selector
             Column {
                 Text(
                     text = stringResource(R.string.routine_editor_color),
@@ -194,22 +217,27 @@ fun RoutineEditorSheet(
                     fontWeight = FontWeight.Medium,
                 )
                 Spacer(Modifier.height(8.dp))
-                Row(
+                FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    colors.forEach { color ->
-                        val isSelected = colorHex == color
+                    RoutineColors.all.forEach { spec ->
+                        val isSelected = colorId == spec.id
+                        val resolvedHex = RoutineColors.hexFor(spec.id, isDark)
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
+                                .size(38.dp)
                                 .clip(CircleShape)
-                                .background(Color(color))
+                                .background(Color(resolvedHex))
                                 .border(
                                     width = if (isSelected) 3.dp else 0.dp,
                                     color = if (isSelected) MaterialTheme.colorScheme.onSurface else Color.Transparent,
                                     shape = CircleShape,
                                 )
-                                .clickable { colorHex = color },
+                                .clickable {
+                                    colorId = spec.id
+                                    colorHex = resolvedHex
+                                },
                         )
                     }
                 }
@@ -353,7 +381,7 @@ fun RoutineEditorSheet(
                 Button(
                     onClick = {
                         if (title.isNotBlank()) {
-                            onSave(title, group, icon, timeMinutes, daysMask, reminder, colorHex)
+                            onSave(title, group, icon, timeMinutes, daysMask, reminder, colorHex, colorId)
                             onDismiss()
                         }
                     },
