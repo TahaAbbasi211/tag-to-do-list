@@ -28,8 +28,8 @@
     <!-- BugÃ¼n ekranÄ± -->
     <string name="today_perfect_day">Kusursuz gün</string>
     <string name="today_complete_count">%2$d görevin %1$d tanesi tamam</string>
-    <string name="today_empty_title">Henüz rutin yok</string>
-    <string name="today_empty_message">İlk günlük rutinini eklemek için + simgesine dokun</string>
+    <string name="today_empty_title">Harika bir güne hazır mısın?</string>
+    <string name="today_empty_message">Aşağıdaki butonla rutinlerini ekle ve hedeflerine doğru ilerle!</string>
     <string name="today_add_routine">Rutin ekle</string>
     <string name="today_search_hint">Rutinlerde ara…</string>
     <string name="today_streak_days">%1$d günlük seri</string>
@@ -131,6 +131,8 @@
     <string name="settings_appearance">Görünüm</string>
     <string name="settings_theme_mode">Tema</string>
     <string name="settings_theme_colour">Tema rengi</string>
+    <string name="settings_dynamic_color">Dinamik renk</string>
+    <string name="settings_dynamic_color_sub">Renkleri cihaz duvar kağıdına göre uyarla</string>
     <string name="settings_languages">Diller</string>
     <string name="settings_language_system">Sistem varsayılanı</string>
     <string name="settings_profile">Profilin</string>
@@ -257,5 +259,37 @@
     <string name="tasks_no_matches">Sonuç yok</string>
     <string name="tasks_try_different_search">Farkli bir arama dene</string>
     <string name="insights_percent_completion">%%%1$d tamamlandi</string>
+
+    <!-- Rutin şablonları -->
+    <string name="templates_card_title">Şablonlarla hızlı başla</string>
+    <string name="templates_card_subtitle">Sabah, çalışma, spor veya uyku için hazır rutin paketi seç</string>
+    <string name="templates_card_dismiss">Kapat</string>
+    <string name="routine_editor_from_template">Şablondan ekle</string>
+    <string name="templates_sheet_title">Bir şablon seç</string>
+    <string name="templates_sheet_subtitle">Rutinler programına eklenir ve istediğin zaman düzenlenebilir.</string>
+    <string name="templates_routine_count">%1$d rutin</string>
+    <string name="templates_add_pack">Ekle</string>
+    <string name="template_morning_name">Sabah</string>
+    <string name="template_morning_sub">Güne enerjik başla</string>
+    <string name="template_morning_water">Bir bardak su iç</string>
+    <string name="template_morning_stretch">Sabah esnemesi</string>
+    <string name="template_morning_breakfast">Sağlıklı kahvaltı</string>
+    <string name="template_morning_plan">Günü planla</string>
+    <string name="template_study_name">Çalışma</string>
+    <string name="template_study_sub">Odaklı öğrenme bloğu</string>
+    <string name="template_study_focus">Derin çalışma oturumu</string>
+    <string name="template_study_notes">Notları gözden geçir</string>
+    <string name="template_study_review">Pratik ve bilgi kartları</string>
+    <string name="template_workout_name">Spor</string>
+    <string name="template_workout_sub">Aktif ve güçlü kal</string>
+    <string name="template_workout_warmup">Isınma</string>
+    <string name="template_workout_main">Güç veya kardiyo</string>
+    <string name="template_workout_cooldown">Soğuma ve su içme</string>
+    <string name="template_sleep_name">Uyku</string>
+    <string name="template_sleep_sub">Rahat bir uyku için gevşe</string>
+    <string name="template_sleep_winddown">Ekransız dinlenme</string>
+    <string name="template_sleep_journal">Akşam günlüğü veya okuma</string>
+    <string name="template_sleep_lightsout">Işıkları kapat</string>
+    <string name="group_complete_badge">Tamamlandı</string>
 </resources>
 
