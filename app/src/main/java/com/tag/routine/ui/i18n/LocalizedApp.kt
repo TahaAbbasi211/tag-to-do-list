@@ -34,6 +34,10 @@ fun LocalizedApp(
     val tag = languageTag.orEmpty()
 
     if (tag.isBlank()) {
+        val systemLocale = remember(context) {
+            Resources.getSystem().configuration.locales[0] ?: Locale.getDefault()
+        }
+        Locale.setDefault(systemLocale)
         CompositionLocalProvider(
             LocalConfiguration provides LocalConfiguration.current,
             LocalLayoutDirection provides context.resources.layoutDirection(),
@@ -42,13 +46,14 @@ fun LocalizedApp(
         return
     }
 
-    val locale = remember(tag) { Locale.forLanguageTag(tag) }
+    val locale = remember(tag) {
+        Locale.forLanguageTag(tag).also { Locale.setDefault(it) }
+    }
     val localizedContext = remember(tag, context) { LocalizedContext(context, locale) }
     val direction = remember(tag) {
         if (isRtl(locale)) LayoutDirection.Rtl else LayoutDirection.Ltr
     }
 
-    // Date/time formatters in `Dates` read Locale.getDefault(), so keep it in sync.
     SideEffect { Locale.setDefault(locale) }
 
     CompositionLocalProvider(
