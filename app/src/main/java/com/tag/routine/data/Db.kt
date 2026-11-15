@@ -25,6 +25,7 @@ data class RoutineEntity(
     val daysMask: Int,
     val reminder: Boolean,
     val colorHex: Long,
+    val colorId: Int = 0,
     val sortOrder: Int,
     val archived: Boolean,
     val createdAt: Long,
@@ -227,7 +228,7 @@ interface FocusDao {
         TaskLogEntity::class,
         FocusSessionEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class TagDatabase : RoomDatabase() {
@@ -259,6 +260,18 @@ abstract class TagDatabase : RoomDatabase() {
                         PRIMARY KEY(`id`)
                     )
                     """.trimIndent(),
+                )
+            }
+        }
+
+        /**
+         * v2 -> v3: adds `colorId` to routines for the 8-color theme-aware routine palette,
+         * preserving all existing routines with default colorId = 0.
+         */
+        val MIGRATION_2_3: Migration = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE `routines` ADD COLUMN `colorId` INTEGER NOT NULL DEFAULT 0",
                 )
             }
         }
