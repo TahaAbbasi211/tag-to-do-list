@@ -1,6 +1,9 @@
 package com.tag.routine.ui.screens
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,14 +26,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import java.util.Locale
 import com.tag.routine.R
 import com.tag.routine.data.Dates
 import com.tag.routine.data.Insights
 import com.tag.routine.ui.UiState
+import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.EmptyState
 import com.tag.routine.ui.components.HeatmapGrid
 import com.tag.routine.ui.components.MiniRing
@@ -38,10 +45,12 @@ import com.tag.routine.ui.components.RoutineIconMap
 import com.tag.routine.ui.components.SectionHeader
 import com.tag.routine.ui.components.StatTile
 import com.tag.routine.ui.components.WeeklyBarChart
+import com.tag.routine.ui.theme.spacing
 
 @Composable
 fun InsightsScreen(state: UiState) {
     val insights = state.insights
+    val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
     if (insights == null || insights.days.isEmpty()) {
         EmptyState(
             icon = {
@@ -65,10 +74,11 @@ fun InsightsScreen(state: UiState) {
     ) {
         // Consistency score hero
         item {
-            Surface(
+            AppCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceContainer,
+                shape = MaterialTheme.shapes.extraLarge,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
             ) {
                 Column(
                     modifier = Modifier
@@ -76,23 +86,27 @@ fun InsightsScreen(state: UiState) {
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    Box(
+                        modifier = Modifier
+                            .size(54.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFFFFB65C).copy(alpha = 0.16f)),
+                        contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.EmojiEvents,
                             contentDescription = null,
                             tint = Color(0xFFFFB65C),
-                            modifier = Modifier.size(28.dp),
-                        )
-                        Text(
-                            text = stringResource(R.string.insights_consistency),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(30.dp),
                         )
                     }
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        text = stringResource(R.string.insights_consistency),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(8.dp))
                     Text(
                         text = "${insights.weeklyConsistency}",
                         style = MaterialTheme.typography.displayLarge,
@@ -154,10 +168,11 @@ fun InsightsScreen(state: UiState) {
         // Weekday strengths
         if (insights.bestWeekday != null || insights.worstWeekday != null) {
             item {
-                Surface(
+                AppCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    shape = MaterialTheme.shapes.extraLarge,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         SectionHeader(title = stringResource(R.string.insights_activity))
@@ -196,10 +211,11 @@ fun InsightsScreen(state: UiState) {
 
         // Weekly bar chart
         item {
-            Surface(
+            AppCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surfaceContainer,
+                shape = MaterialTheme.shapes.extraLarge,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     SectionHeader(
@@ -217,10 +233,11 @@ fun InsightsScreen(state: UiState) {
 
         // Heatmap
         item {
-            Surface(
+            AppCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surfaceContainer,
+                shape = MaterialTheme.shapes.extraLarge,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     SectionHeader(
@@ -236,10 +253,11 @@ fun InsightsScreen(state: UiState) {
         // Top routines leaderboard
         if (state.routineRates.isNotEmpty()) {
             item {
-                Surface(
+                AppCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    shape = MaterialTheme.shapes.extraLarge,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         SectionHeader(
@@ -259,10 +277,11 @@ fun InsightsScreen(state: UiState) {
 
         // Task stats
         item {
-            Surface(
+            AppCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surfaceContainer,
+                shape = MaterialTheme.shapes.extraLarge,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     SectionHeader(title = stringResource(R.string.insights_tasks))
@@ -284,10 +303,10 @@ fun InsightsScreen(state: UiState) {
                         )
                         val rate = if (state.totalTasks == 0) 0f else state.doneTasks.toFloat() / state.totalTasks
                         StatTile(
-                            value = "${(rate * 100).toInt()}",
+                            value = Dates.formatDigits("${(rate * 100).toInt()}", appLocale),
                             label = stringResource(R.string.insights_completion_rate),
                             modifier = Modifier.weight(1f),
-                            suffix = "%",
+                            suffix = Dates.percentSymbol(appLocale),
                         )
                     }
                 }
@@ -318,6 +337,7 @@ private fun formatFocus(minutes: Int): String {
 
 @Composable
 private fun RoutineLeaderboardRow(title: String, iconKey: String, rate: Float) {
+    val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -336,13 +356,16 @@ private fun RoutineLeaderboardRow(title: String, iconKey: String, rate: Float) {
                 fontWeight = FontWeight.Medium,
             )
             Text(
-                text = stringResource(R.string.insights_percent_completion, (rate * 100).toInt()),
+                text = Dates.formatDigits(
+                    stringResource(R.string.insights_percent_completion, (rate * 100).toInt()),
+                    appLocale,
+                ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         Text(
-            text = "${(rate * 100).toInt()}%",
+            text = Dates.formatPercent((rate * 100).toInt(), appLocale),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
