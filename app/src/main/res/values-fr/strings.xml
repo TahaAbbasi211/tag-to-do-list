@@ -28,8 +28,8 @@
     <!-- Ã‰cran Aujourd hui -->
     <string name="today_perfect_day">Journée parfaite</string>
     <string name="today_complete_count">%1$d sur %2$d terminées</string>
-    <string name="today_empty_title">Aucune routine pour l\'instant</string>
-    <string name="today_empty_message">Appuie sur + pour ajouter ta première routine quotidienne</string>
+    <string name="today_empty_title">Prêt pour une belle journée ?</string>
+    <string name="today_empty_message">Ajoute tes routines avec le bouton ci-dessous et garde le rythme !</string>
     <string name="today_add_routine">Ajouter une routine</string>
     <string name="today_search_hint">Rechercher des routines…</string>
     <string name="today_streak_days">Série de %1$d jours</string>
@@ -131,6 +131,8 @@
     <string name="settings_appearance">Apparence</string>
     <string name="settings_theme_mode">Thème</string>
     <string name="settings_theme_colour">Couleur du thème</string>
+    <string name="settings_dynamic_color">Couleur dynamique</string>
+    <string name="settings_dynamic_color_sub">Adapter les couleurs au fond d\'écran de l\'appareil</string>
     <string name="settings_languages">Langues</string>
     <string name="settings_language_system">Système par défaut</string>
     <string name="settings_profile">Ton profil</string>
@@ -257,5 +259,37 @@
     <string name="tasks_no_matches">Aucun résultat</string>
     <string name="tasks_try_different_search">Essaie une autre recherche</string>
     <string name="insights_percent_completion">%1$d%% complété</string>
+
+    <!-- Modèles de routines -->
+    <string name="templates_card_title">Démarrer avec un modèle</string>
+    <string name="templates_card_subtitle">Ajoute un pack prêt pour le matin, les études, le sport ou le sommeil</string>
+    <string name="templates_card_dismiss">Fermer</string>
+    <string name="routine_editor_from_template">Ajouter depuis un modèle</string>
+    <string name="templates_sheet_title">Choisir un modèle</string>
+    <string name="templates_sheet_subtitle">Les routines sont ajoutées à ton programme et restent modifiables.</string>
+    <string name="templates_routine_count">%1$d routines</string>
+    <string name="templates_add_pack">Ajouter</string>
+    <string name="template_morning_name">Matin</string>
+    <string name="template_morning_sub">Commence la journée avec énergie</string>
+    <string name="template_morning_water">Boire un verre d\'eau</string>
+    <string name="template_morning_stretch">Étirements du matin</string>
+    <string name="template_morning_breakfast">Petit-déjeuner équilibré</string>
+    <string name="template_morning_plan">Planifier la journée</string>
+    <string name="template_study_name">Étude</string>
+    <string name="template_study_sub">Session d\'apprentissage ciblée</string>
+    <string name="template_study_focus">Session d\'étude intense</string>
+    <string name="template_study_notes">Relire les notes</string>
+    <string name="template_study_review">Exercices &amp; fiches</string>
+    <string name="template_workout_name">Sport</string>
+    <string name="template_workout_sub">Rester actif et en forme</string>
+    <string name="template_workout_warmup">Échauffement</string>
+    <string name="template_workout_main">Renforcement ou cardio</string>
+    <string name="template_workout_cooldown">Retour au calme &amp; hydratation</string>
+    <string name="template_sleep_name">Sommeil</string>
+    <string name="template_sleep_sub">Se détendre avant de dormir</string>
+    <string name="template_sleep_winddown">Pause sans écran</string>
+    <string name="template_sleep_journal">Journal du soir ou lecture</string>
+    <string name="template_sleep_lightsout">Extinction des feux</string>
+    <string name="group_complete_badge">Terminé</string>
 </resources>
 
