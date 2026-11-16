@@ -30,6 +30,7 @@ class RoutineOrderingTest {
         sortOrder = sortOrder,
         archived = false,
         createdAt = 0L,
+        repeatDaily = true,
     )
 
     /** Mirrors the ordering the view model applies before rendering a group. */

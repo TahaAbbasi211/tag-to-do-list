@@ -291,5 +291,13 @@
     <string name="template_sleep_journal">Journal du soir ou lecture</string>
     <string name="template_sleep_lightsout">Extinction des feux</string>
     <string name="group_complete_badge">Terminé</string>
+
+    <!-- Éléments du jour & répétition quotidienne -->
+    <string name="routine_editor_repeat_daily">Répéter chaque jour</string>
+    <string name="routine_editor_repeat_daily_sub">Afficher automatiquement les jours sélectionnés</string>
+    <string name="delete_recurring_title">Supprimer l\'élément récurrent</string>
+    <string name="delete_recurring_message">Choisis comment retirer « %1$s » :</string>
+    <string name="delete_recurring_only_this_day">Seulement ce jour</string>
+    <string name="delete_recurring_from_this_day">À partir de ce jour</string>
 </resources>
 

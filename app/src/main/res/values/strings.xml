@@ -291,4 +291,12 @@
     <string name="template_sleep_journal">Evening journal or reading</string>
     <string name="template_sleep_lightsout">Lights out</string>
     <string name="group_complete_badge">Complete</string>
+
+    <!-- Day-centric & recurring routine options -->
+    <string name="routine_editor_repeat_daily">Repeat daily</string>
+    <string name="routine_editor_repeat_daily_sub">Repeat automatically on selected days</string>
+    <string name="delete_recurring_title">Delete recurring item</string>
+    <string name="delete_recurring_message">Choose how to remove \"%1$s\":</string>
+    <string name="delete_recurring_only_this_day">Only this day</string>
+    <string name="delete_recurring_from_this_day">From this day onwards</string>
 </resources>

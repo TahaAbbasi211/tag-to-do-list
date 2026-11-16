@@ -21,7 +21,7 @@ class AppContainer(context: Context) {
     val database: TagDatabase = Room.databaseBuilder(appContext, TagDatabase::class.java, TagDatabase.NAME)
         // Real migrations instead of a destructive fallback: an upgrade must never drop
         // the user's routines, tasks or history.
-        .addMigrations(TagDatabase.MIGRATION_1_2, TagDatabase.MIGRATION_2_3)
+        .addMigrations(TagDatabase.MIGRATION_1_2, TagDatabase.MIGRATION_2_3, TagDatabase.MIGRATION_3_4)
         .build()
 
     val settingsStore = SettingsStore(appContext)

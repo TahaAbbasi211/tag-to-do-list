@@ -216,6 +216,7 @@ fun TasksScreen(
                 items(state.tasks, key = { it.task.id }) { row ->
                     SwipeToDelete(
                         onDelete = { onDeleteTask(row.task.id) },
+                        shape = MaterialTheme.shapes.large,
                     ) {
                         TaskRowCard(row, onToggleTask, onDeleteTask, onEditTask)
                     }

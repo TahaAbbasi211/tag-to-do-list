@@ -291,5 +291,13 @@
     <string name="template_sleep_journal">Akşam günlüğü veya okuma</string>
     <string name="template_sleep_lightsout">Işıkları kapat</string>
     <string name="group_complete_badge">Tamamlandı</string>
+
+    <!-- Gün bazlı & günlük tekrar -->
+    <string name="routine_editor_repeat_daily">Günlük tekrarla</string>
+    <string name="routine_editor_repeat_daily_sub">Seçilen günlerde otomatik olarak göster</string>
+    <string name="delete_recurring_title">Tekrarlanan öğeyi sil</string>
+    <string name="delete_recurring_message">\"%1$s\" öğesinin nasıl kaldırılacağını seç:</string>
+    <string name="delete_recurring_only_this_day">Yalnızca bugün</string>
+    <string name="delete_recurring_from_this_day">Bugünden itibaren</string>
 </resources>
 

@@ -130,6 +130,20 @@ class TagRepository(
         routineDao.delete(routineId)
     }
 
+    /** Hides a repeating routine on [date] only, preserving the routine row and all logs. */
+    suspend fun excludeRoutineForDate(routineId: String, date: LocalDate) {
+        val item = routineDao.byId(routineId) ?: return
+        routineDao.upsert(item.withExcludedDate(Dates.iso(date)))
+    }
+
+    /** Ends a repeating routine from [date] onwards without removing past history or logs. */
+    suspend fun endRoutineFromDate(routineId: String, date: LocalDate) {
+        val item = routineDao.byId(routineId) ?: return
+        val lastActive = date.minusDays(1).toEpochDay()
+        val bounded = item.endDateEpochDay?.let { minOf(it, lastActive) } ?: lastActive
+        routineDao.upsert(item.copy(endDateEpochDay = bounded))
+    }
+
     suspend fun newRoutineOrder(): Int = routineDao.maxOrder() + 1
 
     /**
@@ -306,7 +320,10 @@ class TagRepository(
                     .put("icon", r.icon).put("timeMinutes", r.timeMinutes ?: JSONObject.NULL)
                     .put("daysMask", r.daysMask).put("reminder", r.reminder)
                     .put("colorHex", r.colorHex).put("colorId", r.colorId).put("archived", r.archived)
-                    .put("sortOrder", r.sortOrder).put("createdAt", r.createdAt),
+                    .put("sortOrder", r.sortOrder).put("createdAt", r.createdAt)
+                    .put("dateEpochDay", r.dateEpochDay).put("repeatDaily", r.repeatDaily)
+                    .put("endDateEpochDay", r.endDateEpochDay ?: JSONObject.NULL)
+                    .put("excludedDates", r.excludedDates),
             )
         }
         root.put("routines", routines)
@@ -383,6 +400,10 @@ class TagRepository(
                     sortOrder = o.optInt("sortOrder", i),
                     archived = o.optBoolean("archived", false),
                     createdAt = o.optLong("createdAt", System.currentTimeMillis()),
+                    dateEpochDay = o.optLong("dateEpochDay", 0L),
+                    repeatDaily = o.optBoolean("repeatDaily", true),
+                    endDateEpochDay = o.optLongOrNull("endDateEpochDay"),
+                    excludedDates = o.optString("excludedDates", ""),
                 ),
             )
             routineCount++

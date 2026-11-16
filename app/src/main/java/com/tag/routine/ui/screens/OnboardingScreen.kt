@@ -18,12 +18,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +37,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tag.routine.R
+import com.tag.routine.ui.components.AppButton
+import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.theme.tagBrand
 
 /**
@@ -124,19 +124,16 @@ fun OnboardingScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            Button(
+            AppButton(
+                text = stringResource(R.string.onboarding_continue),
                 onClick = { onDone(trimmed) },
+                variant = AppButtonVariant.Primary,
                 enabled = trimmed.isNotEmpty(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.onboarding_continue),
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
+                shape = MaterialTheme.shapes.small,
+            )
 
             // A live preview shows the user exactly how the name will be used, which
             // makes it obvious the field is optional rather than a sign-up form.
@@ -152,12 +149,11 @@ fun OnboardingScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            TextButton(onClick = onSkip) {
-                Text(
-                    text = stringResource(R.string.onboarding_skip),
-                    color = brand.onHeroMuted,
-                )
-            }
+            AppButton(
+                text = stringResource(R.string.onboarding_skip),
+                onClick = onSkip,
+                variant = AppButtonVariant.Text,
+            )
         }
     }
 }

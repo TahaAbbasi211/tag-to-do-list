@@ -74,6 +74,7 @@ fun RoutineEditorSheet(
         reminder: Boolean,
         colorHex: Long,
         colorId: Int,
+        repeatDaily: Boolean,
     ) -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -83,6 +84,7 @@ fun RoutineEditorSheet(
     var icon by remember { mutableStateOf(RoutineEmojis.resolve(existing?.icon ?: RoutineEmojis.DEFAULT)) }
     var timeMinutes by remember { mutableStateOf(existing?.timeMinutes) }
     var daysMask by remember { mutableStateOf(existing?.daysMask ?: 0b1111111) } // all days
+    var repeatDaily by remember { mutableStateOf(existing?.repeatDaily ?: false) }
     var reminder by remember { mutableStateOf(existing?.reminder ?: false) }
     var colorId by remember { mutableStateOf(existing?.colorId ?: 0) }
     var colorHex by remember {
@@ -243,40 +245,65 @@ fun RoutineEditorSheet(
                 }
             }
 
-            // Days of week selector
-            Column {
-                Text(
-                    text = stringResource(R.string.routine_editor_days),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium,
+            // Repeat daily toggle (off by default for new items)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.routine_editor_repeat_daily),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Text(
+                        text = stringResource(R.string.routine_editor_repeat_daily_sub),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = repeatDaily,
+                    onCheckedChange = { repeatDaily = it },
                 )
-                Spacer(Modifier.height(8.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    val dayLabels = Dates.weekdayInitials()
-                    dayLabels.forEachIndexed { index, label ->
-                        val bit = 1 shl index
-                        val selected = (daysMask and bit) != 0
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (selected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.surfaceContainerHigh
+            }
+
+            // Days of week selector (only relevant when repeating across days)
+            if (repeatDaily) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.routine_editor_days),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        val dayLabels = Dates.weekdayInitials()
+                        dayLabels.forEachIndexed { index, label ->
+                            val bit = 1 shl index
+                            val selected = (daysMask and bit) != 0
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (selected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.surfaceContainerHigh
+                                    )
+                                    .clickable {
+                                        daysMask = if (selected) daysMask and bit.inv() else daysMask or bit
+                                    },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                                 )
-                                .clickable {
-                                    daysMask = if (selected) daysMask and bit.inv() else daysMask or bit
-                                },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.labelMedium,
-                                color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                            )
+                            }
                         }
                     }
                 }
@@ -372,25 +399,35 @@ fun RoutineEditorSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                TextButton(
+                AppButton(
+                    text = stringResource(R.string.action_cancel),
                     onClick = onDismiss,
+                    variant = AppButtonVariant.Text,
                     modifier = Modifier.weight(1f),
-                ) {
-                    Text(stringResource(R.string.action_cancel))
-                }
-                Button(
+                )
+                AppButton(
+                    text = stringResource(R.string.action_save),
                     onClick = {
                         if (title.isNotBlank()) {
-                            onSave(title, group, icon, timeMinutes, daysMask, reminder, colorHex, colorId)
+                            onSave(
+                                title,
+                                group,
+                                icon,
+                                timeMinutes,
+                                daysMask,
+                                reminder,
+                                colorHex,
+                                colorId,
+                                repeatDaily,
+                            )
                             onDismiss()
                         }
                     },
+                    variant = AppButtonVariant.Primary,
                     modifier = Modifier.weight(1f),
                     enabled = title.isNotBlank(),
-                    shape = RoundedCornerShape(12.dp),
-                ) {
-                    Text(stringResource(R.string.action_save))
-                }
+                    shape = MaterialTheme.shapes.small,
+                )
             }
 
             Spacer(Modifier.height(16.dp))

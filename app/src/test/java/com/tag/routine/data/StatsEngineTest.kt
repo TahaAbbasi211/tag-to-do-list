@@ -20,6 +20,10 @@ class StatsEngineTest {
         daysMask: Int = Dates.EVERY_DAY,
         createdAt: Long = 0L,
         archived: Boolean = false,
+        repeatDaily: Boolean = true,
+        dateEpochDay: Long = 0L,
+        endDateEpochDay: Long? = null,
+        excludedDates: String = "",
     ) = RoutineEntity(
         id = id,
         title = "Routine $id",
@@ -32,6 +36,10 @@ class StatsEngineTest {
         sortOrder = 0,
         archived = archived,
         createdAt = createdAt,
+        dateEpochDay = dateEpochDay,
+        repeatDaily = repeatDaily,
+        endDateEpochDay = endDateEpochDay,
+        excludedDates = excludedDates,
     )
 
     private fun log(routineId: String, date: LocalDate) =
@@ -182,5 +190,53 @@ class StatsEngineTest {
         val insights = StatsEngine.compute(routines, logs, emptyList(), today)
         assertTrue(insights.weeklyConsistency in 0..100)
         assertNotNull(insights.days)
+    }
+
+    @Test
+    fun `single day items only show on their own dateEpochDay including past and future`() {
+        val yesterday = today.minusDays(1)
+        val tomorrow = today.plusDays(1)
+        val pastItem = routine("past", repeatDaily = false, dateEpochDay = yesterday.toEpochDay(), createdAt = Long.MAX_VALUE)
+        val todayItem = routine("today", repeatDaily = false, dateEpochDay = today.toEpochDay())
+        val futureItem = routine("future", repeatDaily = false, dateEpochDay = tomorrow.toEpochDay())
+        val all = listOf(pastItem, todayItem, futureItem)
+
+        assertEquals(listOf("past"), StatsEngine.scheduledOn(yesterday, all).map { it.id })
+        assertEquals(listOf("today"), StatsEngine.scheduledOn(today, all).map { it.id })
+        assertEquals(listOf("future"), StatsEngine.scheduledOn(tomorrow, all).map { it.id })
+    }
+
+    @Test
+    fun `repeatDaily respects start date, end date, and single-day exclusions`() {
+        val start = today.minusDays(3)
+        val excludedDay = today.minusDays(2)
+        val endedBefore = today.minusDays(1)
+        val recurring = routine(
+            id = "rec",
+            repeatDaily = true,
+            dateEpochDay = start.toEpochDay(),
+            endDateEpochDay = endedBefore.toEpochDay(),
+            excludedDates = Dates.iso(excludedDay),
+        )
+        assertTrue(StatsEngine.scheduledOn(start.minusDays(1), listOf(recurring)).isEmpty())
+        assertTrue(StatsEngine.scheduledOn(start, listOf(recurring)).isNotEmpty())
+        assertTrue(StatsEngine.scheduledOn(excludedDay, listOf(recurring)).isEmpty())
+        assertTrue(StatsEngine.scheduledOn(endedBefore, listOf(recurring)).isNotEmpty())
+        assertTrue(StatsEngine.scheduledOn(today, listOf(recurring)).isEmpty())
+    }
+
+    @Test
+    fun `empty days with zero scheduled items are neutral and do not break streak`() {
+        // Items exist on yesterday (today-1) and today-3, while today-2 has 0 scheduled items.
+        val rMinus1 = routine("r1", repeatDaily = false, dateEpochDay = today.minusDays(1).toEpochDay())
+        val rMinus3 = routine("r3", repeatDaily = false, dateEpochDay = today.minusDays(3).toEpochDay())
+        val logs = listOf(
+            log("r1", today.minusDays(1)),
+            log("r3", today.minusDays(3)),
+        )
+        val insights = StatsEngine.compute(listOf(rMinus1, rMinus3), logs, emptyList(), today)
+        assertEquals(2, insights.currentStreak)
+        assertEquals(2, insights.bestStreak)
+        assertEquals(2, insights.perfectDays)
     }
 }

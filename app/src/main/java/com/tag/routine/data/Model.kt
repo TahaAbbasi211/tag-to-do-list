@@ -421,10 +421,44 @@ object StatsEngine {
     const val STREAK_THRESHOLD = AppConstants.STREAK_THRESHOLD
     const val HISTORY_DAYS = AppConstants.HISTORY_DAYS
 
-    fun scheduledOn(date: LocalDate, routines: List<RoutineEntity>): List<RoutineEntity> {
+    fun isScheduledOn(routine: RoutineEntity, date: LocalDate): Boolean {
+        if (routine.archived) return false
+        val dayEpoch = date.toEpochDay()
+        if (!routine.repeatDaily) {
+            return routine.dateEpochDay == dayEpoch
+        }
         val bit = Dates.weekdayBit(date)
-        val endOfDay = date.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
-        return routines.filter { !it.archived && (it.daysMask and bit) != 0 && it.createdAt <= endOfDay }
+        if ((routine.daysMask and bit) == 0) return false
+        val startOk = if (routine.dateEpochDay > 0L) {
+            dayEpoch >= routine.dateEpochDay
+        } else {
+            val endOfDay = date.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+            routine.createdAt <= endOfDay
+        }
+        if (!startOk) return false
+        val endOk = routine.endDateEpochDay == null || dayEpoch <= routine.endDateEpochDay
+        if (!endOk) return false
+        return !routine.isExcludedOn(Dates.iso(date))
+    }
+
+    fun scheduledOn(date: LocalDate, routines: List<RoutineEntity>): List<RoutineEntity> =
+        routines.filter { isScheduledOn(it, date) }
+
+    fun daySummary(
+        date: LocalDate,
+        routines: List<RoutineEntity>,
+        logsByDate: Map<String, Set<String>>,
+        taskCount: Int = 0,
+    ): DayStat {
+        val scheduled = scheduledOn(date, routines)
+        val done = logsByDate[Dates.iso(date)].orEmpty()
+        val completed = scheduled.count { it.id in done }
+        return DayStat(
+            date = date,
+            scheduled = scheduled.size,
+            completed = completed,
+            taskCompleted = taskCount,
+        )
     }
 
     fun compute(
@@ -439,23 +473,16 @@ object StatsEngine {
 
         val days = (HISTORY_DAYS downTo 0).map { offset ->
             val date = today.minusDays(offset.toLong())
-            val scheduled = scheduledOn(date, routines)
-            val done = logsByDate[Dates.iso(date)].orEmpty()
-            val completed = scheduled.count { it.id in done }
-            DayStat(
-                date = date,
-                scheduled = scheduled.size,
-                completed = completed,
-                taskCompleted = tasksByDate[Dates.iso(date)] ?: 0,
-            )
+            daySummary(date, routines, logsByDate, tasksByDate[Dates.iso(date)] ?: 0)
         }
 
         val currentStreak = run {
             var streak = 0
-            // Today is still in progress, so it only extends a streak once it qualifies.
+            // Days with zero scheduled items are neutral (neither break nor extend).
+            // Today is still in progress, so it only breaks once it fails after today.
             for ((index, day) in days.reversed().withIndex()) {
-                val qualifies = day.hasData && day.ratio >= STREAK_THRESHOLD
-                if (qualifies) {
+                if (!day.hasData) continue
+                if (day.ratio >= STREAK_THRESHOLD) {
                     streak++
                 } else if (index == 0) {
                     continue // grace: an unfinished today does not break yesterday's streak
@@ -470,7 +497,8 @@ object StatsEngine {
             var best = 0
             var run = 0
             for (day in days) {
-                if (day.hasData && day.ratio >= STREAK_THRESHOLD) {
+                if (!day.hasData) continue
+                if (day.ratio >= STREAK_THRESHOLD) {
                     run++
                     best = max(best, run)
                 } else {
@@ -531,9 +559,7 @@ object StatsEngine {
             routineLogs.groupBy({ it.date }, { it.routineId }).mapValues { it.value.toSet() }
         val dates = (0 until window).map { today.minusDays(it.toLong()) }
         return routines.filter { !it.archived }.map { routine ->
-            val scheduledDays = dates.filter { date ->
-                (routine.daysMask and Dates.weekdayBit(date)) != 0
-            }
+            val scheduledDays = dates.filter { date -> isScheduledOn(routine, date) }
             if (scheduledDays.isEmpty()) {
                 routine to 0f
             } else {

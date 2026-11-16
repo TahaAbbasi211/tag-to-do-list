@@ -291,5 +291,13 @@
     <string name="template_sleep_journal">یادداشت شبانه یا مطالعه سبک</string>
     <string name="template_sleep_lightsout">خاموش کردن چراغ‌ها</string>
     <string name="group_complete_badge">کامل</string>
+
+    <!-- آیتم‌های روزمحور و تکرار روزانه -->
+    <string name="routine_editor_repeat_daily">تکرار روزانه</string>
+    <string name="routine_editor_repeat_daily_sub">نمایش خودکار در روزهای انتخاب‌شده</string>
+    <string name="delete_recurring_title">حذف آیتم تکرارشونده</string>
+    <string name="delete_recurring_message">نحوه حذف \"%1$s\" را انتخاب کن:</string>
+    <string name="delete_recurring_only_this_day">فقط این روز</string>
+    <string name="delete_recurring_from_this_day">از این روز به بعد</string>
 </resources>
 

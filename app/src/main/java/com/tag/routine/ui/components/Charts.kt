@@ -53,6 +53,7 @@ fun WeekStrip(
     onSelect: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
     days: Int = 7,
+    hasItemsFor: (LocalDate) -> Boolean = { dotFor(it) > 0f },
 ) {
     val brand = tagBrand()
     val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
@@ -67,6 +68,7 @@ fun WeekStrip(
             val isToday = date == today
             val isFuture = date.isAfter(today)
             val ratio = dotFor(date)
+            val hasItems = hasItemsFor(date)
             val container by animateColorAsState(
                 targetValue = when {
                     isSelected -> MaterialTheme.colorScheme.primary
@@ -125,9 +127,10 @@ fun WeekStrip(
                         .clip(RoundedCornerShape(percent = 50))
                         .background(
                             when {
+                                !hasItems -> Color.Transparent
                                 ratio >= 0.999f -> if (isSelected) contentColor else brand.success
                                 ratio > 0f -> if (isSelected) contentColor.copy(alpha = 0.7f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
-                                else -> Color.Transparent
+                                else -> if (isSelected) contentColor.copy(alpha = 0.55f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
                             },
                         ),
                 )

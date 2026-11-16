@@ -56,6 +56,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
@@ -77,15 +78,17 @@ import kotlin.math.abs
  * reveals a red delete affordance behind the row. The caller is responsible for showing
  * an undo action, so a stray swipe never destroys data irrecoverably.
  *
- * The delete panel is strictly hidden while settled (`dismissDirection == Settled` or zero
- * offset), avoiding Material3's `progress == 1f` at rest, and aligns the trash icon on the
- * exposed side in both LTR and RTL.
+ * When settled (`targetValue == Settled` and zero offset), `backgroundContent` emits no
+ * composables at all so the coloured layer can never anti-alias or bleed around the
+ * rounded corners of [content].
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SwipeToDelete(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    shape: Shape = RoundedCornerShape(16.dp),
+    confirmImmediately: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     // Fire the delete once the box is confirmed dismissed. `confirmValueChange` is the
@@ -94,11 +97,20 @@ fun SwipeToDelete(
     var dismissHandled by remember { mutableStateOf(false) }
     val state = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
-            if (value != SwipeToDismissBoxValue.Settled && !dismissHandled) {
-                dismissHandled = true
-                onDelete()
+            if (value != SwipeToDismissBoxValue.Settled) {
+                if (confirmImmediately) {
+                    if (!dismissHandled) {
+                        dismissHandled = true
+                        onDelete()
+                    }
+                    true
+                } else {
+                    onDelete()
+                    false
+                }
+            } else {
+                true
             }
-            true
         },
     )
 
@@ -110,8 +122,11 @@ fun SwipeToDelete(
     } catch (_: IllegalStateException) {
         0f
     }
-    val isSwiping = direction != SwipeToDismissBoxValue.Settled && abs(offset) > 0.5f
-    val reveal = if (isSwiping) (abs(offset) / revealThresholdPx).coerceIn(0.15f, 1f) else 0f
+    val isAtRest = state.currentValue == SwipeToDismissBoxValue.Settled &&
+        state.targetValue == SwipeToDismissBoxValue.Settled &&
+        abs(offset) <= 2f
+    val isSwiping = !isAtRest && direction != SwipeToDismissBoxValue.Settled
+    val reveal = if (isSwiping) (abs(offset) / revealThresholdPx).coerceIn(0f, 1f) else 0f
     val deleteColor = MaterialTheme.colorScheme.errorContainer
 
     SwipeToDismissBox(
@@ -129,7 +144,7 @@ fun SwipeToDelete(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(shape)
                         .background(deleteColor.copy(alpha = reveal))
                         .padding(horizontal = 20.dp),
                     contentAlignment = iconAlignment,
@@ -614,10 +629,10 @@ fun StatTile(
     accent: Color = MaterialTheme.colorScheme.primary,
     suffix: String? = null,
 ) {
-    Surface(
+    AppCard(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = MaterialTheme.shapes.medium,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
     ) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
