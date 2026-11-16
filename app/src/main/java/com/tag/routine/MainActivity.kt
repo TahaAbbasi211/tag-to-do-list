@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -28,6 +30,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,11 +51,14 @@ import com.tag.routine.data.TaskEntity
 import com.tag.routine.ui.AppViewModel
 import com.tag.routine.ui.Tab
 import com.tag.routine.ui.UiState
+import com.tag.routine.ui.components.AppButton
+import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.PillNavBar
 import com.tag.routine.ui.editors.RoutineEditorSheet
 import com.tag.routine.ui.editors.TaskEditorSheet
 import com.tag.routine.ui.editors.TemplatePickerSheet
 import com.tag.routine.ui.i18n.LocalizedApp
+import com.tag.routine.ui.i18n.ProvideAppLocale
 import com.tag.routine.ui.screens.FocusScreen
 import com.tag.routine.ui.screens.InsightsScreen
 import com.tag.routine.ui.screens.LanguageScreen
@@ -126,6 +132,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
     var creatingTask by remember { mutableStateOf(false) }
     var editingRoutine by remember { mutableStateOf<RoutineEntity?>(null) }
     var creatingRoutine by remember { mutableStateOf(false) }
+    var pendingDeleteRecurring by remember { mutableStateOf<RoutineEntity?>(null) }
     var showTemplatesSheet by remember { mutableStateOf(false) }
     // Settings owns a small sub-page stack: null means the settings list.
     var showLanguagePage by remember { mutableStateOf(false) }
@@ -190,8 +197,12 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                                 onAddRoutine = { creatingRoutine = true },
                                 onEditRoutine = { editingRoutine = it },
                                 onDeleteRoutine = { routine ->
-                                    viewModel.deleteRoutine(routine.id)
-                                    offerUndo(undoRoutineLabel) { viewModel.restoreRoutine(routine) }
+                                    if (routine.repeatDaily) {
+                                        pendingDeleteRecurring = routine
+                                    } else {
+                                        viewModel.deleteRoutine(routine.id)
+                                        offerUndo(undoRoutineLabel) { viewModel.restoreRoutine(routine) }
+                                    }
                                 },
                                 // The Today hero pill jumps to the dedicated Focus
                                 // section, which owns duration selection and history.
@@ -323,7 +334,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
             } else {
                 null
             },
-            onSave = { title, group, icon, timeMinutes, daysMask, reminder, colorHex, colorId ->
+            onSave = { title, group, icon, timeMinutes, daysMask, reminder, colorHex, colorId, repeatDaily ->
                 viewModel.saveRoutine(
                     existing = editingRoutine,
                     title = title,
@@ -334,7 +345,52 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                     reminder = reminder,
                     colorHex = colorHex,
                     colorId = colorId,
+                    repeatDaily = repeatDaily,
                 )
+            },
+        )
+    }
+
+    pendingDeleteRecurring?.let { recurring ->
+        val localizedContext = LocalContext.current
+        AlertDialog(
+            onDismissRequest = { pendingDeleteRecurring = null },
+            title = {
+                ProvideAppLocale(localizedContext) {
+                    Text(stringResource(R.string.delete_recurring_title))
+                }
+            },
+            text = {
+                ProvideAppLocale(localizedContext) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(stringResource(R.string.delete_recurring_message, recurring.title))
+                        AppButton(
+                            text = stringResource(R.string.delete_recurring_only_this_day),
+                            onClick = {
+                                viewModel.excludeRoutineForDate(recurring.id, state.selectedDate)
+                                pendingDeleteRecurring = null
+                            },
+                            variant = AppButtonVariant.Secondary,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        AppButton(
+                            text = stringResource(R.string.delete_recurring_from_this_day),
+                            onClick = {
+                                viewModel.endRoutineFromDate(recurring.id, state.selectedDate)
+                                pendingDeleteRecurring = null
+                            },
+                            variant = AppButtonVariant.Tonal,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                ProvideAppLocale(localizedContext) {
+                    TextButton(onClick = { pendingDeleteRecurring = null }) {
+                        Text(stringResource(R.string.action_cancel))
+                    }
+                }
             },
         )
     }
