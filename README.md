@@ -1,13 +1,15 @@
-# ✅ Todo List — Android App
+# ✅ Tag — Daily Routine & Task Planner (v1.1.1)
 
-A clean and customizable to-do list app for Android with a built-in timer, multiple themes, and support for five languages.
+A clean and customizable Android routine and task planner with day-centric scheduling, a built-in focus timer, unified Material 3 design system, optional Dynamic Color, and full support for five languages.
 
 ## ✨ Features
 
-- 📝 Add, edit, complete, and delete tasks
-- ⏱️ Built-in timer to stay focused on your tasks
-- 🎨 Multiple themes to personalize the look of the app
-- 🌍 Multi-language support:
+- 📅 **Day-centric Today timeline**: Each routine/item belongs to its selected day (past, today, or future) with optional daily repeat (`Repeat daily`)
+- 🗑️ **Flexible recurring delete**: Remove a repeating item for today only or from this day onwards without losing historical completion logs
+- 📝 Add, edit, complete, and delete tasks & routines
+- ⏱️ Built-in focus timer to stay focused on your routines
+- 🎨 Unified design system with multiple high-contrast themes and optional Material You Dynamic Color
+- 🌍 Multi-language support (with RTL & localized digits):
   - فارسی (Persian)
   - English
   - Deutsch (German)
@@ -58,4 +60,9 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 📝 Changelog
 
-- 1.0.9: fix weekday labels locale, digit formatting, list padding, template card visibility, contrast, card shape clipping
+- **1.1.1**:
+  - Fixed hairline pink/coral border bleed on Today and Tasks cards by removing settled `SwipeToDelete` background from composition and matching card corner shapes
+  - Made Today items day-centric (`dateEpochDay` with optional `repeatDaily` toggle, Room schema v4 + lossless `MIGRATION_3_4`, past/future date creation, per-day vs from-date delete options for recurring items, and neutral empty days in streak calculation)
+  - Refined design system tokens, contrast ratios (>= 4.5:1 across palettes), `AppCard`/`AppButton`/`StatTile` unification, and optional Dynamic Color in Settings
+- **1.1**: Vertical single-day timeline layout on Today screen
+- **1.0.9**: Fix weekday labels locale, digit formatting, list padding, template card visibility, contrast, card shape clipping
