@@ -2,6 +2,8 @@
 
 A clean and customizable Android routine and task planner with day-centric scheduling, a built-in focus timer, unified Material 3 design system, optional Dynamic Color, and full support for five languages.
 
+📲 Download the latest APK from the [Releases](https://github.com/TahaAbbasi211/tag-to-do-list/releases) page.
+
 ## ✨ Features
 
 - 📅 **Day-centric Today timeline**: Each routine/item belongs to its selected day (past, today, or future) with optional daily repeat (`Repeat daily`)
@@ -15,38 +17,46 @@ A clean and customizable Android routine and task planner with day-centric sched
   - Deutsch (German)
   - Türkçe (Turkish)
   - Français (French)
-- [Offline storage, e.g. Room / SharedPreferences]
-- [Any other feature, e.g. notifications, reminders]
+- 💾 Offline storage with Room (schema v4) and DataStore Preferences
+- 🔔 Reminders and notifications (including a daily digest)
 
 ## 🛠️ Built With
 
-- [Kotlin / Java]
+- Kotlin
+- Jetpack Compose with Material 3 (Compose BOM 2024.12.01)
+- Room 2.6.1 (KSP, schemas exported) and DataStore Preferences 1.1.1
 - Android Studio
-- [Libraries, e.g. Room, Material Components, ViewBinding]
 
 ## 📋 Requirements
 
-- Android Studio [version, e.g. Koala or newer]
-- Android SDK [e.g. API 24+]
-- A device or emulator running Android [e.g. 7.0+]
+- Android Studio Ladybug (2024.2.1) or newer
+- Android SDK API 35
+- JDK 17
+- A device or emulator running Android 8.0 (API 26) or newer
 
 ## 🚀 Getting Started
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/<your-username>/<repo-name>.git
+   git clone https://github.com/TahaAbbasi211/tag-to-do-list.git
    ```
 
 2. Open the project in **Android Studio**.
 3. Wait for Gradle to sync.
 4. Run the app on an emulator or a physical device.
 
+## 🧪 Tests
+
+Run the unit tests with:
+
+```bash
+./gradlew :app:testDebugUnitTest
+```
 
 ## 🔮 Future Improvements
 
 - [ ] Task categories and due dates
-- [ ] Reminders and notifications
 - [ ] Cloud backup and sync
 - [ ] Home screen widget
 
