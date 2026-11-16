@@ -78,6 +78,7 @@ import com.tag.routine.ui.RoutineGroupSection
 import com.tag.routine.ui.TodayRoutine
 import com.tag.routine.ui.UiState
 import com.tag.routine.ui.components.AnimatedCheck
+import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.ConfettiEffect
 import com.tag.routine.ui.components.RingWithLabel
 import com.tag.routine.ui.components.SectionHeader
@@ -242,6 +243,7 @@ fun TodayScreen(
                 selected = selected,
                 today = today,
                 dotFor = { date -> state.dayRatios[Dates.iso(date)] ?: 0f },
+                hasItemsFor = { date -> Dates.iso(date) in state.scheduledDates },
                 onSelect = onSelectDate,
                 modifier = Modifier.padding(horizontal = MaterialTheme.spacing.lg, vertical = MaterialTheme.spacing.sm),
             )
@@ -421,7 +423,11 @@ private fun RoutineGroupSectionBlock(
         Column(modifier = Modifier.fillMaxWidth()) {
             section.items.forEachIndexed { index, item ->
                 key(item.routine.id) {
-                    SwipeToDelete(onDelete = { onDeleteRoutine(item.routine) }) {
+                    SwipeToDelete(
+                        onDelete = { onDeleteRoutine(item.routine) },
+                        shape = RoundedCornerShape(16.dp),
+                        confirmImmediately = !item.routine.repeatDaily,
+                    ) {
                         TimelineRoutineRow(
                             item = item,
                             appLocale = appLocale,
@@ -784,14 +790,13 @@ private fun FirstDayTemplatesCard(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick),
+    AppCard(
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
+        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)),
+        elevation = 0.dp,
+        onClick = onClick,
     ) {
         Row(
             modifier = Modifier
