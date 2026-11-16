@@ -29,7 +29,20 @@ data class RoutineEntity(
     val sortOrder: Int,
     val archived: Boolean,
     val createdAt: Long,
-)
+    val dateEpochDay: Long = 0L,
+    val repeatDaily: Boolean = false,
+    val endDateEpochDay: Long? = null,
+    val excludedDates: String = "",
+) {
+    fun isExcludedOn(dateIso: String): Boolean =
+        excludedDates.isNotEmpty() && excludedDates.split(',').any { it == dateIso }
+
+    fun withExcludedDate(dateIso: String): RoutineEntity {
+        if (isExcludedOn(dateIso)) return this
+        val updated = if (excludedDates.isBlank()) dateIso else "$excludedDates,$dateIso"
+        return copy(excludedDates = updated)
+    }
+}
 
 @Entity(tableName = "tasks")
 data class TaskEntity(
@@ -228,7 +241,7 @@ interface FocusDao {
         TaskLogEntity::class,
         FocusSessionEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class TagDatabase : RoomDatabase() {
@@ -272,6 +285,28 @@ abstract class TagDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
                     "ALTER TABLE `routines` ADD COLUMN `colorId` INTEGER NOT NULL DEFAULT 0",
+                )
+            }
+        }
+
+        /**
+         * v3 -> v4: adds day-centric scheduling fields (`dateEpochDay`, `repeatDaily`,
+         * `endDateEpochDay`, `excludedDates`) to routines. Existing routines default to
+         * `repeatDaily = 1` (true) so nothing disappears and all prior logs stay intact.
+         */
+        val MIGRATION_3_4: Migration = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE `routines` ADD COLUMN `dateEpochDay` INTEGER NOT NULL DEFAULT 0",
+                )
+                db.execSQL(
+                    "ALTER TABLE `routines` ADD COLUMN `repeatDaily` INTEGER NOT NULL DEFAULT 1",
+                )
+                db.execSQL(
+                    "ALTER TABLE `routines` ADD COLUMN `endDateEpochDay` INTEGER DEFAULT NULL",
+                )
+                db.execSQL(
+                    "ALTER TABLE `routines` ADD COLUMN `excludedDates` TEXT NOT NULL DEFAULT ''",
                 )
             }
         }
