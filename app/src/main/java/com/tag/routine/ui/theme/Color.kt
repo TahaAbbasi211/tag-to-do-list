@@ -11,25 +11,25 @@ internal val VioletDeep = Color(0xFF5B4BE0)
 internal val VioletSoft = Color(0xFFA99BFF)
 
 internal val Mint = Color(0xFF4FD9C0)
-internal val MintDeep = Color(0xFF12A88C)
+internal val MintDeep = Color(0xFF0F766E)
 
 internal val Amber = Color(0xFFFFB65C)
-internal val AmberDeep = Color(0xFFD48A2E)
+internal val AmberDeep = Color(0xFFB45309)
 
 internal val Coral = Color(0xFFFF7A6B)
-internal val CoralDeep = Color(0xFFE65A3A)
+internal val CoralDeep = Color(0xFFC2410C)
 
 internal val Rose = Color(0xFFFF6B9D)
-internal val RoseDeep = Color(0xFFD94D7E)
+internal val RoseDeep = Color(0xFFBE123C)
 
 internal val Sky = Color(0xFF4CC9F0)
-internal val SkyDeep = Color(0xFF1A9FD8)
+internal val SkyDeep = Color(0xFF0369A1)
 
 internal val RoyalPurple = Color(0xFF9C5BFF)
 internal val RoyalPurpleDeep = Color(0xFF7A3BEF)
 
 internal val Pink = Color(0xFFFF7AB3)
-internal val PinkDeep = Color(0xFFF0558C)
+internal val PinkDeep = Color(0xFFBE185D)
 
 // ------------------------------------------------------------------ high-contrast surface tiers
 
@@ -72,6 +72,7 @@ data class TagBrand(
     val ringEnd: Color,
     val streak: Color,
     val success: Color,
+    val warning: Color = streak,
     val priorityLow: Color,
     val priorityNormal: Color,
     val priorityHigh: Color,
