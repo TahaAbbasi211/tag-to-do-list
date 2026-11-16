@@ -60,6 +60,7 @@ data class UiState(
     val settings: AppSettings = AppSettings(),
     val routineRates: List<Pair<RoutineEntity, Float>> = emptyList(),
     val dayRatios: Map<String, Float> = emptyMap(),
+    val scheduledDates: Set<String> = emptySet(),
     val todayTasks: List<TaskRow> = emptyList(),
     val allRoutines: List<RoutineEntity> = emptyList(),
     val totalTasks: Int = 0,
@@ -182,12 +183,23 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             .compute(snapshot.routines, snapshot.routineLogs, snapshot.taskLogs, today)
             .copy(focusMinutes = snapshot.focusMinutes)
 
+        val logsByDate = snapshot.routineLogs
+            .groupBy({ it.date }, { it.routineId })
+            .mapValues { it.value.toSet() }
+        val futureWeekDays = (1L..7L).map { offset ->
+            StatsEngine.daySummary(today.plusDays(offset), snapshot.routines, logsByDate)
+        }
+        val allKnownDays = insights.days + futureWeekDays
+        val dayRatios = allKnownDays.associate { Dates.iso(it.date) to it.ratio }
+        val scheduledDates = allKnownDays.filter { it.hasData }.map { Dates.iso(it.date) }.toSet()
+
         val focusStats = FocusEngine.compute(
             sessions = snapshot.focusSessions,
             routines = snapshot.routines,
             today = today,
         )
 
+        val todayEpoch = today.toEpochDay()
         return UiState(
             loaded = snapshot.loaded,
             selectedDate = selected,
@@ -198,9 +210,12 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             insights = insights,
             settings = snapshot.settings,
             routineRates = StatsEngine.routineRates(snapshot.routines, snapshot.routineLogs, today),
-            dayRatios = insights.days.associate { Dates.iso(it.date) to it.ratio },
+            dayRatios = dayRatios,
+            scheduledDates = scheduledDates,
             todayTasks = dueToday,
-            allRoutines = snapshot.routines.filter { !it.archived },
+            allRoutines = snapshot.routines.filter {
+                !it.archived && (it.endDateEpochDay == null || it.endDateEpochDay >= todayEpoch)
+            },
             totalTasks = snapshot.tasks.size,
             doneTasks = snapshot.tasks.count { it.done },
             focusStats = focusStats,
@@ -259,6 +274,16 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
 
     fun deleteRoutine(routineId: String) = viewModelScope.launch {
         repository.deleteRoutine(routineId)
+        rescheduleReminders()
+    }
+
+    fun excludeRoutineForDate(routineId: String, date: LocalDate) = viewModelScope.launch {
+        repository.excludeRoutineForDate(routineId, date)
+        rescheduleReminders()
+    }
+
+    fun endRoutineFromDate(routineId: String, date: LocalDate) = viewModelScope.launch {
+        repository.endRoutineFromDate(routineId, date)
         rescheduleReminders()
     }
 
@@ -334,7 +359,35 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
         reminder: Boolean,
         colorHex: Long,
         colorId: Int = 0,
+        repeatDaily: Boolean = false,
     ) = viewModelScope.launch {
+        val targetEpochDay = _selectedDate.value.toEpochDay()
+        val resolvedDateEpochDay: Long
+        val resolvedEndDateEpochDay: Long?
+        val resolvedExcludedDates: String
+        if (existing == null) {
+            resolvedDateEpochDay = targetEpochDay
+            resolvedEndDateEpochDay = null
+            resolvedExcludedDates = ""
+        } else if (existing.repeatDaily && !repeatDaily) {
+            // Turning off daily repeat pins this routine solely to the currently edited day.
+            resolvedDateEpochDay = targetEpochDay
+            resolvedEndDateEpochDay = null
+            resolvedExcludedDates = ""
+        } else if (!existing.repeatDaily && repeatDaily) {
+            resolvedDateEpochDay = if (existing.dateEpochDay > 0L) existing.dateEpochDay else targetEpochDay
+            resolvedEndDateEpochDay = null
+            resolvedExcludedDates = existing.excludedDates
+        } else {
+            resolvedDateEpochDay = if (!repeatDaily && existing.dateEpochDay == 0L) {
+                targetEpochDay
+            } else {
+                existing.dateEpochDay
+            }
+            resolvedEndDateEpochDay = existing.endDateEpochDay
+            resolvedExcludedDates = existing.excludedDates
+        }
+
         val entity = (existing ?: RoutineEntity(
             id = UUID.randomUUID().toString(),
             title = title,
@@ -348,6 +401,10 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             sortOrder = repository.newRoutineOrder(),
             archived = false,
             createdAt = System.currentTimeMillis(),
+            dateEpochDay = resolvedDateEpochDay,
+            repeatDaily = repeatDaily,
+            endDateEpochDay = resolvedEndDateEpochDay,
+            excludedDates = resolvedExcludedDates,
         )).copy(
             title = title.trim(),
             groupName = group,
@@ -357,6 +414,10 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             reminder = reminder,
             colorHex = colorHex,
             colorId = colorId,
+            dateEpochDay = resolvedDateEpochDay,
+            repeatDaily = repeatDaily,
+            endDateEpochDay = resolvedEndDateEpochDay,
+            excludedDates = resolvedExcludedDates,
         )
         repository.saveRoutine(entity)
         rescheduleReminders()
@@ -370,6 +431,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var order = repository.newRoutineOrder()
             val now = System.currentTimeMillis()
+            val targetEpochDay = _selectedDate.value.toEpochDay()
             template.items.forEachIndexed { idx, item ->
                 val spec = com.tag.routine.data.RoutineColors.byId(item.colorId)
                 repository.saveRoutine(
@@ -386,6 +448,8 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
                         sortOrder = order + idx,
                         archived = false,
                         createdAt = now + idx,
+                        dateEpochDay = targetEpochDay,
+                        repeatDaily = false,
                     ),
                 )
             }
