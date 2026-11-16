@@ -291,5 +291,13 @@
     <string name="template_sleep_journal">Abendjournal oder Lesen</string>
     <string name="template_sleep_lightsout">Licht aus</string>
     <string name="group_complete_badge">Erledigt</string>
+
+    <!-- Tagesbezogen & tägliche Wiederholung -->
+    <string name="routine_editor_repeat_daily">Täglich wiederholen</string>
+    <string name="routine_editor_repeat_daily_sub">Automatisch an ausgewählten Tagen anzeigen</string>
+    <string name="delete_recurring_title">Wiederkehrenden Eintrag löschen</string>
+    <string name="delete_recurring_message">Wähle, wie \"%1$s\" entfernt werden soll:</string>
+    <string name="delete_recurring_only_this_day">Nur diesen Tag</string>
+    <string name="delete_recurring_from_this_day">Ab diesem Tag</string>
 </resources>
 
