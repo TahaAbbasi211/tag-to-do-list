@@ -190,6 +190,7 @@ private fun brandFor(def: PaletteDef.Def, dark: Boolean, dynamicScheme: ColorSch
         ringEnd = lerp(secondary, Color.White, 0.28f),
         streak = tertiary,
         success = secondary,
+        warning = tertiary,
         priorityLow = Color(0xFF718096),
         priorityNormal = primary,
         priorityHigh = Coral,
