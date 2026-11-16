@@ -176,7 +176,11 @@ object ReminderScheduler {
 
     fun scheduleRoutine(context: Context, alarmManager: AlarmManager, routine: RoutineEntity) {
         val minutes = routine.timeMinutes ?: return
-        val triggerAt = nextTrigger(routine.daysMask, minutes)
+        val triggerAt = nextTrigger(routine, minutes)
+        if (triggerAt == null) {
+            cancelRoutine(context, alarmManager, routine.id)
+            return
+        }
         val pending = routinePendingIntent(context, routine)
         setAlarm(context, alarmManager, triggerAt, pending, routine.id.hashCode())
     }
@@ -280,6 +284,44 @@ object ReminderScheduler {
         }.onFailure {
             alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, AppConstants.ALARM_WINDOW_MILLIS, pending)
         }
+    }
+
+    /** Next epoch millis matching [routine]'s schedule at [minutes] past midnight, or null if none upcoming. */
+    fun nextTrigger(routine: RoutineEntity, minutes: Int): Long? {
+        val zone = java.time.ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        val nowMillis = System.currentTimeMillis()
+        if (!routine.repeatDaily) {
+            val targetDate = LocalDate.ofEpochDay(routine.dateEpochDay)
+            if (targetDate.isBefore(today)) return null
+            val candidate = ZonedDateTime.of(
+                targetDate,
+                java.time.LocalTime.of((minutes / 60) % 24, minutes % 60),
+                zone,
+            ).toInstant().toEpochMilli()
+            return if (candidate > nowMillis + AppConstants.ALARM_GRACE_MILLIS) candidate else null
+        }
+        var date = today
+        repeat(30) {
+            val dayEpoch = date.toEpochDay()
+            if (routine.endDateEpochDay != null && dayEpoch > routine.endDateEpochDay) return null
+            val startOk = routine.dateEpochDay == 0L || dayEpoch >= routine.dateEpochDay
+            val dayMatches = startOk &&
+                (routine.daysMask and Dates.weekdayBit(date)) != 0 &&
+                !routine.isExcludedOn(Dates.iso(date))
+            if (dayMatches) {
+                val candidate = ZonedDateTime.of(
+                    date,
+                    java.time.LocalTime.of((minutes / 60) % 24, minutes % 60),
+                    zone,
+                ).toInstant().toEpochMilli()
+                if (candidate > nowMillis + AppConstants.ALARM_GRACE_MILLIS) {
+                    return candidate
+                }
+            }
+            date = date.plusDays(1)
+        }
+        return null
     }
 
     /** Next epoch millis matching [daysMask] at [minutes] past midnight, always in the future. */
