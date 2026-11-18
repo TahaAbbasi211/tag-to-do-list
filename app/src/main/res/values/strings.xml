@@ -345,4 +345,30 @@
     <string name="duration_m">%1$dm</string>
     <string name="duration_h">%1$dh</string>
     <string name="duration_hm">%1$dh %2$dm</string>
+
+    <!-- 12-week heatmap (v1.4) -->
+    <string name="insights_heatmap_tap_hint">Tap any day to see items and completions.</string>
+    <string name="insights_heatmap_day_summary">Items: %1$d · Checked: %2$d</string>
+    <string name="insights_heatmap_day_neutral">No scheduled items</string>
+    <string name="insights_heatmap_legend_neutral">No items</string>
+    <string name="insights_heatmap_legend_less">Less</string>
+    <string name="insights_heatmap_legend_more">More</string>
+    <string name="insights_heatmap_weeks_ago">%1$dw ago</string>
+
+    <!-- Weekly report (v1.4) -->
+    <string name="insights_weekly_report_title">Weekly report</string>
+    <string name="insights_weekly_report_subtitle_complete">Full week compared with last week</string>
+    <string name="insights_weekly_report_subtitle_partial">Week in progress (%1$d of %2$d days)</string>
+    <string name="insights_this_week">This week</string>
+    <string name="insights_last_week">Last week</string>
+    <string name="insights_perfect_days">Perfect days</string>
+    <string name="insights_streak">Streak</string>
+    <string name="insights_weekly_best_item">Strongest item</string>
+    <string name="insights_weekly_weakest_item">Weakest item</string>
+    <string name="insights_weekly_compare_up">+%1$s compared to last week</string>
+    <string name="insights_weekly_compare_down">-%1$s compared to last week</string>
+    <string name="insights_weekly_compare_steady">Same completion as last week (%1$s)</string>
+    <string name="insights_weekly_compare_incomplete">Partial week — full comparison starts after day %1$d</string>
+    <string name="insights_weekly_compare_no_baseline">Need scheduled items in both weeks to compare</string>
+    <string name="insights_weekly_no_items">No scheduled items in this week yet.</string>
 </resources>
