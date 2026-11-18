@@ -9,6 +9,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,7 +38,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tag.routine.data.Dates
 import com.tag.routine.data.DayStat
@@ -149,6 +153,9 @@ fun WeeklyBarChart(
 ) {
     val brand = tagBrand()
     val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val fontScale = LocalDensity.current.fontScale
+    val useHorizontalScroll = fontScale > 1.25f
+    val trackHeight = (barHeight - 34.dp).coerceAtLeast(64.dp)
     val data = stats.takeLast(7)
     val reveal = remember { Animatable(0f) }
     LaunchedEffect(data.map { it.ratio to it.date }) {
@@ -156,19 +163,30 @@ fun WeeklyBarChart(
         reveal.animateTo(1f, tween(650))
     }
 
+    val rowModifier = if (useHorizontalScroll) {
+        Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+    } else {
+        Modifier.fillMaxWidth()
+    }
+
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(barHeight),
+            modifier = rowModifier,
             horizontalArrangement = Arrangement.spacedBy(9.dp),
             verticalAlignment = Alignment.Bottom,
         ) {
             data.forEach { stat ->
                 val isToday = stat.date == today
                 val heightFraction = (stat.ratio * reveal.value).coerceIn(0f, 1f)
+                val columnModifier = if (useHorizontalScroll) {
+                    Modifier.width((42.dp * fontScale.coerceAtMost(2.2f)))
+                } else {
+                    Modifier.weight(1f)
+                }
                 Column(
-                    modifier = Modifier.weight(1f),
+                    modifier = columnModifier,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Bottom,
                 ) {
@@ -176,29 +194,37 @@ fun WeeklyBarChart(
                         text = if (stat.hasData) Dates.formatPercent((stat.ratio * 100).toInt(), appLocale) else "–",
                         style = MaterialTheme.typography.labelSmall,
                         color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Clip,
                     )
                     Spacer(Modifier.height(5.dp))
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(barHeight - 34.dp)
+                            .height(trackHeight)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                            .background(brand.chartTrack),
                         contentAlignment = Alignment.BottomCenter,
                     ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height((barHeight - 34.dp) * heightFraction)
+                                .height(trackHeight * heightFraction)
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(
                                     if (isToday) {
-                                        Brush.verticalGradient(listOf(brand.ringEnd, brand.ringStart))
+                                        Brush.verticalGradient(
+                                            listOf(
+                                                MaterialTheme.colorScheme.primary,
+                                                MaterialTheme.colorScheme.secondary,
+                                            ),
+                                        )
                                     } else {
                                         Brush.verticalGradient(
                                             listOf(
                                                 MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
-                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
                                             ),
                                         )
                                     },
@@ -207,10 +233,12 @@ fun WeeklyBarChart(
                     }
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        text = Dates.dayOfWeekLabel(stat.date).take(1),
+                        text = Dates.dayOfWeekLabel(stat.date, appLocale).take(1),
                         style = MaterialTheme.typography.labelSmall,
                         color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = if (isToday) FontWeight.Bold else FontWeight.Medium,
+                        maxLines = 1,
+                        softWrap = false,
                     )
                 }
             }
