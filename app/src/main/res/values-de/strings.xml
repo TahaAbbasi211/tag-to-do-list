@@ -299,5 +299,51 @@
     <string name="delete_recurring_message">Wähle, wie \"%1$s\" entfernt werden soll:</string>
     <string name="delete_recurring_only_this_day">Nur diesen Tag</string>
     <string name="delete_recurring_from_this_day">Ab diesem Tag</string>
+
+    <!-- Einträge kopieren (v1.2) -->
+    <string name="copy_yesterday_to_today">Gestern auf heute kopieren</string>
+    <string name="copy_yesterday_to_today_count">Gestern auf heute kopieren (%1$d)</string>
+    <string name="copy_to_other_day">Auf einen anderen Tag kopieren</string>
+    <string name="copy_to_other_day_title">Auf einen anderen Tag kopieren</string>
+    <string name="copy_to_other_day_message">Wähle die Tage, an denen \"%1$s\" auch erscheinen soll. Es werden nur Einträge kopiert, keine Häkchen.</string>
+    <string name="copy_to_other_day_pick_days">Tage</string>
+    <string name="copy_to_other_day_confirm">Kopieren</string>
+    <string name="copy_nothing_to_copy">Gestern gibt es nichts zu kopieren</string>
+    <string name="copy_done_one">%1$d Eintrag kopiert</string>
+    <string name="copy_done_count">%1$d Einträge kopiert</string>
+    <string name="copy_nothing_done">Diese Tage enthalten den Eintrag bereits</string>
+
+    <!-- Schnell hinzufügen (v1.2) -->
+    <string name="quick_add_suggestions">Schnell hinzufügen</string>
+    <string name="quick_add_suggestions_hint">Tippe auf einen Vorschlag, um Titel, Symbol, Farbe und Uhrzeit zu übernehmen.</string>
+
+    <!-- Dynamische Zeile auf der Heute-Karte (v1.2) -->
+    <string name="nudge_empty">Noch nichts geplant. Genieße die Ruhe oder füge etwas Kleines hinzu.</string>
+    <string name="nudge_all_done">Alles erledigt. Wunderbar gemacht.</string>
+    <string name="nudge_one_left">Nur noch eins übrig!</string>
+    <string name="nudge_night">Planen wir schon morgen?</string>
+    <string name="nudge_morning">Ein frischer Morgen. Fang mit einem an.</string>
+    <string name="nudge_halfway">Halbzeit. Bleib im Rhythmus.</string>
+    <string name="nudge_keep_going">Eins nach dem anderen. Du schaffst das.</string>
+
+    <!-- Layout & Bereiche (v1.3) -->
+    <string name="tasks_subtitle">Behalte deine Aufgaben im Blick</string>
+    <string name="insights_subtitle">Deine Beständigkeit und dein Fokus-Rhythmus</string>
+    <string name="settings_subtitle">Designs, Hinweise und Sicherungen anpassen</string>
+    <string name="focus_overview">Fokus-Statistik</string>
+    <string name="focus_timer_ready">Bereit für Fokus</string>
+    <string name="settings_tags_empty">Noch keine Etiketten. Füge unten eines hinzu.</string>
+    <string name="streak_days_short">T</string>
+
+    <!-- Fokus pro Eintrag & Auswertung (v1.3) -->
+    <string name="today_focus_time">Fokus heute: %1$s</string>
+    <string name="insights_focus_breakdown_title">Meistfokussierte Einträge</string>
+    <string name="insights_focus_breakdown_subtitle">Gesamte Fokuszeit nach Eintrag</string>
+    <string name="insights_focus_sessions_count">%1$d Sitzungen</string>
+    <string name="insights_focus_unlinked">Weitere Sitzungen (ohne Zuordnung)</string>
+    <string name="insights_focus_empty">Starte den Fokus für einen Eintrag unter Heute, um deine Fokuszeit pro Eintrag zu sehen.</string>
+    <string name="duration_m">%1$d Min.</string>
+    <string name="duration_h">%1$d Std.</string>
+    <string name="duration_hm">%1$dh %2$dm</string>
 </resources>
 
