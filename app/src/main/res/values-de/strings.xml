@@ -345,5 +345,31 @@
     <string name="duration_m">%1$d Min.</string>
     <string name="duration_h">%1$d Std.</string>
     <string name="duration_hm">%1$dh %2$dm</string>
+
+    <!-- 12-Wochen-Heatmap (v1.4) -->
+    <string name="insights_heatmap_tap_hint">Tippe auf einen Tag, um Einträge und Erledigungen zu sehen.</string>
+    <string name="insights_heatmap_day_summary">Einträge: %1$d · Erledigt: %2$d</string>
+    <string name="insights_heatmap_day_neutral">Keine geplanten Einträge</string>
+    <string name="insights_heatmap_legend_neutral">Keine</string>
+    <string name="insights_heatmap_legend_less">Weniger</string>
+    <string name="insights_heatmap_legend_more">Mehr</string>
+    <string name="insights_heatmap_weeks_ago">Vor %1$d Wo.</string>
+
+    <!-- Wochenbericht (v1.4) -->
+    <string name="insights_weekly_report_title">Wochenbericht</string>
+    <string name="insights_weekly_report_subtitle_complete">Volle Woche im Vergleich zur Vorwoche</string>
+    <string name="insights_weekly_report_subtitle_partial">Woche läuft noch (%1$d von %2$d Tagen)</string>
+    <string name="insights_this_week">Diese Woche</string>
+    <string name="insights_last_week">Letzte Woche</string>
+    <string name="insights_perfect_days">Perfekte Tage</string>
+    <string name="insights_streak">Serie</string>
+    <string name="insights_weekly_best_item">Stärkster Eintrag</string>
+    <string name="insights_weekly_weakest_item">Schwächster Eintrag</string>
+    <string name="insights_weekly_compare_up">+%1$s im Vergleich zur Vorwoche</string>
+    <string name="insights_weekly_compare_down">-%1$s im Vergleich zur Vorwoche</string>
+    <string name="insights_weekly_compare_steady">Gleich wie letzte Woche (%1$s)</string>
+    <string name="insights_weekly_compare_incomplete">Laufende Woche — voller Vergleich nach Tag %1$d</string>
+    <string name="insights_weekly_compare_no_baseline">Für einen Vergleich werden Einträge in beiden Wochen benötigt</string>
+    <string name="insights_weekly_no_items">Für diese Woche sind noch keine Einträge geplant.</string>
 </resources>
 
