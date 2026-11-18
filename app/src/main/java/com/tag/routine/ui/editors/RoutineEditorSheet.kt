@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,6 +45,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.tag.routine.R
@@ -53,10 +55,14 @@ import com.tag.routine.data.Groups
 import com.tag.routine.data.RoutineColors
 import com.tag.routine.data.RoutineEmojis
 import com.tag.routine.data.RoutineEntity
+import com.tag.routine.data.RoutineSuggestion
+import com.tag.routine.data.SuggestionEngine
 import com.tag.routine.ui.components.AppButton
 import com.tag.routine.ui.components.AppButtonVariant
+import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.FilterPill
 import com.tag.routine.ui.i18n.ProvideAppLocale
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -65,6 +71,11 @@ fun RoutineEditorSheet(
     localizedContext: android.content.Context,
     onDismiss: () -> Unit,
     onOpenTemplates: (() -> Unit)? = null,
+    /**
+     * Routines that already exist, used to suggest titles while the user types. Only read
+     * from, never written: the suggestions are derived from data that is already stored.
+     */
+    existingRoutines: List<RoutineEntity> = emptyList(),
     onSave: (
         title: String,
         group: String,
@@ -93,11 +104,12 @@ fun RoutineEditorSheet(
 
     val groups = listOf(Groups.MORNING, Groups.AFTERNOON, Groups.EVENING)
     var hourText by remember {
-        mutableStateOf(existing?.timeMinutes?.let { "%02d".format(it / 60) } ?: "07")
+        mutableStateOf(existing?.timeMinutes?.let { "%02d".format(Locale.ROOT, it / 60) } ?: "07")
     }
     var minuteText by remember {
-        mutableStateOf(existing?.timeMinutes?.let { "%02d".format(it % 60) } ?: "00")
+        mutableStateOf(existing?.timeMinutes?.let { "%02d".format(Locale.ROOT, it % 60) } ?: "00")
     }
+    var hideSuggestions by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -108,6 +120,7 @@ fun RoutineEditorSheet(
         // Activity's system-locale context. Re-provide the app language so the editor
         // matches the rest of the app instead of falling back to English.
         ProvideAppLocale(localizedContext) {
+        val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -146,12 +159,70 @@ fun RoutineEditorSheet(
             // Title
             OutlinedTextField(
                 value = title,
-                onValueChange = { title = it },
+                onValueChange = {
+                    title = it
+                    hideSuggestions = false
+                },
                 label = { Text(stringResource(R.string.routine_editor_title)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
             )
+
+            // Quick add: up to five titles the user has used before, ranked by how closely
+            // they match what is being typed and by how often they were used. One tap fills
+            // the title together with the icon, colour and time of that routine.
+            val suggestions = remember(existingRoutines, title, hideSuggestions) {
+                if (existing == null && !hideSuggestions) {
+                    SuggestionEngine.suggest(existingRoutines, title)
+                } else {
+                    emptyList()
+                }
+            }
+            if (suggestions.isNotEmpty()) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.quick_add_suggestions),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        suggestions.forEach { suggestion ->
+                            SuggestionRow(
+                                suggestion = suggestion,
+                                isDark = isDark,
+                                appLocale = appLocale,
+                                onPick = {
+                                    title = suggestion.title
+                                    val picked = suggestion.routine
+                                    icon = RoutineEmojis.resolve(picked.icon)
+                                    val spec = RoutineColors.byId(picked.colorId)
+                                    colorId = spec.id
+                                    colorHex = RoutineColors.hexFor(spec.id, isDark)
+                                    if (picked.timeMinutes != null) {
+                                        timeMinutes = picked.timeMinutes
+                                        hourText = "%02d".format(Locale.ROOT, picked.timeMinutes / 60)
+                                        minuteText = "%02d".format(Locale.ROOT, picked.timeMinutes % 60)
+                                    } else {
+                                        timeMinutes = null
+                                        hourText = "07"
+                                        minuteText = "00"
+                                    }
+                                    group = picked.groupName
+                                    hideSuggestions = true
+                                },
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.quick_add_suggestions_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
 
             // Group selector
             Column {
@@ -378,7 +449,7 @@ fun RoutineEditorSheet(
                         } else {
                             stringResource(
                                 R.string.routine_editor_remind_at,
-                                "%02d:%02d".format((timeMinutes!!) / 60, (timeMinutes!!) % 60),
+                                Dates.timeLabel(timeMinutes!!, appLocale),
                             )
                         },
                         style = MaterialTheme.typography.bodySmall,
@@ -432,6 +503,76 @@ fun RoutineEditorSheet(
 
             Spacer(Modifier.height(16.dp))
         }
+        }
+    }
+}
+
+/**
+ * One quick-add suggestion: the emoji and colour of the remembered routine, its title, time,
+ * and how many times the user has used that title. Tapping it fills the whole form.
+ */
+@Composable
+private fun SuggestionRow(
+    suggestion: RoutineSuggestion,
+    isDark: Boolean,
+    appLocale: Locale,
+    onPick: () -> Unit,
+) {
+    val accent = Color(RoutineColors.hexFor(suggestion.routine.colorId, isDark))
+    val meta = buildList {
+        suggestion.routine.timeMinutes?.let { add(Dates.timeLabel(it, appLocale)) }
+        if (suggestion.uses > 1) add(Dates.formatDigits("×${suggestion.uses}", appLocale))
+    }.joinToString("  ·  ")
+
+    AppCard(
+        onClick = onPick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        elevation = 0.dp,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(34.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(accent.copy(alpha = 0.16f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = RoutineEmojis.resolve(suggestion.routine.icon),
+                    fontSize = 18.sp,
+                )
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = suggestion.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
+                if (meta.isNotEmpty()) {
+                    Text(
+                        text = meta,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Icon(
+                imageVector = Icons.Rounded.Add,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(18.dp),
+            )
         }
     }
 }
