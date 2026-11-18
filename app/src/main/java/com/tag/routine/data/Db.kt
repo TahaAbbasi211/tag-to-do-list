@@ -114,6 +114,14 @@ interface RoutineDao {
     @Query("SELECT COUNT(*) FROM routines")
     suspend fun count(): Int
 
+    /**
+     * Every routine id currently stored. Used by the copy actions to check, against the
+     * database rather than a possibly stale in-memory snapshot, that a copy is not already
+     * on the target day.
+     */
+    @Query("SELECT id FROM routines")
+    suspend fun allIds(): List<String>
+
     /** One-off migration: drops the routines that 1.0.0 seeded on first launch. */
     @Query("DELETE FROM routines WHERE id LIKE 'routine-%'")
     suspend fun deleteSeeded(): Int
