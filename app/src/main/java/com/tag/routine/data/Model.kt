@@ -329,6 +329,23 @@ object Dates {
     /** Alias kept for call sites that describe a clock label rather than an offset. */
     fun timeLabel(minutes: Int, locale: Locale = Locale.ROOT): String = formatMinutes(minutes, locale)
 
+    /** Formats a focus duration (e.g. "25m" or "1h 15m") with localised units and digits. */
+    fun formatDuration(
+        totalMinutes: Int,
+        resources: Resources? = null,
+        locale: Locale = Locale.getDefault(),
+    ): String {
+        val safe = totalMinutes.coerceAtLeast(0)
+        val hours = safe / 60
+        val mins = safe % 60
+        val raw = when {
+            hours == 0 -> str(resources, R.string.duration_m, "${mins}m", mins)
+            mins == 0 -> str(resources, R.string.duration_h, "${hours}h", hours)
+            else -> str(resources, R.string.duration_hm, "${hours}h ${mins}m", hours, mins)
+        }
+        return formatDigits(raw, locale)
+    }
+
     /**
      * Relative label for [date] compared with [today].
      *
