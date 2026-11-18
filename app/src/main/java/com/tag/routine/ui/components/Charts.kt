@@ -12,7 +12,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,11 +26,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,16 +44,32 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
+import com.tag.routine.R
 import com.tag.routine.data.Dates
 import com.tag.routine.data.DayStat
+import com.tag.routine.data.HeatmapCalendar
+import com.tag.routine.data.HeatmapIntensity
+import com.tag.routine.data.WeeklyReportEngine
+import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
+import kotlinx.coroutines.flow.first
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.Locale
+import kotlin.math.roundToInt
 
 /** Horizontal seven-day selector showing completion dots. */
 @Composable
@@ -246,47 +269,377 @@ fun WeeklyBarChart(
     }
 }
 
-/** Contribution-style heatmap of the trailing weeks. */
+/**
+ * Interactive 12-week activity heatmap aligned to calendar weeks.
+ *
+ * Weeks flow chronologically from Start to End (automatically mirroring in RTL), and rows run
+ * from the locale's first day of week (Saturday for Persian, Monday otherwise). Days without
+ * scheduled items use a neutral bordered swatch distinct from 0%-completion days, tapping a day
+ * displays its item and completion summary, and narrow screens or large system fonts switch the
+ * week grid to horizontal scroll instead of clipping cells or weekday labels.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun HeatmapGrid(
     stats: List<DayStat>,
     modifier: Modifier = Modifier,
-    weeks: Int = 12,
+    weeks: Int = HeatmapCalendar.DEFAULT_WEEKS,
+    today: LocalDate = Dates.today(),
 ) {
-    val brand = tagBrand()
-    val cells = stats.takeLast(weeks * 7)
-    val empty = brand.gridEmpty
-    val ramp = listOf(
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-        brand.success,
-    )
-    Column(modifier = modifier) {
-        cells.chunked(7).forEach { week ->
+    val spacing = MaterialTheme.spacing
+    val resources = LocalContext.current.resources
+    val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val density = LocalDensity.current
+
+    val firstDayOfWeek = remember(appLocale) {
+        WeeklyReportEngine.defaultFirstDayOfWeek(appLocale)
+    }
+    val weekColumns = remember(stats, today, weeks, firstDayOfWeek) {
+        HeatmapCalendar.build(
+            stats = stats,
+            today = today,
+            weeks = weeks,
+            firstDayOfWeek = firstDayOfWeek,
+        )
+    }
+    val weekdayLabels = remember(firstDayOfWeek, appLocale) {
+        HeatmapCalendar.weekdayDates(firstDayOfWeek).map { date ->
+            Dates.shortDayName(date, appLocale)
+        }
+    }
+
+    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
+    val selectedCell = remember(weekColumns, selectedDate) {
+        selectedDate?.let { target ->
+            weekColumns.asSequence()
+                .flatMap { it.cells.asSequence() }
+                .firstOrNull { !it.isFuture && it.date == target }
+        }
+    }
+
+    val neutralColor = MaterialTheme.colorScheme.surfaceContainerLowest
+    val neutralBorder = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)
+    val zeroDoneColor = MaterialTheme.colorScheme.surfaceContainerHighest
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val level1Color = lerp(zeroDoneColor, primaryColor, 0.34f)
+    val level2Color = lerp(zeroDoneColor, primaryColor, 0.58f)
+    val level3Color = lerp(zeroDoneColor, primaryColor, 0.80f)
+    val completeColor = primaryColor
+    val selectedBorderColor = MaterialTheme.colorScheme.onSurface
+    val todayBorderColor = MaterialTheme.colorScheme.primary
+
+    val labelStyle = MaterialTheme.typography.labelSmall
+    val textMeasurer = rememberTextMeasurer()
+    val maxLabelWidthDp = remember(weekdayLabels, labelStyle, density) {
+        with(density) {
+            weekdayLabels.maxOfOrNull { label ->
+                textMeasurer.measure(text = label, style = labelStyle).size.width
+            }?.toDp() ?: 16.dp
+        }.coerceAtLeast(16.dp)
+    }
+    val maxLabelHeightDp = remember(weekdayLabels, labelStyle, density) {
+        with(density) {
+            weekdayLabels.maxOfOrNull { label ->
+                textMeasurer.measure(text = label, style = labelStyle).size.height
+            }?.toDp() ?: 16.dp
+        }
+    }
+
+    val neutralLabel = stringResource(R.string.insights_heatmap_legend_neutral)
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(spacing.md),
+    ) {
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val cellGap = 4.dp
+            val labelGap = 8.dp
+            val minCellSize = 18.dp
+            val weekCount = weekColumns.size.coerceAtLeast(1)
+            val availableWidth = (maxWidth - maxLabelWidthDp - labelGap).coerceAtLeast(0.dp)
+            val fitCellWidth = (availableWidth - cellGap * (weekCount - 1)) / weekCount
+            val needsScroll = fitCellWidth < minCellSize
+            val cellWidth = if (needsScroll) minCellSize else fitCellWidth
+            val rowHeight = max(cellWidth.coerceIn(minCellSize, 24.dp), maxLabelHeightDp + 2.dp)
+            val cornerRadius = (minOf(cellWidth, rowHeight) * 0.28f).coerceIn(4.dp, 7.dp)
+            val cellShape = RoundedCornerShape(cornerRadius)
+
+            val scrollState = rememberScrollState()
+            LaunchedEffect(weekCount, needsScroll) {
+                if (needsScroll) {
+                    val maxScroll = snapshotFlow { scrollState.maxValue }
+                        .first { it in 1 until Int.MAX_VALUE }
+                    scrollState.scrollTo(maxScroll)
+                }
+            }
+
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 2.5.dp),
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
+            ) {
+                Column(
+                    modifier = Modifier.width(maxLabelWidthDp),
+                    verticalArrangement = Arrangement.spacedBy(cellGap),
+                ) {
+                    weekdayLabels.forEach { label ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(rowHeight),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = label,
+                                style = labelStyle,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                softWrap = false,
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.width(labelGap))
+
+                val weeksRowModifier = if (needsScroll) {
+                    Modifier
+                        .weight(1f)
+                        .horizontalScroll(scrollState)
+                } else {
+                    Modifier.weight(1f)
+                }
+
+                Row(
+                    modifier = weeksRowModifier,
+                    horizontalArrangement = Arrangement.spacedBy(cellGap),
+                ) {
+                    weekColumns.forEach { weekColumn ->
+                        val columnModifier = if (needsScroll) {
+                            Modifier.width(cellWidth)
+                        } else {
+                            Modifier.weight(1f)
+                        }
+                        Column(
+                            modifier = columnModifier,
+                            verticalArrangement = Arrangement.spacedBy(cellGap),
+                        ) {
+                            weekColumn.cells.forEach { cell ->
+                                if (cell.isFuture) {
+                                    Spacer(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(rowHeight),
+                                    )
+                                } else {
+                                    val isSelected = selectedDate == cell.date
+                                    val bgColor = when (cell.intensity) {
+                                        HeatmapIntensity.FUTURE -> Color.Transparent
+                                        HeatmapIntensity.NEUTRAL -> neutralColor
+                                        HeatmapIntensity.ZERO_DONE -> zeroDoneColor
+                                        HeatmapIntensity.LEVEL_1 -> level1Color
+                                        HeatmapIntensity.LEVEL_2 -> level2Color
+                                        HeatmapIntensity.LEVEL_3 -> level3Color
+                                        HeatmapIntensity.COMPLETE -> completeColor
+                                    }
+                                    val borderModifier = when {
+                                        isSelected -> Modifier.border(
+                                            width = 2.dp,
+                                            color = selectedBorderColor,
+                                            shape = cellShape,
+                                        )
+                                        cell.isToday -> Modifier.border(
+                                            width = 1.5.dp,
+                                            color = todayBorderColor,
+                                            shape = cellShape,
+                                        )
+                                        cell.intensity == HeatmapIntensity.NEUTRAL -> Modifier.border(
+                                            width = 1.dp,
+                                            color = neutralBorder,
+                                            shape = cellShape,
+                                        )
+                                        else -> Modifier
+                                    }
+                                    val cellStat = cell.stat
+                                    val a11ySummary = Dates.formatDigits(
+                                        if (cellStat != null && cellStat.hasData) {
+                                            "${Dates.dayMonth(cell.date, appLocale)} ${cellStat.completed}/${cellStat.scheduled}"
+                                        } else {
+                                            "${Dates.dayMonth(cell.date, appLocale)} $neutralLabel"
+                                        },
+                                        appLocale,
+                                    )
+
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(rowHeight)
+                                            .clip(cellShape)
+                                            .background(bgColor)
+                                            .then(borderModifier)
+                                            .semantics { contentDescription = a11ySummary }
+                                            .clickable {
+                                                selectedDate = if (isSelected) null else cell.date
+                                            },
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Chronological endpoints aligned to the grid direction (Start = oldest, End = today).
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(spacing.xs),
+        ) {
+            Text(
+                text = Dates.formatDigits(
+                    stringResource(R.string.insights_heatmap_weeks_ago, weekColumns.size),
+                    appLocale,
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(R.string.day_today),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+
+        // Legend distinguishing neutral empty days from 0%-completed and intensity levels.
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Row(
+                modifier = Modifier.align(Alignment.CenterVertically),
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
             ) {
-                week.forEach { stat ->
-                    val color = when {
-                        !stat.hasData -> empty
-                        stat.completed == 0 -> MaterialTheme.colorScheme.surfaceContainerHighest
-                        stat.ratio >= 0.999f -> ramp[3]
-                        stat.ratio >= 0.66f -> ramp[2]
-                        stat.ratio >= 0.34f -> ramp[1]
-                        else -> ramp[0]
-                    }
+                Box(
+                    modifier = Modifier
+                        .size(11.dp)
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(neutralColor)
+                        .border(1.dp, neutralBorder, RoundedCornerShape(3.dp)),
+                )
+                Text(
+                    text = neutralLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Row(
+                modifier = Modifier.align(Alignment.CenterVertically),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.insights_heatmap_legend_less),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                listOf(zeroDoneColor, level1Color, level2Color, level3Color, completeColor).forEach { swatch ->
                     Box(
-                        Modifier
-                            .weight(1f)
-                            .height(20.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(color),
+                        modifier = Modifier
+                            .size(11.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(swatch),
                     )
                 }
+                Text(
+                    text = stringResource(R.string.insights_heatmap_legend_more),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        // Selected day summary panel (updates on tap).
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)),
+        ) {
+            if (selectedCell != null) {
+                val stat = selectedCell.stat
+                val daysDiff = ChronoUnit.DAYS.between(today, selectedCell.date)
+                val dateLabel = if (daysDiff in -1L..0L) {
+                    "${Dates.relativeDayLabel(selectedCell.date, today, resources)} · ${Dates.dayMonth(selectedCell.date, appLocale)}"
+                } else {
+                    Dates.dayMonth(selectedCell.date, appLocale)
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = spacing.md, vertical = spacing.sm),
+                    verticalArrangement = Arrangement.spacedBy(spacing.xs),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                    ) {
+                        Text(
+                            text = Dates.formatDigits(dateLabel, appLocale),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f),
+                        )
+                        if (stat != null && stat.hasData) {
+                            val pct = (stat.ratio * 100f).roundToInt().coerceIn(0, 100)
+                            Surface(
+                                shape = RoundedCornerShape(percent = 50),
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f),
+                            ) {
+                                Text(
+                                    text = Dates.formatPercent(pct, appLocale),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                    maxLines = 1,
+                                    softWrap = false,
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        text = if (stat != null && stat.hasData) {
+                            Dates.formatDigits(
+                                stringResource(
+                                    R.string.insights_heatmap_day_summary,
+                                    stat.scheduled,
+                                    stat.completed,
+                                ),
+                                appLocale,
+                            )
+                        } else {
+                            stringResource(R.string.insights_heatmap_day_neutral)
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Start,
+                    )
+                }
+            } else {
+                Text(
+                    text = stringResource(R.string.insights_heatmap_tap_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = spacing.md, vertical = spacing.sm),
+                )
             }
         }
     }
