@@ -371,5 +371,15 @@
     <string name="insights_weekly_compare_incomplete">هفته ناقص است؛ مقایسه کامل پس از پایان روز %1$d انجام می‌شود</string>
     <string name="insights_weekly_compare_no_baseline">برای مقایسه، هر دو هفته باید آیتم برنامه‌ریزی‌شده داشته باشند</string>
     <string name="insights_weekly_no_items">هنوز آیتمی برای این هفته برنامه‌ریزی نشده است.</string>
+
+    <!-- نوع تقویم (نسخه ۱.۵) -->
+    <string name="settings_calendar_type">نوع تقویم</string>
+    <string name="settings_calendar_type_sub">نمایش تاریخ‌ها و روز شروع هفته در سراسر برنامه</string>
+    <string name="calendar_gregorian">میلادی</string>
+    <string name="calendar_jalali">شمسی (جلالی)</string>
+    <string name="date_picker_prev_month">ماه قبل</string>
+    <string name="date_picker_next_month">ماه بعد</string>
+    <string name="date_picker_select_year">انتخاب سال</string>
+    <string name="date_picker_today">امروز</string>
 </resources>
 
