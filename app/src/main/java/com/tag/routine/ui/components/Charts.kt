@@ -55,9 +55,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import com.tag.routine.R
+import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
 import com.tag.routine.data.DayStat
 import com.tag.routine.data.HeatmapCalendar
@@ -71,7 +73,7 @@ import java.time.temporal.ChronoUnit
 import java.util.Locale
 import kotlin.math.roundToInt
 
-/** Horizontal seven-day selector showing completion dots. */
+/** Horizontal seven-day selector showing completion dots and the active month/year header. */
 @Composable
 fun WeekStrip(
     selected: LocalDate,
@@ -80,87 +82,106 @@ fun WeekStrip(
     onSelect: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
     days: Int = 7,
+    calendarType: CalendarType = CalendarType.GREGORIAN,
+    showMonthHeader: Boolean = true,
     hasItemsFor: (LocalDate) -> Boolean = { dotFor(it) > 0f },
 ) {
     val brand = tagBrand()
     val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
     val start = today.minusDays(3)
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        repeat(days) { index ->
-            val date = start.plusDays(index.toLong())
-            val isSelected = date == selected
-            val isToday = date == today
-            val isFuture = date.isAfter(today)
-            val ratio = dotFor(date)
-            val hasItems = hasItemsFor(date)
-            val container by animateColorAsState(
-                targetValue = when {
-                    isSelected -> MaterialTheme.colorScheme.primary
-                    isToday -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
-                    else -> MaterialTheme.colorScheme.surfaceContainer
-                },
-                animationSpec = tween(220),
-                label = "week-bg",
+    Column(modifier = modifier.fillMaxWidth()) {
+        if (showMonthHeader) {
+            Text(
+                text = Dates.monthYearTitle(selected, appLocale, calendarType),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(bottom = 6.dp),
             )
-            val contentColor by animateColorAsState(
-                targetValue = when {
-                    isSelected -> MaterialTheme.colorScheme.onPrimary
-                    isFuture -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
-                    isToday -> MaterialTheme.colorScheme.primary
-                    else -> MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                animationSpec = tween(220),
-                label = "week-fg",
-            )
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(container)
-                    .then(
-                        if (!isSelected) {
-                            Modifier.border(
-                                1.dp,
-                                if (isToday) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
-                                else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                                RoundedCornerShape(20.dp),
-                            )
-                        } else Modifier
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            repeat(days) { index ->
+                val date = start.plusDays(index.toLong())
+                val isSelected = date == selected
+                val isToday = date == today
+                val isFuture = date.isAfter(today)
+                val ratio = dotFor(date)
+                val hasItems = hasItemsFor(date)
+                val container by animateColorAsState(
+                    targetValue = when {
+                        isSelected -> MaterialTheme.colorScheme.primary
+                        isToday -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+                        else -> MaterialTheme.colorScheme.surfaceContainer
+                    },
+                    animationSpec = tween(220),
+                    label = "week-bg",
+                )
+                val contentColor by animateColorAsState(
+                    targetValue = when {
+                        isSelected -> MaterialTheme.colorScheme.onPrimary
+                        isFuture -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
+                        isToday -> MaterialTheme.colorScheme.primary
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    animationSpec = tween(220),
+                    label = "week-fg",
+                )
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(container)
+                        .then(
+                            if (!isSelected) {
+                                Modifier.border(
+                                    1.dp,
+                                    if (isToday) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
+                                    else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                    RoundedCornerShape(20.dp),
+                                )
+                            } else Modifier
+                        )
+                        .clickable { onSelect(date) }
+                        .padding(vertical = 10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = Dates.shortDayName(date, appLocale),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = contentColor.copy(alpha = 0.85f),
+                        fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Medium,
+                        maxLines = 1,
+                        softWrap = false,
                     )
-                    .clickable { onSelect(date) }
-                    .padding(vertical = 10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = Dates.dayOfWeekLabel(date, appLocale).take(1).uppercase(appLocale),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = contentColor.copy(alpha = 0.85f),
-                    fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Medium,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = Dates.formatDigits(date.dayOfMonth.toString(), appLocale),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = contentColor,
-                    fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                )
-                Spacer(Modifier.height(6.dp))
-                Box(
-                    Modifier
-                        .size(6.dp)
-                        .clip(RoundedCornerShape(percent = 50))
-                        .background(
-                            when {
-                                !hasItems -> Color.Transparent
-                                ratio >= 0.999f -> if (isSelected) contentColor else brand.success
-                                ratio > 0f -> if (isSelected) contentColor.copy(alpha = 0.7f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
-                                else -> if (isSelected) contentColor.copy(alpha = 0.55f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
-                            },
-                        ),
-                )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = Dates.formatDigits(Dates.dayOfMonth(date, calendarType).toString(), appLocale),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = contentColor,
+                        fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Box(
+                        Modifier
+                            .size(6.dp)
+                            .clip(RoundedCornerShape(percent = 50))
+                            .background(
+                                when {
+                                    !hasItems -> Color.Transparent
+                                    ratio >= 0.999f -> if (isSelected) contentColor else brand.success
+                                    ratio > 0f -> if (isSelected) contentColor.copy(alpha = 0.7f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
+                                    else -> if (isSelected) contentColor.copy(alpha = 0.55f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
+                                },
+                            ),
+                    )
+                }
             }
         }
     }
@@ -269,14 +290,20 @@ fun WeeklyBarChart(
     }
 }
 
+private data class PlacedMonthLabel(
+    val text: String,
+    val startDp: Dp,
+)
+
 /**
  * Interactive 12-week activity heatmap aligned to calendar weeks.
  *
  * Weeks flow chronologically from Start to End (automatically mirroring in RTL), and rows run
- * from the locale's first day of week (Saturday for Persian, Monday otherwise). Days without
- * scheduled items use a neutral bordered swatch distinct from 0%-completion days, tapping a day
- * displays its item and completion summary, and narrow screens or large system fonts switch the
- * week grid to horizontal scroll instead of clipping cells or weekday labels.
+ * from the active calendar's first day of week (Saturday in Jalali or Persian Gregorian, Monday
+ * otherwise). Days without scheduled items use a neutral bordered swatch distinct from
+ * 0%-completion days, tapping a day displays its item and completion summary, and narrow screens
+ * or large system fonts switch the week grid to horizontal scroll instead of clipping cells or
+ * weekday/month labels.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -285,14 +312,15 @@ fun HeatmapGrid(
     modifier: Modifier = Modifier,
     weeks: Int = HeatmapCalendar.DEFAULT_WEEKS,
     today: LocalDate = Dates.today(),
+    calendarType: CalendarType = CalendarType.GREGORIAN,
 ) {
     val spacing = MaterialTheme.spacing
     val resources = LocalContext.current.resources
     val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
     val density = LocalDensity.current
 
-    val firstDayOfWeek = remember(appLocale) {
-        WeeklyReportEngine.defaultFirstDayOfWeek(appLocale)
+    val firstDayOfWeek = remember(calendarType, appLocale) {
+        WeeklyReportEngine.defaultFirstDayOfWeek(calendarType, appLocale)
     }
     val weekColumns = remember(stats, today, weeks, firstDayOfWeek) {
         HeatmapCalendar.build(
@@ -301,6 +329,9 @@ fun HeatmapGrid(
             weeks = weeks,
             firstDayOfWeek = firstDayOfWeek,
         )
+    }
+    val monthAnchors = remember(weekColumns, calendarType) {
+        HeatmapCalendar.monthLabels(weekColumns, calendarType)
     }
     val weekdayLabels = remember(firstDayOfWeek, appLocale) {
         HeatmapCalendar.weekdayDates(firstDayOfWeek).map { date ->
@@ -363,6 +394,38 @@ fun HeatmapGrid(
             val rowHeight = max(cellWidth.coerceIn(minCellSize, 24.dp), maxLabelHeightDp + 2.dp)
             val cornerRadius = (minOf(cellWidth, rowHeight) * 0.28f).coerceIn(4.dp, 7.dp)
             val cellShape = RoundedCornerShape(cornerRadius)
+            val gridWidth = cellWidth * weekCount + cellGap * (weekCount - 1)
+
+            val placedMonthLabels = remember(monthAnchors, cellWidth, cellGap, gridWidth, appLocale, calendarType, labelStyle, density) {
+                val stepPx = with(density) { (cellWidth + cellGap).toPx() }
+                val totalGridWidthPx = with(density) { gridWidth.toPx() }
+                val minGapPx = with(density) { 6.dp.toPx() }
+                var nextAllowedStartPx = 0f
+                buildList {
+                    monthAnchors.forEachIndexed { idx, anchor ->
+                        val text = Dates.shortMonthName(anchor.referenceDate, appLocale, calendarType)
+                        val textWidthPx = textMeasurer.measure(text = text, style = labelStyle).size.width.toFloat()
+                        val rawStartPx = anchor.columnIndex * stepPx
+                        val startPx = rawStartPx.coerceAtMost((totalGridWidthPx - textWidthPx).coerceAtLeast(0f))
+                        val nextAnchorStartPx = monthAnchors.getOrNull(idx + 1)?.let { it.columnIndex * stepPx } ?: Float.MAX_VALUE
+                        if (startPx >= nextAllowedStartPx && startPx + textWidthPx + minGapPx <= nextAnchorStartPx) {
+                            add(PlacedMonthLabel(text = text, startDp = with(density) { startPx.toDp() }))
+                            nextAllowedStartPx = startPx + textWidthPx + minGapPx
+                        } else if (idx == monthAnchors.lastIndex && startPx >= nextAllowedStartPx && startPx + textWidthPx <= totalGridWidthPx) {
+                            add(PlacedMonthLabel(text = text, startDp = with(density) { startPx.toDp() }))
+                            nextAllowedStartPx = startPx + textWidthPx + minGapPx
+                        }
+                    }
+                }
+            }
+            val monthRowHeight = remember(placedMonthLabels, labelStyle, maxLabelHeightDp, density) {
+                val measured = with(density) {
+                    placedMonthLabels.maxOfOrNull { label ->
+                        textMeasurer.measure(text = label.text, style = labelStyle).size.height
+                    }?.toDp() ?: 0.dp
+                }
+                max(maxLabelHeightDp, measured)
+            }
 
             val scrollState = rememberScrollState()
             LaunchedEffect(weekCount, needsScroll) {
@@ -381,6 +444,7 @@ fun HeatmapGrid(
                     modifier = Modifier.width(maxLabelWidthDp),
                     verticalArrangement = Arrangement.spacedBy(cellGap),
                 ) {
+                    Spacer(Modifier.height(monthRowHeight))
                     weekdayLabels.forEach { label ->
                         Box(
                             modifier = Modifier
@@ -401,7 +465,7 @@ fun HeatmapGrid(
 
                 Spacer(Modifier.width(labelGap))
 
-                val weeksRowModifier = if (needsScroll) {
+                val weeksContainerModifier = if (needsScroll) {
                     Modifier
                         .weight(1f)
                         .horizontalScroll(scrollState)
@@ -409,78 +473,97 @@ fun HeatmapGrid(
                     Modifier.weight(1f)
                 }
 
-                Row(
-                    modifier = weeksRowModifier,
-                    horizontalArrangement = Arrangement.spacedBy(cellGap),
+                Column(
+                    modifier = weeksContainerModifier,
+                    verticalArrangement = Arrangement.spacedBy(cellGap),
                 ) {
-                    weekColumns.forEach { weekColumn ->
-                        val columnModifier = if (needsScroll) {
-                            Modifier.width(cellWidth)
-                        } else {
-                            Modifier.weight(1f)
+                    Box(
+                        modifier = Modifier
+                            .width(gridWidth)
+                            .height(monthRowHeight),
+                        contentAlignment = Alignment.CenterStart,
+                    ) {
+                        placedMonthLabels.forEach { label ->
+                            Text(
+                                text = label.text,
+                                style = labelStyle,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                softWrap = false,
+                                modifier = Modifier.padding(start = label.startDp),
+                            )
                         }
-                        Column(
-                            modifier = columnModifier,
-                            verticalArrangement = Arrangement.spacedBy(cellGap),
-                        ) {
-                            weekColumn.cells.forEach { cell ->
-                                if (cell.isFuture) {
-                                    Spacer(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(rowHeight),
-                                    )
-                                } else {
-                                    val isSelected = selectedDate == cell.date
-                                    val bgColor = when (cell.intensity) {
-                                        HeatmapIntensity.FUTURE -> Color.Transparent
-                                        HeatmapIntensity.NEUTRAL -> neutralColor
-                                        HeatmapIntensity.ZERO_DONE -> zeroDoneColor
-                                        HeatmapIntensity.LEVEL_1 -> level1Color
-                                        HeatmapIntensity.LEVEL_2 -> level2Color
-                                        HeatmapIntensity.LEVEL_3 -> level3Color
-                                        HeatmapIntensity.COMPLETE -> completeColor
-                                    }
-                                    val borderModifier = when {
-                                        isSelected -> Modifier.border(
-                                            width = 2.dp,
-                                            color = selectedBorderColor,
-                                            shape = cellShape,
-                                        )
-                                        cell.isToday -> Modifier.border(
-                                            width = 1.5.dp,
-                                            color = todayBorderColor,
-                                            shape = cellShape,
-                                        )
-                                        cell.intensity == HeatmapIntensity.NEUTRAL -> Modifier.border(
-                                            width = 1.dp,
-                                            color = neutralBorder,
-                                            shape = cellShape,
-                                        )
-                                        else -> Modifier
-                                    }
-                                    val cellStat = cell.stat
-                                    val a11ySummary = Dates.formatDigits(
-                                        if (cellStat != null && cellStat.hasData) {
-                                            "${Dates.dayMonth(cell.date, appLocale)} ${cellStat.completed}/${cellStat.scheduled}"
-                                        } else {
-                                            "${Dates.dayMonth(cell.date, appLocale)} $neutralLabel"
-                                        },
-                                        appLocale,
-                                    )
+                    }
 
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(rowHeight)
-                                            .clip(cellShape)
-                                            .background(bgColor)
-                                            .then(borderModifier)
-                                            .semantics { contentDescription = a11ySummary }
-                                            .clickable {
-                                                selectedDate = if (isSelected) null else cell.date
+                    Row(
+                        modifier = Modifier.width(gridWidth),
+                        horizontalArrangement = Arrangement.spacedBy(cellGap),
+                    ) {
+                        weekColumns.forEach { weekColumn ->
+                            Column(
+                                modifier = Modifier.width(cellWidth),
+                                verticalArrangement = Arrangement.spacedBy(cellGap),
+                            ) {
+                                weekColumn.cells.forEach { cell ->
+                                    if (cell.isFuture) {
+                                        Spacer(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(rowHeight),
+                                        )
+                                    } else {
+                                        val isSelected = selectedDate == cell.date
+                                        val bgColor = when (cell.intensity) {
+                                            HeatmapIntensity.FUTURE -> Color.Transparent
+                                            HeatmapIntensity.NEUTRAL -> neutralColor
+                                            HeatmapIntensity.ZERO_DONE -> zeroDoneColor
+                                            HeatmapIntensity.LEVEL_1 -> level1Color
+                                            HeatmapIntensity.LEVEL_2 -> level2Color
+                                            HeatmapIntensity.LEVEL_3 -> level3Color
+                                            HeatmapIntensity.COMPLETE -> completeColor
+                                        }
+                                        val borderModifier = when {
+                                            isSelected -> Modifier.border(
+                                                width = 2.dp,
+                                                color = selectedBorderColor,
+                                                shape = cellShape,
+                                            )
+                                            cell.isToday -> Modifier.border(
+                                                width = 1.5.dp,
+                                                color = todayBorderColor,
+                                                shape = cellShape,
+                                            )
+                                            cell.intensity == HeatmapIntensity.NEUTRAL -> Modifier.border(
+                                                width = 1.dp,
+                                                color = neutralBorder,
+                                                shape = cellShape,
+                                            )
+                                            else -> Modifier
+                                        }
+                                        val cellStat = cell.stat
+                                        val dateSummary = Dates.dayMonth(cell.date, appLocale, calendarType)
+                                        val a11ySummary = Dates.formatDigits(
+                                            if (cellStat != null && cellStat.hasData) {
+                                                "$dateSummary ${cellStat.completed}/${cellStat.scheduled}"
+                                            } else {
+                                                "$dateSummary $neutralLabel"
                                             },
-                                    )
+                                            appLocale,
+                                        )
+
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(rowHeight)
+                                                .clip(cellShape)
+                                                .background(bgColor)
+                                                .then(borderModifier)
+                                                .semantics { contentDescription = a11ySummary }
+                                                .clickable {
+                                                    selectedDate = if (isSelected) null else cell.date
+                                                },
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -571,10 +654,11 @@ fun HeatmapGrid(
             if (selectedCell != null) {
                 val stat = selectedCell.stat
                 val daysDiff = ChronoUnit.DAYS.between(today, selectedCell.date)
+                val formattedDay = Dates.dayMonth(selectedCell.date, appLocale, calendarType)
                 val dateLabel = if (daysDiff in -1L..0L) {
-                    "${Dates.relativeDayLabel(selectedCell.date, today, resources)} · ${Dates.dayMonth(selectedCell.date, appLocale)}"
+                    "${Dates.relativeDayLabel(selectedCell.date, today, resources, appLocale, calendarType)} · $formattedDay"
                 } else {
-                    Dates.dayMonth(selectedCell.date, appLocale)
+                    formattedDay
                 }
 
                 Column(
