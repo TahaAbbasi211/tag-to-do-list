@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -50,6 +51,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.tag.routine.R
 import com.tag.routine.data.AppConstants
+import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
 import com.tag.routine.data.Groups
 import com.tag.routine.data.RoutineColors
@@ -71,6 +73,7 @@ fun RoutineEditorSheet(
     localizedContext: android.content.Context,
     onDismiss: () -> Unit,
     onOpenTemplates: (() -> Unit)? = null,
+    calendarType: CalendarType = CalendarType.GREGORIAN,
     /**
      * Routines that already exist, used to suggest titles while the user types. Only read
      * from, never written: the suggestions are derived from data that is already stored.
@@ -348,31 +351,38 @@ fun RoutineEditorSheet(
                         fontWeight = FontWeight.Medium,
                     )
                     Spacer(Modifier.height(8.dp))
-                    Row(
+                    FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
-                        val dayLabels = Dates.weekdayInitials()
-                        dayLabels.forEachIndexed { index, label ->
-                            val bit = 1 shl index
-                            val selected = (daysMask and bit) != 0
+                        val dayOptions = Dates.weekdayOptions(calendarType, appLocale)
+                        dayOptions.forEach { option ->
+                            val selected = (daysMask and option.bit) != 0
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
+                                    .sizeIn(minWidth = 36.dp, minHeight = 36.dp)
+                                    .clip(RoundedCornerShape(percent = 50))
                                     .background(
                                         if (selected) MaterialTheme.colorScheme.primary
                                         else MaterialTheme.colorScheme.surfaceContainerHigh
                                     )
                                     .clickable {
-                                        daysMask = if (selected) daysMask and bit.inv() else daysMask or bit
-                                    },
+                                        daysMask = if (selected) {
+                                            daysMask and option.bit.inv()
+                                        } else {
+                                            daysMask or option.bit
+                                        }
+                                    }
+                                    .padding(horizontal = 8.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
-                                    text = label,
+                                    text = option.shortLabel,
                                     style = MaterialTheme.typography.labelMedium,
                                     color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                                    maxLines = 1,
+                                    softWrap = false,
                                 )
                             }
                         }
