@@ -371,5 +371,15 @@
     <string name="insights_weekly_compare_incomplete">Laufende Woche — voller Vergleich nach Tag %1$d</string>
     <string name="insights_weekly_compare_no_baseline">Für einen Vergleich werden Einträge in beiden Wochen benötigt</string>
     <string name="insights_weekly_no_items">Für diese Woche sind noch keine Einträge geplant.</string>
+
+    <!-- Kalendertyp (v1.5) -->
+    <string name="settings_calendar_type">Kalendertyp</string>
+    <string name="settings_calendar_type_sub">Bestimmt Datumsanzeige und Wochenbeginn in der App</string>
+    <string name="calendar_gregorian">Gregorianisch</string>
+    <string name="calendar_jalali">Sonnenkalender (Dschalali)</string>
+    <string name="date_picker_prev_month">Vorheriger Monat</string>
+    <string name="date_picker_next_month">Nächster Monat</string>
+    <string name="date_picker_select_year">Jahr wählen</string>
+    <string name="date_picker_today">Heute</string>
 </resources>
 
