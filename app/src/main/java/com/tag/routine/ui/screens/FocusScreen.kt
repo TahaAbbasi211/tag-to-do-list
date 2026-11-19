@@ -57,6 +57,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tag.routine.R
 import com.tag.routine.data.AppConstants
+import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
 import com.tag.routine.data.FocusStats
 import com.tag.routine.data.RoutineColors
@@ -75,10 +76,7 @@ import com.tag.routine.ui.components.SectionHeader
 import com.tag.routine.ui.components.StatTile
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
-import java.time.Instant
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.util.Locale
 
 /**
@@ -91,6 +89,7 @@ fun FocusScreen(
     focus: FocusState,
     stats: FocusStats,
     defaultMinutes: Int,
+    calendarType: CalendarType = CalendarType.GREGORIAN,
     onStart: (RoutineEntity, Int) -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
@@ -193,6 +192,7 @@ fun FocusScreen(
                                 completed = row.completed,
                                 endedAt = row.endedAt,
                                 appLocale = appLocale,
+                                calendarType = calendarType,
                             )
                             if (index < stats.recent.lastIndex) {
                                 HorizontalDivider(
@@ -652,6 +652,7 @@ private fun FocusHistoryRow(
     completed: Boolean,
     endedAt: Long,
     appLocale: Locale,
+    calendarType: CalendarType,
 ) {
     val brand = tagBrand()
     val spacing = MaterialTheme.spacing
@@ -691,9 +692,12 @@ private fun FocusHistoryRow(
                         )
                         append(" · ")
                         append(
-                            Instant.ofEpochMilli(endedAt)
-                                .atZone(ZoneId.systemDefault())
-                                .format(historyFormatter.withLocale(appLocale)),
+                            Dates.shortDateTime(
+                                epochMillis = endedAt,
+                                zone = ZoneId.systemDefault(),
+                                locale = appLocale,
+                                calendarType = calendarType,
+                            ),
                         )
                     },
                     appLocale,
@@ -710,7 +714,3 @@ private fun FocusHistoryRow(
         )
     }
 }
-
-/** Localised, short date+time used by the history rows. */
-private val historyFormatter: DateTimeFormatter =
-    DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT)
