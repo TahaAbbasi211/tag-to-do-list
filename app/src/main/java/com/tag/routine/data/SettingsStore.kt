@@ -20,6 +20,7 @@ class SettingsStore(private val context: Context) {
         val themePalette = stringPreferencesKey("theme_palette")
         val dynamicColor = booleanPreferencesKey("dynamic_color")
         val language = stringPreferencesKey("language")
+        val calendarType = stringPreferencesKey("calendar_type")
         val userName = stringPreferencesKey("user_name")
         val notifications = booleanPreferencesKey("notifications")
         val digestEnabled = booleanPreferencesKey("digest_enabled")
@@ -40,6 +41,7 @@ class SettingsStore(private val context: Context) {
             themePalette = prefs[Keys.themePalette] ?: AppSettings.Palettes.VIOLET,
             dynamicColor = prefs[Keys.dynamicColor] ?: false,
             language = prefs[Keys.language] ?: "",
+            calendarType = CalendarType.fromKey(prefs[Keys.calendarType]),
             userName = storedName,
             notificationsEnabled = prefs[Keys.notifications] ?: true,
             dailyDigestEnabled = prefs[Keys.digestEnabled] ?: true,
@@ -90,6 +92,9 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setLanguage(tag: String) =
         context.settingsStore.edit { it[Keys.language] = tag }
+
+    suspend fun setCalendarType(type: CalendarType) =
+        context.settingsStore.edit { it[Keys.calendarType] = type.key }
 
     suspend fun setUserName(name: String) =
         context.settingsStore.edit { it[Keys.userName] = name }
