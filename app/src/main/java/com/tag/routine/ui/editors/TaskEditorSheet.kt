@@ -3,6 +3,8 @@ package com.tag.routine.ui.editors
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +21,7 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -33,10 +36,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tag.routine.R
+import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
 import com.tag.routine.data.Priorities
 import com.tag.routine.data.TagEntity
@@ -45,13 +50,15 @@ import com.tag.routine.ui.components.FilterPill
 import com.tag.routine.ui.i18n.ProvideAppLocale
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun TaskEditorSheet(
     existing: TaskEntity?,
     tags: List<TagEntity>,
     localizedContext: Context,
+    calendarType: CalendarType = CalendarType.GREGORIAN,
     onDismiss: () -> Unit,
     onSave: (
         title: String,
@@ -81,6 +88,7 @@ fun TaskEditorSheet(
         // (system-locale) context. Re-provide the app's language so the editor is not
         // rendered in English while the rest of the app is in the chosen language.
         ProvideAppLocale(localizedContext) {
+            val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -179,19 +187,24 @@ fun TaskEditorSheet(
                         fontWeight = FontWeight.Medium,
                     )
                     Spacer(Modifier.height(8.dp))
+                    val formattedDue = dueDate?.let { raw ->
+                        Dates.parse(raw)?.let { Dates.dayMonth(it, appLocale, calendarType) } ?: raw
+                    } ?: ""
                     OutlinedTextField(
-                        value = dueDate?.let { Dates.parse(it)?.let(Dates::dayMonth) ?: it } ?: "",
+                        value = formattedDue,
                         onValueChange = { },
                         readOnly = true,
                         placeholder = { Text(stringResource(R.string.task_editor_due_none)) },
                         trailingIcon = {
                             if (dueDate == null) {
-                                Icon(
-                                    imageVector = Icons.Rounded.CalendarMonth,
-                                    contentDescription = stringResource(R.string.task_editor_pick_date),
-                                )
+                                IconButton(onClick = { showDatePicker = true }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.CalendarMonth,
+                                        contentDescription = stringResource(R.string.task_editor_pick_date),
+                                    )
+                                }
                             } else {
-                                androidx.compose.material3.IconButton(onClick = { dueDate = null }) {
+                                IconButton(onClick = { dueDate = null }) {
                                     Icon(
                                         imageVector = Icons.Rounded.Close,
                                         contentDescription = stringResource(R.string.action_clear),
@@ -204,7 +217,10 @@ fun TaskEditorSheet(
                         shape = RoundedCornerShape(12.dp),
                     )
                     Spacer(Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
                         QuickDateChip(
                             label = stringResource(R.string.task_editor_quick_today),
                             active = dueDate == Dates.iso(Dates.today()),
@@ -259,43 +275,55 @@ fun TaskEditorSheet(
 
     if (showDatePicker) {
         val initial = dueDate?.let(Dates::parse) ?: Dates.today()
-        val pickerState = rememberDatePickerState(
-            initialSelectedDateMillis = initial
-                .atStartOfDay(java.time.ZoneOffset.UTC)
-                .toInstant()
-                .toEpochMilli(),
-        )
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        pickerState.selectedDateMillis?.let { millis ->
-                            val picked = java.time.Instant.ofEpochMilli(millis)
-                                .atZone(java.time.ZoneOffset.UTC)
-                                .toLocalDate()
-                            dueDate = Dates.iso(picked)
+        if (calendarType == CalendarType.JALALI) {
+            JalaliDatePickerDialog(
+                initialDate = initial,
+                localizedContext = localizedContext,
+                onDismiss = { showDatePicker = false },
+                onConfirm = { picked ->
+                    dueDate = Dates.iso(picked)
+                    showDatePicker = false
+                },
+            )
+        } else {
+            val pickerState = rememberDatePickerState(
+                initialSelectedDateMillis = initial
+                    .atStartOfDay(java.time.ZoneOffset.UTC)
+                    .toInstant()
+                    .toEpochMilli(),
+            )
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            pickerState.selectedDateMillis?.let { millis ->
+                                val picked = java.time.Instant.ofEpochMilli(millis)
+                                    .atZone(java.time.ZoneOffset.UTC)
+                                    .toLocalDate()
+                                dueDate = Dates.iso(picked)
+                            }
+                            showDatePicker = false
+                        },
+                    ) {
+                        ProvideAppLocale(localizedContext) {
+                            Text(stringResource(R.string.action_ok))
                         }
-                        showDatePicker = false
-                    },
-                ) {
-                    ProvideAppLocale(localizedContext) {
-                        Text(stringResource(R.string.action_ok))
                     }
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    ProvideAppLocale(localizedContext) {
-                        Text(stringResource(R.string.action_cancel))
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        ProvideAppLocale(localizedContext) {
+                            Text(stringResource(R.string.action_cancel))
+                        }
                     }
+                },
+            ) {
+                // Same window problem as the sheet: the picker's own month and weekday names
+                // come from Material's resources and follow LocalContext.
+                ProvideAppLocale(localizedContext) {
+                    DatePicker(state = pickerState)
                 }
-            },
-        ) {
-            // Same window problem as the sheet: the picker's own month and weekday names
-            // come from Material's resources and follow LocalContext.
-            ProvideAppLocale(localizedContext) {
-                DatePicker(state = pickerState)
             }
         }
     }
