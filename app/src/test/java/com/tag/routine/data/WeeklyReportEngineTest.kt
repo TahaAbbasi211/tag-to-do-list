@@ -403,4 +403,28 @@ class WeeklyReportEngineTest {
         assertEquals("r2", report.weakestItem?.routine?.id)
         assertTrue(report.currentStreak >= 1)
     }
+
+    @Test
+    fun `Jalali calendar groups weeks Saturday to Friday even under English locale`() {
+        val firstDay = WeeklyReportEngine.defaultFirstDayOfWeek(CalendarType.JALALI, Locale.ENGLISH)
+        assertEquals(DayOfWeek.SATURDAY, firstDay)
+
+        // 2026-03-21 is Saturday 1 Farvardin 1405
+        val nowruz1405 = LocalDate.of(2026, 3, 21)
+        val thursday = nowruz1405.plusDays(5) // 2026-03-26 (6th day of week: Sat..Thu)
+        val r = routine("r1", "Nowruz", dateEpochDay = nowruz1405.minusDays(7).toEpochDay())
+        val report = WeeklyReportEngine.compute(
+            routines = listOf(r),
+            routineLogs = listOf(log("r1", nowruz1405)),
+            today = thursday,
+            firstDayOfWeek = firstDay,
+        )
+
+        assertEquals(nowruz1405, report.currentWeekStart)
+        assertEquals(nowruz1405.plusDays(6), report.currentWeekEnd) // Friday 2026-03-27
+        assertEquals(nowruz1405.minusDays(7), report.previousWeekStart) // Saturday 2026-03-14
+        assertEquals(nowruz1405.minusDays(1), report.previousWeekEnd) // Friday 2026-03-20
+        assertEquals(6, report.elapsedDaysInCurrentWeek)
+        assertTrue(report.isCurrentWeekIncomplete)
+    }
 }
