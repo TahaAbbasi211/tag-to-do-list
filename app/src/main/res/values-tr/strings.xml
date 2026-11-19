@@ -371,5 +371,15 @@
     <string name="insights_weekly_compare_incomplete">Hafta henüz tamamlanmadı — tam karşılaştırma %1$d. günden sonra</string>
     <string name="insights_weekly_compare_no_baseline">Karşılaştırma için her iki haftada da planlı öğe gerekir</string>
     <string name="insights_weekly_no_items">Bu hafta için henüz planlanmış öğe yok.</string>
+
+    <!-- Takvim türü (v1.5) -->
+    <string name="settings_calendar_type">Takvim türü</string>
+    <string name="settings_calendar_type_sub">Uygulama genelinde tarih görünümünü ve hafta başlangıcını belirler</string>
+    <string name="calendar_gregorian">Miladi</string>
+    <string name="calendar_jalali">Şemsî (Celâlî)</string>
+    <string name="date_picker_prev_month">Önceki ay</string>
+    <string name="date_picker_next_month">Sonraki ay</string>
+    <string name="date_picker_select_year">Yıl seç</string>
+    <string name="date_picker_today">Bugün</string>
 </resources>
 
