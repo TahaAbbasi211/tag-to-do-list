@@ -268,6 +268,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                                 focus = focus,
                                 stats = state.focusStats,
                                 defaultMinutes = state.settings.focusMinutes,
+                                calendarType = state.settings.calendarType,
                                 onStart = viewModel::startFocus,
                                 onPause = viewModel::pauseFocus,
                                 onResume = viewModel::resumeFocus,
@@ -281,6 +282,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                                 onThemeMode = viewModel::setThemeMode,
                                 onThemePalette = viewModel::setTheme,
                                 onDynamicColor = viewModel::setDynamicColor,
+                                onCalendarType = viewModel::setCalendarType,
                                 onNotifications = viewModel::setNotificationsEnabled,
                                 onDigest = viewModel::setDigestEnabled,
                                 onDigestMinutes = viewModel::setDigestMinutes,
@@ -332,6 +334,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
             existing = editingTask,
             tags = state.tags,
             localizedContext = LocalContext.current,
+            calendarType = state.settings.calendarType,
             onDismiss = {
                 creatingTask = false
                 editingTask = null
@@ -356,6 +359,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
         RoutineEditorSheet(
             existing = editingRoutine,
             localizedContext = localizedContext,
+            calendarType = state.settings.calendarType,
             existingRoutines = state.routineHistory,
             onDismiss = {
                 creatingRoutine = false
