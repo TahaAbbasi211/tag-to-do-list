@@ -371,5 +371,15 @@
     <string name="insights_weekly_compare_incomplete">Semaine partielle — comparaison complète après le jour %1$d</string>
     <string name="insights_weekly_compare_no_baseline">Des éléments planifiés dans les deux semaines sont requis pour comparer</string>
     <string name="insights_weekly_no_items">Aucun élément planifié pour cette semaine.</string>
+
+    <!-- Type de calendrier (v1.5) -->
+    <string name="settings_calendar_type">Type de calendrier</string>
+    <string name="settings_calendar_type_sub">Détermine l\'affichage des dates et le début de la semaine</string>
+    <string name="calendar_gregorian">Grégorien</string>
+    <string name="calendar_jalali">Solaire (Jalali)</string>
+    <string name="date_picker_prev_month">Mois précédent</string>
+    <string name="date_picker_next_month">Mois suivant</string>
+    <string name="date_picker_select_year">Choisir l\'année</string>
+    <string name="date_picker_today">Aujourd\'hui</string>
 </resources>
 
