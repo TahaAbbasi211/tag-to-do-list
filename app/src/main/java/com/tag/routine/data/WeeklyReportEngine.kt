@@ -69,10 +69,16 @@ object WeeklyReportEngine {
     const val DEFAULT_ROUTINE_RATE_WINDOW = 30
 
     /**
-     * Week start day used by the report and heatmap: Saturday for Persian (`fa`), Monday otherwise.
+     * Week start day used by the report and heatmap: always Saturday in Jalali mode;
+     * in Gregorian mode, Saturday for Persian (`fa`) and Monday otherwise.
      */
+    fun defaultFirstDayOfWeek(
+        calendarType: CalendarType,
+        locale: Locale = Locale.getDefault(),
+    ): DayOfWeek = Dates.firstDayOfWeek(calendarType, locale)
+
     fun defaultFirstDayOfWeek(locale: Locale = Locale.getDefault()): DayOfWeek =
-        if (locale.language.equals("fa", ignoreCase = true)) DayOfWeek.SATURDAY else DayOfWeek.MONDAY
+        Dates.firstDayOfWeek(CalendarType.GREGORIAN, locale)
 
     /**
      * Builds a [WeeklyReport] from existing [StatsEngine] outputs.
