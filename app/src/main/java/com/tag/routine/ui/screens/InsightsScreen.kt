@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tag.routine.R
+import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
 import com.tag.routine.data.FocusedItemStat
 import com.tag.routine.data.ReportedItem
@@ -127,8 +128,9 @@ fun InsightsScreen(state: UiState) {
         return
     }
 
-    val firstDayOfWeek = remember(appLocale) {
-        WeeklyReportEngine.defaultFirstDayOfWeek(appLocale)
+    val calendarType = state.settings.calendarType
+    val firstDayOfWeek = remember(calendarType, appLocale) {
+        WeeklyReportEngine.defaultFirstDayOfWeek(calendarType, appLocale)
     }
     val weeklyReport = remember(insights, state.routineRates, state.today, firstDayOfWeek) {
         WeeklyReportEngine.compute(
@@ -281,6 +283,7 @@ fun InsightsScreen(state: UiState) {
                 report = weeklyReport,
                 daySuffix = daySuffix,
                 appLocale = appLocale,
+                calendarType = calendarType,
             )
         }
 
@@ -460,6 +463,7 @@ fun InsightsScreen(state: UiState) {
                     HeatmapGrid(
                         stats = insights.days,
                         today = state.today,
+                        calendarType = calendarType,
                     )
                 }
             }
@@ -680,23 +684,24 @@ private fun WeeklyReportCard(
     report: WeeklyReport,
     daySuffix: String,
     appLocale: Locale,
+    calendarType: CalendarType,
 ) {
     val spacing = MaterialTheme.spacing
     val brand = tagBrand()
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    val subtitle = if (report.isCurrentWeekIncomplete) {
-        Dates.formatDigits(
-            stringResource(
-                R.string.insights_weekly_report_subtitle_partial,
-                report.elapsedDaysInCurrentWeek,
-                WeeklyReportEngine.DAYS_IN_WEEK,
-            ),
-            appLocale,
+    val baseSubtitle = if (report.isCurrentWeekIncomplete) {
+        stringResource(
+            R.string.insights_weekly_report_subtitle_partial,
+            report.elapsedDaysInCurrentWeek,
+            WeeklyReportEngine.DAYS_IN_WEEK,
         )
     } else {
         stringResource(R.string.insights_weekly_report_subtitle_complete)
     }
+    val weekRange = "${Dates.shortDate(report.currentWeekStart, appLocale, calendarType)} – " +
+        Dates.shortDate(report.currentWeekEnd, appLocale, calendarType)
+    val subtitle = Dates.formatDigits("$baseSubtitle · $weekRange", appLocale)
 
     AppCard(
         modifier = Modifier.fillMaxWidth(),
