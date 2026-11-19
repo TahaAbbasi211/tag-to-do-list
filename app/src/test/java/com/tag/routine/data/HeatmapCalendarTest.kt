@@ -98,4 +98,24 @@ class HeatmapCalendarTest {
         assertTrue(columns.last().cells.last().isToday)
         assertFalse(columns.last().cells.last().isFuture)
     }
+
+    @Test
+    fun `Jalali monthLabels emit Persian month transitions across Nowruz boundary`() {
+        // 2026-04-20 = 1405-01-31 (last day of Farvardin 1405)
+        val today = LocalDate.of(2026, 4, 20)
+        val columns = HeatmapCalendar.build(
+            stats = emptyList(),
+            today = today,
+            weeks = 12,
+            firstDayOfWeek = DayOfWeek.SATURDAY,
+        )
+        val labels = HeatmapCalendar.monthLabels(columns, CalendarType.JALALI)
+
+        // Should cover Bahman 1404, Esfand 1404, and Farvardin 1405
+        assertTrue(labels.any { it.year == 1404 && it.month == 12 })
+        assertTrue(labels.any { it.year == 1405 && it.month == 1 })
+        val farvardinLabel = labels.first { it.year == 1405 && it.month == 1 }
+        assertTrue(farvardinLabel.columnIndex in 0 until columns.size)
+        assertEquals("فروردین", Dates.shortMonthName(farvardinLabel.referenceDate, java.util.Locale.ENGLISH, CalendarType.JALALI))
+    }
 }
