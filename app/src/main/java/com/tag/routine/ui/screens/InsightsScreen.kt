@@ -27,8 +27,10 @@ import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,10 +45,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tag.routine.R
+import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
 import com.tag.routine.data.FocusedItemStat
+import com.tag.routine.data.ReportedItem
 import com.tag.routine.data.RoutineColors
 import com.tag.routine.data.RoutineEmojis
+import com.tag.routine.data.WeekComparison
+import com.tag.routine.data.WeeklyReport
+import com.tag.routine.data.WeeklyReportEngine
 import com.tag.routine.ui.UiState
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.EmptyState
@@ -63,6 +70,7 @@ import com.tag.routine.ui.theme.tagBrand
 import java.time.DayOfWeek
 import java.time.temporal.TemporalAdjusters
 import java.util.Locale
+import kotlin.math.abs
 
 @Composable
 fun InsightsScreen(state: UiState) {
@@ -74,7 +82,17 @@ fun InsightsScreen(state: UiState) {
     val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
     val daySuffix = stringResource(R.string.streak_days_short)
 
-    if (insights == null || insights.days.isEmpty()) {
+    val hasAnyInsightsData = insights != null &&
+        insights.days.isNotEmpty() && (
+            insights.days.any { it.hasData || it.taskCompleted > 0 } ||
+                insights.totalCompletions > 0 ||
+                state.routineRates.isNotEmpty() ||
+                state.totalTasks > 0 ||
+                focusSummary.totalMinutes > 0 ||
+                focusSummary.totalSessions > 0
+            )
+
+    if (insights == null || !hasAnyInsightsData) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -108,6 +126,19 @@ fun InsightsScreen(state: UiState) {
             Spacer(Modifier.height(80.dp))
         }
         return
+    }
+
+    val calendarType = state.settings.calendarType
+    val firstDayOfWeek = remember(calendarType, appLocale) {
+        WeeklyReportEngine.defaultFirstDayOfWeek(calendarType, appLocale)
+    }
+    val weeklyReport = remember(insights, state.routineRates, state.today, firstDayOfWeek) {
+        WeeklyReportEngine.compute(
+            insights = insights,
+            routineRates = state.routineRates,
+            today = state.today,
+            firstDayOfWeek = firstDayOfWeek,
+        )
     }
 
     LazyColumn(
@@ -244,6 +275,16 @@ fun InsightsScreen(state: UiState) {
                     )
                 }
             }
+        }
+
+        // Weekly report
+        item {
+            WeeklyReportCard(
+                report = weeklyReport,
+                daySuffix = daySuffix,
+                appLocale = appLocale,
+                calendarType = calendarType,
+            )
         }
 
         // Total focus & top focused items breakdown
@@ -419,7 +460,11 @@ fun InsightsScreen(state: UiState) {
                         subtitle = stringResource(R.string.insights_last_12_weeks),
                     )
                     Spacer(Modifier.height(spacing.md))
-                    HeatmapGrid(stats = insights.days)
+                    HeatmapGrid(
+                        stats = insights.days,
+                        today = state.today,
+                        calendarType = calendarType,
+                    )
                 }
             }
         }
@@ -628,6 +673,251 @@ private fun RoutineLeaderboardRow(
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
+            maxLines = 1,
+            softWrap = false,
+        )
+    }
+}
+
+@Composable
+private fun WeeklyReportCard(
+    report: WeeklyReport,
+    daySuffix: String,
+    appLocale: Locale,
+    calendarType: CalendarType,
+) {
+    val spacing = MaterialTheme.spacing
+    val brand = tagBrand()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
+    val baseSubtitle = if (report.isCurrentWeekIncomplete) {
+        stringResource(
+            R.string.insights_weekly_report_subtitle_partial,
+            report.elapsedDaysInCurrentWeek,
+            WeeklyReportEngine.DAYS_IN_WEEK,
+        )
+    } else {
+        stringResource(R.string.insights_weekly_report_subtitle_complete)
+    }
+    val weekRange = "${Dates.shortDate(report.currentWeekStart, appLocale, calendarType)} – " +
+        Dates.shortDate(report.currentWeekEnd, appLocale, calendarType)
+    val subtitle = Dates.formatDigits("$baseSubtitle · $weekRange", appLocale)
+
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)),
+    ) {
+        Column(
+            modifier = Modifier.padding(spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(spacing.md),
+        ) {
+            SectionHeader(
+                title = stringResource(R.string.insights_weekly_report_title),
+                subtitle = subtitle,
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Max),
+                horizontalArrangement = Arrangement.spacedBy(spacing.md),
+            ) {
+                StatTile(
+                    value = report.currentWeekPercent?.let { Dates.formatPercent(it, appLocale) } ?: "–",
+                    label = stringResource(R.string.insights_this_week),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    accent = MaterialTheme.colorScheme.primary,
+                )
+                StatTile(
+                    value = report.previousWeekPercent?.let { Dates.formatPercent(it, appLocale) } ?: "–",
+                    label = stringResource(R.string.insights_last_week),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    accent = MaterialTheme.colorScheme.secondary,
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Max),
+                horizontalArrangement = Arrangement.spacedBy(spacing.md),
+            ) {
+                StatTile(
+                    value = Dates.formatDigits("${report.perfectDaysCurrentWeek}", appLocale),
+                    label = stringResource(R.string.insights_perfect_days),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    accent = brand.success,
+                    suffix = daySuffix,
+                )
+                StatTile(
+                    value = Dates.formatDigits("${report.currentStreak}", appLocale),
+                    label = stringResource(R.string.insights_streak),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    accent = brand.streak,
+                    suffix = daySuffix,
+                )
+            }
+
+            val (statusBg, statusFg, statusText) = when (report.comparison) {
+                WeekComparison.IMPROVED -> Triple(
+                    brand.success.copy(alpha = 0.14f),
+                    brand.success,
+                    Dates.formatDigits(
+                        stringResource(
+                            R.string.insights_weekly_compare_up,
+                            Dates.formatPercent(report.deltaPercent ?: 0, appLocale),
+                        ),
+                        appLocale,
+                    ),
+                )
+                WeekComparison.DECLINED -> Triple(
+                    MaterialTheme.colorScheme.tertiaryContainer,
+                    MaterialTheme.colorScheme.onTertiaryContainer,
+                    Dates.formatDigits(
+                        stringResource(
+                            R.string.insights_weekly_compare_down,
+                            Dates.formatPercent(abs(report.deltaPercent ?: 0), appLocale),
+                        ),
+                        appLocale,
+                    ),
+                )
+                WeekComparison.STEADY -> Triple(
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f),
+                    MaterialTheme.colorScheme.onPrimaryContainer,
+                    Dates.formatDigits(
+                        stringResource(
+                            R.string.insights_weekly_compare_steady,
+                            Dates.formatPercent(report.currentWeekPercent ?: 0, appLocale),
+                        ),
+                        appLocale,
+                    ),
+                )
+                WeekComparison.INCOMPLETE_WEEK -> Triple(
+                    MaterialTheme.colorScheme.surfaceContainer,
+                    MaterialTheme.colorScheme.onSurfaceVariant,
+                    Dates.formatDigits(
+                        stringResource(
+                            R.string.insights_weekly_compare_incomplete,
+                            WeeklyReportEngine.DAYS_IN_WEEK,
+                        ),
+                        appLocale,
+                    ),
+                )
+                WeekComparison.NO_BASELINE -> Triple(
+                    MaterialTheme.colorScheme.surfaceContainer,
+                    MaterialTheme.colorScheme.onSurfaceVariant,
+                    stringResource(R.string.insights_weekly_compare_no_baseline),
+                )
+            }
+
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium,
+                color = statusBg,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)),
+            ) {
+                Text(
+                    text = statusText,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Medium,
+                    color = statusFg,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = spacing.md, vertical = spacing.sm),
+                )
+            }
+
+            if (report.bestItem != null || report.weakestItem != null) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+                report.bestItem?.let { best ->
+                    WeeklyHighlightRow(
+                        label = stringResource(R.string.insights_weekly_best_item),
+                        item = best,
+                        isDark = isDark,
+                        appLocale = appLocale,
+                        accentColor = brand.success,
+                    )
+                }
+                report.weakestItem?.let { weakest ->
+                    WeeklyHighlightRow(
+                        label = stringResource(R.string.insights_weekly_weakest_item),
+                        item = weakest,
+                        isDark = isDark,
+                        appLocale = appLocale,
+                        accentColor = MaterialTheme.colorScheme.tertiary,
+                    )
+                }
+            } else if (!report.hasAnyWeekData) {
+                Text(
+                    text = stringResource(R.string.insights_weekly_no_items),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun WeeklyHighlightRow(
+    label: String,
+    item: ReportedItem,
+    isDark: Boolean,
+    appLocale: Locale,
+    accentColor: Color,
+) {
+    val spacing = MaterialTheme.spacing
+    val itemAccent = Color(RoutineColors.hexFor(item.routine.colorId, isDark))
+    val emoji = RoutineEmojis.resolve(item.routine.icon)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = spacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(34.dp)
+                .clip(CircleShape)
+                .background(itemAccent.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(text = emoji, fontSize = 16.sp)
+        }
+        Spacer(Modifier.width(spacing.md))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = accentColor,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = item.routine.title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Spacer(Modifier.width(spacing.sm))
+        Text(
+            text = Dates.formatPercent(item.percent, appLocale),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = accentColor,
             maxLines = 1,
             softWrap = false,
         )

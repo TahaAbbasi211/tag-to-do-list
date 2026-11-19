@@ -272,6 +272,8 @@ class TagRepository(
 
     suspend fun setLanguage(tag: String) = settingsStore.setLanguage(tag)
 
+    suspend fun setCalendarType(type: CalendarType) = settingsStore.setCalendarType(type)
+
     suspend fun setUserName(name: String) = settingsStore.setUserName(name)
 
     /** Saves the first-launch name and marks onboarding complete in one write. */

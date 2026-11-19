@@ -128,7 +128,13 @@ fun TodayScreen(
             resources = resources,
         )
     } else {
-        Dates.relativeDayLabel(selected, today, resources)
+        Dates.relativeDayLabel(
+            date = selected,
+            today = today,
+            resources = resources,
+            locale = appLocale,
+            calendarType = state.settings.calendarType,
+        )
     }
     val greetingText = Dates.formatDigits(rawGreeting, appLocale)
 
@@ -301,6 +307,7 @@ fun TodayScreen(
                 dotFor = { date -> state.dayRatios[Dates.iso(date)] ?: 0f },
                 hasItemsFor = { date -> Dates.iso(date) in state.scheduledDates },
                 onSelect = onSelectDate,
+                calendarType = state.settings.calendarType,
                 modifier = Modifier.padding(horizontal = MaterialTheme.spacing.lg, vertical = MaterialTheme.spacing.sm),
             )
 
@@ -448,6 +455,7 @@ fun TodayScreen(
             routineTitle = target.title,
             today = state.today,
             localizedContext = LocalContext.current,
+            calendarType = state.settings.calendarType,
             onDismiss = { copyTarget = null },
             onConfirm = { days -> onCopyRoutineToDays(target.id, days) },
         )

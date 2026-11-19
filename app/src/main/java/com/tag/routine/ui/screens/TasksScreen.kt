@@ -43,12 +43,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tag.routine.R
+import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
 import com.tag.routine.data.Priorities
 import com.tag.routine.data.TaskEntity
@@ -68,6 +70,7 @@ import com.tag.routine.ui.components.SectionHeader
 import com.tag.routine.ui.components.SwipeToDelete
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
+import java.time.LocalDate
 import java.util.Locale
 
 @Composable
@@ -321,6 +324,8 @@ fun TasksScreen(
                         ) {
                             TaskRowCard(
                                 row = row,
+                                today = state.today,
+                                calendarType = state.settings.calendarType,
                                 appLocale = appLocale,
                                 onToggleTask = onToggleTask,
                                 onDeleteTask = onDeleteTask,
@@ -351,6 +356,8 @@ fun TasksScreen(
 @Composable
 private fun TaskRowCard(
     row: TaskRow,
+    today: LocalDate,
+    calendarType: CalendarType,
     appLocale: Locale,
     onToggleTask: (String) -> Unit,
     onDeleteTask: (String) -> Unit,
@@ -360,6 +367,10 @@ private fun TaskRowCard(
     val done = task.done
     val brand = tagBrand()
     val spacing = MaterialTheme.spacing
+    val resources = LocalContext.current.resources
+    val formattedDueLabel = task.dueDate?.let(Dates::parse)?.let { due ->
+        Dates.relativeDayLabel(due, today, resources, appLocale, calendarType)
+    } ?: row.dueLabel?.let { Dates.formatDigits(it, appLocale) }
 
     val priorityColor = when (task.priority) {
         Priorities.HIGH -> MaterialTheme.colorScheme.error
@@ -440,7 +451,7 @@ private fun TaskRowCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                if (row.tag != null || row.dueLabel != null) {
+                if (row.tag != null || formattedDueLabel != null) {
                     Spacer(Modifier.height(spacing.sm))
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(spacing.sm),
@@ -462,14 +473,14 @@ private fun TaskRowCard(
                                 },
                             )
                         }
-                        if (row.dueLabel != null) {
+                        if (formattedDueLabel != null) {
                             val dueColor = when (row.dueState) {
                                 DueState.OVERDUE -> MaterialTheme.colorScheme.error
                                 DueState.TODAY -> MaterialTheme.colorScheme.tertiary
                                 else -> MaterialTheme.colorScheme.onSurfaceVariant
                             }
                             MetaPill(
-                                text = Dates.formatDigits(row.dueLabel, appLocale),
+                                text = formattedDueLabel,
                                 container = dueColor.copy(alpha = 0.12f),
                                 contentColor = dueColor,
                             )

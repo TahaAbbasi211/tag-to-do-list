@@ -2,9 +2,14 @@ package com.tag.routine.data
 
 import android.content.res.Resources
 import com.tag.routine.R
+import java.time.DayOfWeek
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -104,11 +109,23 @@ object Palette {
 
 // ---------------------------------------------------------------- settings
 
+/** Display calendar used across date pickers, strips, heatmap, and summaries. */
+enum class CalendarType(val key: String) {
+    GREGORIAN("gregorian"),
+    JALALI("jalali");
+
+    companion object {
+        fun fromKey(value: String?): CalendarType =
+            if (value == JALALI.key) JALALI else GREGORIAN
+    }
+}
+
 data class AppSettings(
     val themeMode: Int = ThemeMode.SYSTEM,
     val themePalette: String = Palettes.VIOLET,
     val dynamicColor: Boolean = false,
     val language: String = "",
+    val calendarType: CalendarType = CalendarType.GREGORIAN,
     val userName: String = "",
     val notificationsEnabled: Boolean = true,
     val dailyDigestEnabled: Boolean = true,
@@ -243,6 +260,13 @@ object ActiveFocusRunCodec {
 
 // ---------------------------------------------------------------- dates
 
+/** Display metadata for one weekday toggle in routine pickers and calendar grids. */
+data class WeekdayOption(
+    val dayOfWeek: DayOfWeek,
+    val bit: Int,
+    val shortLabel: String,
+)
+
 object Dates {
     private val iso = DateTimeFormatter.ISO_LOCAL_DATE
 
@@ -255,7 +279,38 @@ object Dates {
     /** Monday based bit for [daysMask] (bit 0 == Monday). */
     fun weekdayBit(date: LocalDate): Int = 1 shl (date.dayOfWeek.value - 1)
 
+    /** Monday based bit for [dayOfWeek] (bit 0 == Monday). */
+    fun weekdayBit(dayOfWeek: DayOfWeek): Int = 1 shl (dayOfWeek.value - 1)
+
     const val EVERY_DAY = 0b1111111
+
+    fun epochDayToJalali(epochDay: Long): JalaliDate = JalaliCalendar.fromEpochDay(epochDay)
+
+    fun jalaliToEpochDay(year: Int, month: Int, day: Int): Long =
+        JalaliCalendar.toEpochDay(year, month, day)
+
+    fun toJalali(date: LocalDate): JalaliDate = JalaliCalendar.fromLocalDate(date)
+
+    fun fromJalali(year: Int, month: Int, day: Int): LocalDate =
+        JalaliCalendar.toLocalDate(year, month, day)
+
+    fun persianMonthLength(year: Int, month: Int): Int = JalaliCalendar.daysInMonth(year, month)
+
+    fun isPersianLeapYear(year: Int): Boolean = JalaliCalendar.isLeapYear(year)
+
+    fun persianMonthName(month: Int): String = JalaliCalendar.monthName(month)
+
+    fun persianMonthNames(): List<String> = JalaliCalendar.PERSIAN_MONTH_NAMES
+
+    /** First day of week: always Saturday in Jalali mode; Saturday for `fa` or Monday otherwise in Gregorian. */
+    fun firstDayOfWeek(
+        calendarType: CalendarType,
+        locale: Locale = Locale.getDefault(),
+    ): DayOfWeek = when (calendarType) {
+        CalendarType.JALALI -> DayOfWeek.SATURDAY
+        CalendarType.GREGORIAN ->
+            if (locale.language.equals("fa", ignoreCase = true)) DayOfWeek.SATURDAY else DayOfWeek.MONDAY
+    }
 
     /**
      * Formatters are built per call rather than cached, because the active locale changes
@@ -264,15 +319,151 @@ object Dates {
     private fun formatter(pattern: String, locale: Locale = Locale.getDefault()): DateTimeFormatter =
         DateTimeFormatter.ofPattern(pattern, locale)
 
-    fun dayMonth(date: LocalDate, locale: Locale = Locale.getDefault()): String =
-        date.format(formatter("EEE, d MMM", locale))
+    fun dayOfMonth(
+        date: LocalDate,
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): Int = when (calendarType) {
+        CalendarType.GREGORIAN -> date.dayOfMonth
+        CalendarType.JALALI -> JalaliCalendar.fromLocalDate(date).day
+    }
 
-    fun full(date: LocalDate, locale: Locale = Locale.getDefault()): String =
-        date.format(formatter("EEEE, d MMMM", locale))
+    fun monthNumber(
+        date: LocalDate,
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): Int = when (calendarType) {
+        CalendarType.GREGORIAN -> date.monthValue
+        CalendarType.JALALI -> JalaliCalendar.fromLocalDate(date).month
+    }
+
+    fun yearNumber(
+        date: LocalDate,
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): Int = when (calendarType) {
+        CalendarType.GREGORIAN -> date.year
+        CalendarType.JALALI -> JalaliCalendar.fromLocalDate(date).year
+    }
+
+    fun monthName(
+        date: LocalDate,
+        locale: Locale = Locale.getDefault(),
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): String = when (calendarType) {
+        CalendarType.GREGORIAN -> date.format(formatter("MMMM", locale))
+        CalendarType.JALALI -> JalaliCalendar.monthName(JalaliCalendar.fromLocalDate(date).month)
+    }
+
+    fun shortMonthName(
+        date: LocalDate,
+        locale: Locale = Locale.getDefault(),
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): String = when (calendarType) {
+        CalendarType.GREGORIAN -> date.format(formatter("MMM", locale))
+        CalendarType.JALALI -> JalaliCalendar.monthName(JalaliCalendar.fromLocalDate(date).month)
+    }
+
+    fun monthYearTitle(
+        year: Int,
+        month: Int,
+        locale: Locale = Locale.getDefault(),
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): String = when (calendarType) {
+        CalendarType.GREGORIAN ->
+            monthYearTitle(LocalDate.of(year, month, 1), locale, CalendarType.GREGORIAN)
+        CalendarType.JALALI ->
+            formatDigits("${JalaliCalendar.monthName(month)} $year", locale)
+    }
+
+    fun monthYearTitle(
+        date: LocalDate,
+        locale: Locale = Locale.getDefault(),
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): String = when (calendarType) {
+        CalendarType.GREGORIAN -> formatDigits(date.format(formatter("MMMM yyyy", locale)), locale)
+        CalendarType.JALALI -> {
+            val j = JalaliCalendar.fromLocalDate(date)
+            formatDigits("${JalaliCalendar.monthName(j.month)} ${j.year}", locale)
+        }
+    }
+
+    fun monthYearRange(
+        start: LocalDate,
+        end: LocalDate,
+        locale: Locale = Locale.getDefault(),
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): String {
+        val startYear = yearNumber(start, calendarType)
+        val endYear = yearNumber(end, calendarType)
+        val startMonth = monthNumber(start, calendarType)
+        val endMonth = monthNumber(end, calendarType)
+        return when {
+            startYear == endYear && startMonth == endMonth ->
+                monthYearTitle(startYear, startMonth, locale, calendarType)
+            startYear == endYear ->
+                formatDigits(
+                    "${shortMonthName(start, locale, calendarType)} – ${shortMonthName(end, locale, calendarType)} $endYear",
+                    locale,
+                )
+            else ->
+                formatDigits(
+                    "${monthYearTitle(startYear, startMonth, locale, calendarType)} – ${monthYearTitle(endYear, endMonth, locale, calendarType)}",
+                    locale,
+                )
+        }
+    }
+
+    fun dayMonth(
+        date: LocalDate,
+        locale: Locale = Locale.getDefault(),
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): String = when (calendarType) {
+        CalendarType.GREGORIAN -> formatDigits(date.format(formatter("EEE, d MMM", locale)), locale)
+        CalendarType.JALALI -> {
+            val j = JalaliCalendar.fromLocalDate(date)
+            val dow = dayOfWeekLabel(date, locale)
+            val sep = if (locale.language.equals("fa", ignoreCase = true)) "، " else ", "
+            formatDigits("$dow$sep${j.day} ${JalaliCalendar.monthName(j.month)}", locale)
+        }
+    }
+
+    fun full(
+        date: LocalDate,
+        locale: Locale = Locale.getDefault(),
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): String = when (calendarType) {
+        CalendarType.GREGORIAN -> formatDigits(date.format(formatter("EEEE, d MMMM", locale)), locale)
+        CalendarType.JALALI -> {
+            val j = JalaliCalendar.fromLocalDate(date)
+            val dow = date.format(formatter("EEEE", locale))
+            val sep = if (locale.language.equals("fa", ignoreCase = true)) "، " else ", "
+            formatDigits("$dow$sep${j.day} ${JalaliCalendar.monthName(j.month)} ${j.year}", locale)
+        }
+    }
 
     /** Single-letter weekday used by the compact week strip. */
     fun shortDayName(date: LocalDate, locale: Locale = Locale.getDefault()): String =
         date.format(formatter("EEEEE", locale)).uppercase(locale)
+
+    /**
+     * Ordered weekday options for the routine editor's day picker.
+     *
+     * Starts on Saturday when [calendarType] is [CalendarType.JALALI] and on Monday in
+     * [CalendarType.GREGORIAN], while each option keeps its stable Monday-based [daysMask] bit.
+     */
+    fun weekdayOptions(
+        calendarType: CalendarType,
+        locale: Locale = Locale.getDefault(),
+    ): List<WeekdayOption> {
+        val start = if (calendarType == CalendarType.JALALI) DayOfWeek.SATURDAY else DayOfWeek.MONDAY
+        val anchor = LocalDate.of(2024, 1, 1).with(TemporalAdjusters.nextOrSame(start))
+        return (0..6).map { offset ->
+            val date = anchor.plusDays(offset.toLong())
+            WeekdayOption(
+                dayOfWeek = date.dayOfWeek,
+                bit = weekdayBit(date.dayOfWeek),
+                shortLabel = shortDayName(date, locale),
+            )
+        }
+    }
 
     /**
      * Monday-first single-letter weekday labels for the routine editor's day picker.
@@ -287,8 +478,38 @@ object Dates {
         return (0..6).map { offset -> shortDayName(monday.plusDays(offset.toLong()), locale) }
     }
 
-    fun shortDate(date: LocalDate, locale: Locale = Locale.getDefault()): String =
-        date.format(formatter("d MMM", locale))
+    fun shortDate(
+        date: LocalDate,
+        locale: Locale = Locale.getDefault(),
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): String = when (calendarType) {
+        CalendarType.GREGORIAN -> formatDigits(date.format(formatter("d MMM", locale)), locale)
+        CalendarType.JALALI -> {
+            val j = JalaliCalendar.fromLocalDate(date)
+            formatDigits("${j.day} ${JalaliCalendar.monthName(j.month)}", locale)
+        }
+    }
+
+    /** Localised short date+time label respecting [calendarType] and [locale]. */
+    fun shortDateTime(
+        epochMillis: Long,
+        zone: ZoneId = ZoneId.systemDefault(),
+        locale: Locale = Locale.getDefault(),
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): String {
+        val zoned = Instant.ofEpochMilli(epochMillis).atZone(zone)
+        return when (calendarType) {
+            CalendarType.GREGORIAN -> formatDigits(
+                zoned.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT).withLocale(locale)),
+                locale,
+            )
+            CalendarType.JALALI -> {
+                val datePart = shortDate(zoned.toLocalDate(), locale, CalendarType.JALALI)
+                val timePart = zoned.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale))
+                formatDigits("$datePart · $timePart", locale)
+            }
+        }
+    }
 
     /**
      * Normalises all digits and percent signs in [text]: Persian digits (`۰..۹`) and
@@ -356,18 +577,21 @@ object Dates {
         date: LocalDate,
         today: LocalDate,
         resources: Resources? = null,
+        locale: Locale? = null,
+        calendarType: CalendarType = CalendarType.GREGORIAN,
     ): String {
         val days = ChronoUnit.DAYS.between(today, date)
-        val resLocale = resources?.configuration?.locales?.get(0) ?: Locale.getDefault()
-        return when {
+        val resLocale = locale ?: resources?.configuration?.locales?.get(0) ?: Locale.getDefault()
+        val raw = when {
             days == 0L -> str(resources, R.string.day_today, "Today")
             days == 1L -> str(resources, R.string.day_tomorrow, "Tomorrow")
             days == -1L -> str(resources, R.string.day_yesterday, "Yesterday")
             days in 2..6 -> str(resources, R.string.day_in_days, "In $days days", days.toInt())
             days in -6..-2 ->
                 str(resources, R.string.day_days_ago, "${-days} days ago", (-days).toInt())
-            else -> dayMonth(date, resLocale)
+            else -> dayMonth(date, resLocale, calendarType)
         }
+        return formatDigits(raw, resLocale)
     }
 
     fun dayOfWeekLabel(date: LocalDate, locale: Locale = Locale.getDefault()): String =

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.tag.routine.AppContainer
 import com.tag.routine.data.AppConstants
 import com.tag.routine.data.AppSettings
+import com.tag.routine.data.CalendarType
 import com.tag.routine.data.CopyEngine
 import com.tag.routine.data.Dates
 import com.tag.routine.data.FocusEngine
@@ -187,8 +188,9 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             }
         }
 
+        val calendarType = snapshot.settings.calendarType
         val rows = filtered
-            .map { toRow(it, tagById[it.tagId], today) }
+            .map { toRow(it, tagById[it.tagId], today, calendarType) }
             .sortedWith(
                 compareBy<TaskRow> { it.task.done }
                     .thenByDescending { dueWeight(it.dueState) }
@@ -198,7 +200,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
 
         val dueToday = snapshot.tasks
             .filter { !it.done && it.dueDate == Dates.iso(today) }
-            .map { toRow(it, tagById[it.tagId], today) }
+            .map { toRow(it, tagById[it.tagId], today, calendarType) }
 
         val focusStats = FocusEngine.compute(
             sessions = snapshot.focusSessions,
@@ -256,7 +258,12 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
         )
     }
 
-    private fun toRow(task: TaskEntity, tag: TagEntity?, today: LocalDate): TaskRow {
+    private fun toRow(
+        task: TaskEntity,
+        tag: TagEntity?,
+        today: LocalDate,
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): TaskRow {
         val due = task.dueDate?.let { Dates.parse(it) }
         val dueState = when {
             task.done || due == null -> DueState.NONE
@@ -265,7 +272,12 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             due.isBefore(today.plusDays(7)) -> DueState.SOON
             else -> DueState.LATER
         }
-        return TaskRow(task, tag, due?.let { Dates.relativeDayLabel(it, today) }, dueState)
+        return TaskRow(
+            task,
+            tag,
+            due?.let { Dates.relativeDayLabel(it, today, calendarType = calendarType) },
+            dueState,
+        )
     }
 
     private fun dueWeight(state: DueState): Int = when (state) {
@@ -538,6 +550,8 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     fun setDynamicColor(enabled: Boolean) = viewModelScope.launch { repository.setDynamicColor(enabled) }
 
     fun setLanguage(tag: String) = viewModelScope.launch { repository.setLanguage(tag) }
+
+    fun setCalendarType(type: CalendarType) = viewModelScope.launch { repository.setCalendarType(type) }
 
     fun setUserName(name: String) = viewModelScope.launch { repository.setUserName(name) }
 

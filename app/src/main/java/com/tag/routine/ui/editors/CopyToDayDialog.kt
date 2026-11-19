@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.tag.routine.R
+import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
 import com.tag.routine.ui.components.AppButton
 import com.tag.routine.ui.components.AppButtonVariant
@@ -56,6 +57,7 @@ fun CopyToDayDialog(
     routineTitle: String,
     today: LocalDate,
     localizedContext: android.content.Context,
+    calendarType: CalendarType = CalendarType.GREGORIAN,
     onDismiss: () -> Unit,
     onConfirm: (List<LocalDate>) -> Unit,
 ) {
@@ -67,6 +69,9 @@ fun CopyToDayDialog(
     Dialog(onDismissRequest = onDismiss) {
         ProvideAppLocale(localizedContext) {
             val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+            val monthSpan = remember(days, appLocale, calendarType) {
+                Dates.monthYearRange(days.first(), days.last(), appLocale, calendarType)
+            }
             AppCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
@@ -95,7 +100,7 @@ fun CopyToDayDialog(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = stringResource(R.string.copy_to_other_day_pick_days),
+                        text = "${stringResource(R.string.copy_to_other_day_pick_days)} · $monthSpan",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -110,6 +115,7 @@ fun CopyToDayDialog(
                                 day = day,
                                 isToday = day == today,
                                 locale = appLocale,
+                                calendarType = calendarType,
                                 selected = day in selected,
                                 onClick = {
                                     selected = if (day in selected) selected - day else selected + day
@@ -153,6 +159,7 @@ private fun DayChip(
     day: LocalDate,
     isToday: Boolean,
     locale: Locale,
+    calendarType: CalendarType,
     selected: Boolean,
     onClick: () -> Unit,
 ) {
@@ -171,7 +178,7 @@ private fun DayChip(
 
     Box(
         modifier = Modifier
-            .size(width = 46.dp, height = 56.dp)
+            .sizeIn(minWidth = 46.dp, minHeight = 56.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(container)
             .border(
@@ -187,7 +194,8 @@ private fun DayChip(
                 },
                 shape = RoundedCornerShape(14.dp),
             )
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -198,14 +206,16 @@ private fun DayChip(
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
+                softWrap = false,
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                text = Dates.formatDigits(day.dayOfMonth.toString(), locale),
+                text = Dates.formatDigits(Dates.dayOfMonth(day, calendarType).toString(), locale),
                 style = MaterialTheme.typography.titleSmall,
                 color = content,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
                 maxLines = 1,
+                softWrap = false,
             )
         }
     }

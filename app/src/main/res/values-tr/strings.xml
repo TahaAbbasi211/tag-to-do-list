@@ -345,5 +345,41 @@
     <string name="duration_m">%1$d dk</string>
     <string name="duration_h">%1$d sa</string>
     <string name="duration_hm">%1$dsa %2$ddk</string>
+
+    <!-- 12 haftalık ısı haritası (v1.4) -->
+    <string name="insights_heatmap_tap_hint">Öğeleri ve tamamlananları görmek için bir güne dokun.</string>
+    <string name="insights_heatmap_day_summary">Öğe: %1$d · Tamamlanan: %2$d</string>
+    <string name="insights_heatmap_day_neutral">Planlanmış öğe yok</string>
+    <string name="insights_heatmap_legend_neutral">Plan yok</string>
+    <string name="insights_heatmap_legend_less">Az</string>
+    <string name="insights_heatmap_legend_more">Çok</string>
+    <string name="insights_heatmap_weeks_ago">%1$d hafta önce</string>
+
+    <!-- Haftalık rapor (v1.4) -->
+    <string name="insights_weekly_report_title">Haftalık rapor</string>
+    <string name="insights_weekly_report_subtitle_complete">Tam hafta, geçen haftayla karşılaştırmalı</string>
+    <string name="insights_weekly_report_subtitle_partial">Hafta devam ediyor (%1$d / %2$d gün)</string>
+    <string name="insights_this_week">Bu hafta</string>
+    <string name="insights_last_week">Geçen hafta</string>
+    <string name="insights_perfect_days">Tamamlanan günler</string>
+    <string name="insights_streak">Seri</string>
+    <string name="insights_weekly_best_item">En güçlü öğe</string>
+    <string name="insights_weekly_weakest_item">En zayıf öğe</string>
+    <string name="insights_weekly_compare_up">Geçen haftaya göre +%1$s</string>
+    <string name="insights_weekly_compare_down">Geçen haftaya göre -%1$s</string>
+    <string name="insights_weekly_compare_steady">Geçen haftayla aynı (%1$s)</string>
+    <string name="insights_weekly_compare_incomplete">Hafta henüz tamamlanmadı — tam karşılaştırma %1$d. günden sonra</string>
+    <string name="insights_weekly_compare_no_baseline">Karşılaştırma için her iki haftada da planlı öğe gerekir</string>
+    <string name="insights_weekly_no_items">Bu hafta için henüz planlanmış öğe yok.</string>
+
+    <!-- Takvim türü (v1.5) -->
+    <string name="settings_calendar_type">Takvim türü</string>
+    <string name="settings_calendar_type_sub">Uygulama genelinde tarih görünümünü ve hafta başlangıcını belirler</string>
+    <string name="calendar_gregorian">Miladi</string>
+    <string name="calendar_jalali">Şemsî (Celâlî)</string>
+    <string name="date_picker_prev_month">Önceki ay</string>
+    <string name="date_picker_next_month">Sonraki ay</string>
+    <string name="date_picker_select_year">Yıl seç</string>
+    <string name="date_picker_today">Bugün</string>
 </resources>
 

@@ -31,6 +31,7 @@ import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.Label
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Backup
+import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Info
@@ -75,6 +76,7 @@ import com.tag.routine.BuildConfig
 import com.tag.routine.R
 import com.tag.routine.data.AppConstants
 import com.tag.routine.data.AppSettings
+import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
 import com.tag.routine.data.ImportOutcome
 import com.tag.routine.ui.UiState
@@ -96,6 +98,7 @@ fun SettingsScreen(
     onThemeMode: (Int) -> Unit,
     onThemePalette: (String) -> Unit,
     onDynamicColor: (Boolean) -> Unit = {},
+    onCalendarType: (CalendarType) -> Unit = {},
     onNotifications: (Boolean) -> Unit,
     onDigest: (Boolean) -> Unit,
     onDigestMinutes: (Int) -> Unit,
@@ -271,6 +274,24 @@ fun SettingsScreen(
                     modifier = Modifier.size(22.dp),
                 )
             }
+        }
+
+        // 3b. Calendar type
+        SettingsSection(
+            title = stringResource(R.string.settings_calendar_type),
+            icon = Icons.Rounded.CalendarMonth,
+        ) {
+            Text(
+                text = stringResource(R.string.settings_calendar_type_sub),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(spacing.md))
+            CalendarTypeSelector(
+                current = settings.calendarType,
+                stackVertically = LocalDensity.current.fontScale > 1.5f,
+                onSelect = onCalendarType,
+            )
         }
 
         // 4. Focus defaults
@@ -694,55 +715,99 @@ private fun ThemeSelector(
     currentMode: Int,
     onSelect: (Int) -> Unit,
 ) {
-    val spacing = MaterialTheme.spacing
     val modes = listOf(
         AppSettings.ThemeMode.SYSTEM to stringResource(R.string.theme_system),
         AppSettings.ThemeMode.LIGHT to stringResource(R.string.theme_light),
         AppSettings.ThemeMode.DARK to stringResource(R.string.theme_dark),
     )
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Max),
-        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
-    ) {
-        modes.forEach { (mode, label) ->
-            val selected = currentMode == mode
-            val bg by animateColorAsState(
-                targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
-                animationSpec = tween(220),
-                label = "theme-bg",
-            )
-            val fg by animateColorAsState(
-                targetValue = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                animationSpec = tween(220),
-                label = "theme-fg",
-            )
-            Surface(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
-                shape = MaterialTheme.shapes.small,
-                color = bg,
-                border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
-                onClick = { onSelect(mode) },
+    SegmentedOptionRow(
+        options = modes,
+        current = currentMode,
+        onSelect = onSelect,
+    )
+}
+
+@Composable
+private fun CalendarTypeSelector(
+    current: CalendarType,
+    stackVertically: Boolean,
+    onSelect: (CalendarType) -> Unit,
+) {
+    val options = listOf(
+        CalendarType.GREGORIAN to stringResource(R.string.calendar_gregorian),
+        CalendarType.JALALI to stringResource(R.string.calendar_jalali),
+    )
+    SegmentedOptionRow(
+        options = options,
+        current = current,
+        stackVertically = stackVertically,
+        onSelect = onSelect,
+    )
+}
+
+@Composable
+private fun <T> SegmentedOptionRow(
+    options: List<Pair<T, String>>,
+    current: T,
+    stackVertically: Boolean = false,
+    onSelect: (T) -> Unit,
+) {
+    val spacing = MaterialTheme.spacing
+    val renderOption: @Composable (Modifier, T, String) -> Unit = { itemModifier, value, label ->
+        val selected = current == value
+        val bg by animateColorAsState(
+            targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
+            animationSpec = tween(220),
+            label = "seg-bg",
+        )
+        val fg by animateColorAsState(
+            targetValue = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+            animationSpec = tween(220),
+            label = "seg-fg",
+        )
+        Surface(
+            modifier = itemModifier,
+            shape = MaterialTheme.shapes.small,
+            color = bg,
+            border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
+            onClick = { onSelect(value) },
+        ) {
+            Box(
+                modifier = (if (stackVertically) Modifier.fillMaxWidth() else Modifier.fillMaxSize())
+                    .padding(horizontal = spacing.xs, vertical = spacing.md),
+                contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = spacing.xs, vertical = spacing.md),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = label,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                        color = fg,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+                Text(
+                    text = label,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                    color = fg,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+
+    if (stackVertically) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(spacing.sm),
+        ) {
+            options.forEach { (value, label) ->
+                renderOption(Modifier.fillMaxWidth(), value, label)
+            }
+        }
+    } else {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max),
+            horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+        ) {
+            options.forEach { (value, label) ->
+                renderOption(Modifier.weight(1f).fillMaxHeight(), value, label)
             }
         }
     }

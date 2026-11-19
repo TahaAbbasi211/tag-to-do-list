@@ -345,5 +345,41 @@
     <string name="duration_m">%1$d دقیقه</string>
     <string name="duration_h">%1$d ساعت</string>
     <string name="duration_hm">%1$d س %2$d د</string>
+
+    <!-- هیت‌مپ ۱۲ هفته‌ای (نسخه ۱.۴) -->
+    <string name="insights_heatmap_tap_hint">روی هر روز بزنید تا تعداد آیتم‌ها و انجام‌شده‌ها را ببینید.</string>
+    <string name="insights_heatmap_day_summary">آیتم: %1$d، تیک‌خورده: %2$d</string>
+    <string name="insights_heatmap_day_neutral">بدون آیتم برنامه‌ریزی‌شده</string>
+    <string name="insights_heatmap_legend_neutral">بدون آیتم</string>
+    <string name="insights_heatmap_legend_less">کمتر</string>
+    <string name="insights_heatmap_legend_more">بیشتر</string>
+    <string name="insights_heatmap_weeks_ago">%1$d هفته پیش</string>
+
+    <!-- گزارش هفتگی (نسخه ۱.۴) -->
+    <string name="insights_weekly_report_title">گزارش هفتگی</string>
+    <string name="insights_weekly_report_subtitle_complete">مقایسه هفته کامل با هفته گذشته</string>
+    <string name="insights_weekly_report_subtitle_partial">هفته جاری در حال انجام (%1$d از %2$d روز)</string>
+    <string name="insights_this_week">هفته جاری</string>
+    <string name="insights_last_week">هفته قبل</string>
+    <string name="insights_perfect_days">روزهای کامل</string>
+    <string name="insights_streak">زنجیره</string>
+    <string name="insights_weekly_best_item">بهترین آیتم</string>
+    <string name="insights_weekly_weakest_item">ضعیف‌ترین آیتم</string>
+    <string name="insights_weekly_compare_up">افزایش %1$s نسبت به هفته قبل</string>
+    <string name="insights_weekly_compare_down">کاهش %1$s نسبت به هفته قبل</string>
+    <string name="insights_weekly_compare_steady">مشابه هفته قبل (%1$s)</string>
+    <string name="insights_weekly_compare_incomplete">هفته ناقص است؛ مقایسه کامل پس از پایان روز %1$d انجام می‌شود</string>
+    <string name="insights_weekly_compare_no_baseline">برای مقایسه، هر دو هفته باید آیتم برنامه‌ریزی‌شده داشته باشند</string>
+    <string name="insights_weekly_no_items">هنوز آیتمی برای این هفته برنامه‌ریزی نشده است.</string>
+
+    <!-- نوع تقویم (نسخه ۱.۵) -->
+    <string name="settings_calendar_type">نوع تقویم</string>
+    <string name="settings_calendar_type_sub">نمایش تاریخ‌ها و روز شروع هفته در سراسر برنامه</string>
+    <string name="calendar_gregorian">میلادی</string>
+    <string name="calendar_jalali">شمسی (جلالی)</string>
+    <string name="date_picker_prev_month">ماه قبل</string>
+    <string name="date_picker_next_month">ماه بعد</string>
+    <string name="date_picker_select_year">انتخاب سال</string>
+    <string name="date_picker_today">امروز</string>
 </resources>
 

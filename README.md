@@ -1,11 +1,12 @@
-# ✅ Tag — Daily Routine & Task Planner (v1.4)
+# ✅ Tag — Daily Routine & Task Planner (v1.5)
 
-A clean and customizable Android routine and task planner with day-centric scheduling, a built-in focus timer, unified Material 3 design system, optional Dynamic Color, and full support for five languages.
+A clean and customizable Android routine and task planner with day-centric scheduling, Gregorian & Solar Hijri (Jalali) calendar support, a built-in focus timer, unified Material 3 design system, optional Dynamic Color, and full support for five languages.
 
 📲 Download the latest APK from the [Releases](https://github.com/TahaAbbasi211/tag-to-do-list/releases) page.
 
 ## ✨ Features
 
+- 🗓️ **Gregorian & Solar Hijri (Jalali) calendar**: Switch between **Gregorian** (default) and **Solar Hijri (Jalali)** anytime in Settings without restarting or modifying stored data — featuring Persian month names (`فروردین… اسفند`) across all 5 app languages, Saturday-start weeks, a custom Jalali date picker in Tasks, month/year headers on the Week Strip, Jalali day numbers in Copy to Another Day, month labels and Saturday-aligned columns in the Insights Heatmap, Saturday–Friday boundaries in the Weekly Report, and Jalali timestamps in Focus history
 - 📅 **Day-centric Today timeline**: Each routine/item belongs to its selected day (past, today, or future) with optional daily repeat (`Repeat daily`)
 - 🗑️ **Flexible recurring delete**: Remove a repeating item for today only or from this day onwards without losing historical completion logs
 - 📑 **Copy items between days**: One tap copies yesterday's items onto the selected day, and any item's menu offers **Copy to another day** with a multi-day picker. Only items are copied — never the tick state — and pressing the action twice never creates duplicates
@@ -59,13 +60,14 @@ Run the unit tests with:
 ./gradlew :app:testDebugUnitTest
 ```
 
-The suite currently holds 142 tests, covering weekly reporting (`WeeklyReportEngine`), 12-week calendar heatmap building (`HeatmapCalendar`), daily focus totals, unlinked focus sessions and per-item focus ranking (`FocusSummaryEngine`), copy rules, quick-add ranking, dynamic Today line, plus the existing date, stats, focus timer, ordering, migration and localization guards.
+The suite currently holds 153 tests, covering Solar Hijri (Jalali) conversions, leap years, year boundaries, Saturday-start weeks and month labels (`JalaliCalendarTest`, `DatesTest`), weekly reporting (`WeeklyReportEngine`), 12-week calendar heatmap building (`HeatmapCalendar`), daily focus totals, unlinked focus sessions and per-item focus ranking (`FocusSummaryEngine`), copy rules, quick-add ranking, dynamic Today line, plus the existing stats, focus timer, ordering, migration and localization guards.
 
 ## 🔮 Future Improvements
 
 - [x] Item-linked focus sessions and per-item focus insights (v1.3)
+- [x] Solar Hijri (Jalali) calendar display and date selection (v1.5)
 - [ ] Focus goals & Pomodoro break intervals
-- [ ] Task categories and due dates
+- [ ] Task categories & recurring tasks
 - [ ] Cloud backup and sync
 - [ ] Home screen widget
 
@@ -79,6 +81,11 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 📝 Changelog
 
+- **1.5**:
+  - **Solar Hijri (Jalali) Calendar Option (`CalendarType`, `JalaliCalendar`, `Dates`)**: Added a **Calendar type** setting in Settings (**Gregorian** by default, **Solar Hijri (Jalali)** optional) persisted in existing DataStore Preferences (`tag_settings`) with zero database schema changes and zero new dependencies. Stored Room dates and backups remain Gregorian ISO / `epochDay`
+  - **Shared Jalali Layer (`JalaliCalendar` + `Dates`)**: Implemented `epochDay` ↔ Jalali conversions, 31/30/29-or-30 month lengths, leap-year calculation, Saturday-start week ordering, Persian month names (`فروردین… اسفند`) across all 5 app languages, and `Dates.formatDigits` formatting using Android ICU (`Calendar` with `@calendar=persian` pinned to `TimeZone.GMT_ZONE` / UTC noon to avoid day shifts)
+  - **Live Calendar Updates Across All Screens**: Updated `WeekStrip` (with month/year header), `TodayScreen` hero date label, `CopyToDayDialog`, `RoutineEditorSheet` (Saturday-first weekday selector preserving `daysMask` bits), `TaskEditorSheet` (new `JalaliDatePickerDialog` with month/year navigation and year selector), `TasksScreen` due labels, `FocusScreen` history timestamps, and Insights `HeatmapGrid` (month labels + Saturday alignment) & `WeeklyReportCard` (Saturday–Friday boundaries + formatted week span) so changing calendar type updates every screen immediately without restart
+  - **Tests & Localization**: Added 5-language strings (`en`, `fa`, `de`, `fr`, `tr`), verified RTL/LTR, Light/Dark, and large system font layouts, and added unit tests covering ICU-verified reference dates, 60+ year exhaustive `epochDay` round-trips, month lengths, leap/common Esfand boundaries, Saturday week starts, heatmap month labels, and weekly report boundaries
 - **1.4**:
   - **Weekly Report (`WeeklyReportEngine`)**: Pure-Kotlin weekly summary built from existing `StatsEngine` outputs (`Insights` and `routineRates`) with neutral handling for days with zero scheduled items, current vs previous week completion percentages, perfect days count, streak, strongest & weakest items, honest incomplete-week handling (avoiding misleading partial-vs-full comparisons), and full unit-test coverage (`WeeklyReportEngineTest`) including empty weeks, incomplete weeks, comparisons, month/leap-year boundaries, year transitions, and multi-year history
   - **Interactive 12-Week Heatmap (`HeatmapCalendar`, `HeatmapGrid`)**: Calendar-aligned 12-week contribution heatmap with distinct neutral vs 0%-done vs theme-tinted completion intensity levels, proper RTL/LTR week and weekday ordering (Saturday-start for Persian, Monday-start otherwise), tap-to-inspect day summary (scheduled items, checked items, completion percentage), and non-clipping layout for small screens & large system fonts
