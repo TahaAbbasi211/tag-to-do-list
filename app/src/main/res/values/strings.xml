@@ -371,4 +371,14 @@
     <string name="insights_weekly_compare_incomplete">Partial week — full comparison starts after day %1$d</string>
     <string name="insights_weekly_compare_no_baseline">Need scheduled items in both weeks to compare</string>
     <string name="insights_weekly_no_items">No scheduled items in this week yet.</string>
+
+    <!-- Calendar type (v1.5) -->
+    <string name="settings_calendar_type">Calendar type</string>
+    <string name="settings_calendar_type_sub">Affects date display and week start across the app</string>
+    <string name="calendar_gregorian">Gregorian</string>
+    <string name="calendar_jalali">Solar Hijri (Jalali)</string>
+    <string name="date_picker_prev_month">Previous month</string>
+    <string name="date_picker_next_month">Next month</string>
+    <string name="date_picker_select_year">Select year</string>
+    <string name="date_picker_today">Today</string>
 </resources>
