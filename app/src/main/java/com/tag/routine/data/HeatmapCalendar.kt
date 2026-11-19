@@ -43,6 +43,14 @@ data class HeatmapWeekColumn(
     val cells: List<HeatmapCell>,
 )
 
+/** Month header anchor positioned over [columnIndex] in the heatmap grid. */
+data class HeatmapMonthLabel(
+    val columnIndex: Int,
+    val year: Int,
+    val month: Int,
+    val referenceDate: LocalDate,
+)
+
 /**
  * Pure calendar builder for the trailing 12-week heatmap.
  *
@@ -102,6 +110,45 @@ object HeatmapCalendar {
     fun weekdayDates(firstDayOfWeek: DayOfWeek): List<LocalDate> {
         val anchor = LocalDate.of(2024, 1, 1).with(TemporalAdjusters.nextOrSame(firstDayOfWeek))
         return (0 until 7).map { anchor.plusDays(it.toLong()) }
+    }
+
+    /**
+     * Month transition anchors across [weekColumns] using [calendarType].
+     *
+     * Column 0 anchors the initial visible month (preferring day 1 if that week starts a
+     * new month), and subsequent columns emit an anchor whenever a non-future cell falls
+     * on the first day of a month.
+     */
+    fun monthLabels(
+        weekColumns: List<HeatmapWeekColumn>,
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): List<HeatmapMonthLabel> {
+        if (weekColumns.isEmpty()) return emptyList()
+        val labels = mutableListOf<HeatmapMonthLabel>()
+        var lastYearMonth: Pair<Int, Int>? = null
+        weekColumns.forEachIndexed { index, column ->
+            val firstDayCell = column.cells.firstOrNull { cell ->
+                !cell.isFuture && Dates.dayOfMonth(cell.date, calendarType) == 1
+            }
+            val anchorDate = when {
+                firstDayCell != null -> firstDayCell.date
+                index == 0 -> column.cells.firstOrNull { !it.isFuture }?.date ?: column.weekStart
+                else -> null
+            } ?: return@forEachIndexed
+
+            val yearMonth = Dates.yearNumber(anchorDate, calendarType) to
+                Dates.monthNumber(anchorDate, calendarType)
+            if (yearMonth != lastYearMonth) {
+                labels += HeatmapMonthLabel(
+                    columnIndex = index,
+                    year = yearMonth.first,
+                    month = yearMonth.second,
+                    referenceDate = anchorDate,
+                )
+                lastYearMonth = yearMonth
+            }
+        }
+        return labels
     }
 
     fun classify(stat: DayStat): HeatmapIntensity = when {
