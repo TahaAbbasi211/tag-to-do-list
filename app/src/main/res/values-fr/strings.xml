@@ -299,5 +299,51 @@
     <string name="delete_recurring_message">Choisis comment retirer « %1$s » :</string>
     <string name="delete_recurring_only_this_day">Seulement ce jour</string>
     <string name="delete_recurring_from_this_day">À partir de ce jour</string>
+
+    <!-- Copier des éléments (v1.2) -->
+    <string name="copy_yesterday_to_today">Copier hier vers aujourd\'hui</string>
+    <string name="copy_yesterday_to_today_count">Copier hier vers aujourd\'hui (%1$d)</string>
+    <string name="copy_to_other_day">Copier vers un autre jour</string>
+    <string name="copy_to_other_day_title">Copier vers un autre jour</string>
+    <string name="copy_to_other_day_message">Choisis les jours où « %1$s » doit aussi apparaître. Seuls les éléments sont copiés, pas les cases cochées.</string>
+    <string name="copy_to_other_day_pick_days">Jours</string>
+    <string name="copy_to_other_day_confirm">Copier</string>
+    <string name="copy_nothing_to_copy">Rien à copier depuis hier</string>
+    <string name="copy_done_one">%1$d élément copié</string>
+    <string name="copy_done_count">%1$d éléments copiés</string>
+    <string name="copy_nothing_done">Ces jours contiennent déjà cet élément</string>
+
+    <!-- Ajout rapide (v1.2) -->
+    <string name="quick_add_suggestions">Ajout rapide</string>
+    <string name="quick_add_suggestions_hint">Touche une suggestion pour remplir son titre, son icône, sa couleur et son heure.</string>
+
+    <!-- Ligne dynamique de la carte Aujourd\'hui (v1.2) -->
+    <string name="nudge_empty">Rien de prévu pour le moment. Profite du calme, ou ajoute une petite chose.</string>
+    <string name="nudge_all_done">Tout est fait. Bravo.</string>
+    <string name="nudge_one_left">Il n\'en reste qu\'un !</string>
+    <string name="nudge_night">On planifie demain ?</string>
+    <string name="nudge_morning">Un matin tout neuf. Commence par un seul.</string>
+    <string name="nudge_halfway">À mi-chemin. Garde le rythme.</string>
+    <string name="nudge_keep_going">Une chose à la fois. Tu vas y arriver.</string>
+
+    <!-- Libellés de mise en page (v1.3) -->
+    <string name="tasks_subtitle">Organise et suis tes tâches</string>
+    <string name="insights_subtitle">Ta régularité et ton rythme de concentration</string>
+    <string name="settings_subtitle">Personnalise thèmes, alertes et sauvegardes</string>
+    <string name="focus_overview">Statistiques de concentration</string>
+    <string name="focus_timer_ready">Prêt à te concentrer</string>
+    <string name="settings_tags_empty">Aucune étiquette. Ajoute-en une ci-dessous.</string>
+    <string name="streak_days_short">j</string>
+
+    <!-- Concentration par élément (v1.3) -->
+    <string name="today_focus_time">Concentration aujourd\'hui : %1$s</string>
+    <string name="insights_focus_breakdown_title">Éléments les plus travaillés</string>
+    <string name="insights_focus_breakdown_subtitle">Temps de concentration par élément</string>
+    <string name="insights_focus_sessions_count">%1$d sessions</string>
+    <string name="insights_focus_unlinked">Autres sessions (sans élément)</string>
+    <string name="insights_focus_empty">Lance une session depuis un élément dans Aujourd\'hui pour suivre ton temps par élément.</string>
+    <string name="duration_m">%1$d min</string>
+    <string name="duration_h">%1$dh</string>
+    <string name="duration_hm">%1$dh %2$dm</string>
 </resources>
 

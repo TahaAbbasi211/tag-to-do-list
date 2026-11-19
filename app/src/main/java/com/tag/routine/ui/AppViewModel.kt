@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.tag.routine.AppContainer
 import com.tag.routine.data.AppConstants
 import com.tag.routine.data.AppSettings
+import com.tag.routine.data.CopyEngine
 import com.tag.routine.data.Dates
 import com.tag.routine.data.FocusEngine
 import com.tag.routine.data.FocusStats
+import com.tag.routine.data.FocusSummary
+import com.tag.routine.data.FocusSummaryEngine
 import com.tag.routine.data.Groups
 import com.tag.routine.data.ImportOutcome
 import com.tag.routine.data.Insights
@@ -49,6 +52,12 @@ data class TodayRoutine(val routine: RoutineEntity, val done: Boolean)
 
 data class RoutineGroupSection(val name: String, val items: List<TodayRoutine>)
 
+data class CopyFeedback(
+    val count: Int,
+    val fromYesterday: Boolean,
+    val eventId: Long,
+)
+
 data class UiState(
     val loaded: Boolean = false,
     val selectedDate: LocalDate = Dates.today(),
@@ -63,9 +72,21 @@ data class UiState(
     val scheduledDates: Set<String> = emptySet(),
     val todayTasks: List<TaskRow> = emptyList(),
     val allRoutines: List<RoutineEntity> = emptyList(),
+    /**
+     * All non-archived routines stored on disk (including past ended ones), read-only
+     * source for quick-add suggestions.
+     */
+    val routineHistory: List<RoutineEntity> = emptyList(),
+    /**
+     * Items the previous day shows that the selected day does not, i.e. exactly what the
+     * "copy yesterday to today" action would create. Empty when there is nothing to copy,
+     * which is what hides the button.
+     */
+    val copyFromPreviousDay: List<RoutineEntity> = emptyList(),
     val totalTasks: Int = 0,
     val doneTasks: Int = 0,
     val focusStats: FocusStats = FocusStats(),
+    val focusSummary: FocusSummary = FocusSummary(),
 ) {
     val completedCount: Int get() = groups.sumOf { section -> section.items.count { it.done } }
     val routineCount: Int get() = groups.sumOf { it.items.size }
@@ -179,9 +200,19 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             .filter { !it.done && it.dueDate == Dates.iso(today) }
             .map { toRow(it, tagById[it.tagId], today) }
 
+        val focusStats = FocusEngine.compute(
+            sessions = snapshot.focusSessions,
+            routines = snapshot.routines,
+            today = today,
+        )
+        val focusSummary = FocusSummaryEngine.compute(
+            sessions = snapshot.focusSessions,
+            routines = snapshot.routines,
+            today = today,
+        )
         val insights = StatsEngine
             .compute(snapshot.routines, snapshot.routineLogs, snapshot.taskLogs, today)
-            .copy(focusMinutes = snapshot.focusMinutes)
+            .copy(focusMinutes = focusSummary.totalMinutes)
 
         val logsByDate = snapshot.routineLogs
             .groupBy({ it.date }, { it.routineId })
@@ -192,12 +223,6 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
         val allKnownDays = insights.days + futureWeekDays
         val dayRatios = allKnownDays.associate { Dates.iso(it.date) to it.ratio }
         val scheduledDates = allKnownDays.filter { it.hasData }.map { Dates.iso(it.date) }.toSet()
-
-        val focusStats = FocusEngine.compute(
-            sessions = snapshot.focusSessions,
-            routines = snapshot.routines,
-            today = today,
-        )
 
         val todayEpoch = today.toEpochDay()
         return UiState(
@@ -216,9 +241,18 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             allRoutines = snapshot.routines.filter {
                 !it.archived && (it.endDateEpochDay == null || it.endDateEpochDay >= todayEpoch)
             },
+            routineHistory = snapshot.routines.filter { !it.archived },
+            copyFromPreviousDay = CopyEngine.plan(
+                sourceDay = selected.minusDays(1),
+                targetDay = selected,
+                routines = snapshot.routines,
+                orderStart = 0,
+                now = 0L,
+            ),
             totalTasks = snapshot.tasks.size,
             doneTasks = snapshot.tasks.count { it.done },
             focusStats = focusStats,
+            focusSummary = focusSummary,
         )
     }
 
@@ -285,6 +319,36 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     fun endRoutineFromDate(routineId: String, date: LocalDate) = viewModelScope.launch {
         repository.endRoutineFromDate(routineId, date)
         rescheduleReminders()
+    }
+
+    // ------------------------------------------------------------ copy items
+
+    private var copyEventSeq = 0L
+
+    /** Outcome of the last copy action, consumed by the snackbar. */
+    private val _copyResult = MutableStateFlow<CopyFeedback?>(null)
+    val copyResult: StateFlow<CopyFeedback?> = _copyResult.asStateFlow()
+
+    fun consumeCopyResult() {
+        _copyResult.value = null
+    }
+
+    /**
+     * Copies the previous day's items onto the day the user is looking at. Completion state
+     * is never copied, and running it twice writes nothing the second time.
+     */
+    fun copyYesterdayToSelected() = viewModelScope.launch {
+        val target = _selectedDate.value
+        val copied = repository.copyRoutines(target.minusDays(1), target)
+        if (copied > 0) rescheduleReminders()
+        _copyResult.value = CopyFeedback(copied, fromYesterday = true, eventId = ++copyEventSeq)
+    }
+
+    /** Copies one routine onto every day the user picked in the copy sheet. */
+    fun copyRoutineToDays(routineId: String, targetDays: List<LocalDate>) = viewModelScope.launch {
+        val copied = repository.copyRoutineToDays(routineId, targetDays)
+        if (copied > 0) rescheduleReminders()
+        _copyResult.value = CopyFeedback(copied, fromYesterday = false, eventId = ++copyEventSeq)
     }
 
     // ------------------------------------------------------------ undo support

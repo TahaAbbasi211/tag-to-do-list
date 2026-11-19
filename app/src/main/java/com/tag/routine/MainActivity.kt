@@ -32,6 +32,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,12 +41,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.tag.routine.data.Dates
 import com.tag.routine.data.RoutineEntity
 import com.tag.routine.data.TaskEntity
 import com.tag.routine.ui.AppViewModel
@@ -146,6 +149,26 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    // Copy actions report their outcome through one shared snackbar.
+    val copyResult by viewModel.copyResult.collectAsState()
+    val copyContext = LocalContext.current
+    val appLocale = LocalConfiguration.current.locales[0] ?: java.util.Locale.getDefault()
+    LaunchedEffect(copyResult?.eventId) {
+        val feedback = copyResult ?: return@LaunchedEffect
+        viewModel.consumeCopyResult()
+        val message = when {
+            feedback.count == 1 -> copyContext.getString(R.string.copy_done_one, feedback.count)
+            feedback.count > 1 -> copyContext.getString(R.string.copy_done_count, feedback.count)
+            feedback.fromYesterday -> copyContext.getString(R.string.copy_nothing_to_copy)
+            else -> copyContext.getString(R.string.copy_nothing_done)
+        }
+        val formatted = Dates.formatDigits(message, appLocale)
+        scope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar(formatted)
+        }
+    }
+
     // System back closes the Settings sub-page before it leaves the app.
     BackHandler(enabled = showLanguagePage && tab == Tab.SETTINGS) {
         showLanguagePage = false
@@ -207,9 +230,17 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                                 // The Today hero pill jumps to the dedicated Focus
                                 // section, which owns duration selection and history.
                                 onStartFocus = { tab = Tab.FOCUS },
+                                onStartFocusForRoutine = { routine ->
+                                    if (focus.routineId != routine.id) {
+                                        viewModel.startFocus(routine, state.settings.focusMinutes)
+                                    }
+                                    tab = Tab.FOCUS
+                                },
                                 onMoveRoutine = viewModel::moveRoutine,
                                 onOpenTemplates = { showTemplatesSheet = true },
                                 onDismissTemplatesCard = viewModel::dismissTemplatesCard,
+                                onCopyPreviousDay = viewModel::copyYesterdayToSelected,
+                                onCopyRoutineToDays = viewModel::copyRoutineToDays,
                             )
 
                             Tab.TASKS -> TasksScreen(
@@ -325,6 +356,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
         RoutineEditorSheet(
             existing = editingRoutine,
             localizedContext = localizedContext,
+            existingRoutines = state.routineHistory,
             onDismiss = {
                 creatingRoutine = false
                 editingRoutine = null

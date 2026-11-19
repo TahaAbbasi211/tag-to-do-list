@@ -32,10 +32,12 @@ import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
@@ -74,10 +76,13 @@ import com.tag.routine.data.Groups
 import com.tag.routine.data.RoutineColors
 import com.tag.routine.data.RoutineEmojis
 import com.tag.routine.data.RoutineEntity
+import com.tag.routine.data.TodayNudge
 import com.tag.routine.ui.RoutineGroupSection
 import com.tag.routine.ui.TodayRoutine
 import com.tag.routine.ui.UiState
 import com.tag.routine.ui.components.AnimatedCheck
+import com.tag.routine.ui.components.AppButton
+import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.ConfettiEffect
 import com.tag.routine.ui.components.RingWithLabel
@@ -86,6 +91,7 @@ import com.tag.routine.ui.components.SwipeToDelete
 import com.tag.routine.ui.components.TimelineRoutineItem
 import com.tag.routine.ui.components.TodayEmptyState
 import com.tag.routine.ui.components.WeekStrip
+import com.tag.routine.ui.editors.CopyToDayDialog
 import com.tag.routine.ui.i18n.ProvideAppLocale
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
@@ -101,9 +107,12 @@ fun TodayScreen(
     onEditRoutine: (RoutineEntity) -> Unit,
     onDeleteRoutine: (RoutineEntity) -> Unit,
     onStartFocus: () -> Unit,
+    onStartFocusForRoutine: (RoutineEntity) -> Unit = {},
     onMoveRoutine: (String, Boolean) -> Unit,
     onOpenTemplates: () -> Unit = {},
     onDismissTemplatesCard: () -> Unit = {},
+    onCopyPreviousDay: () -> Unit = {},
+    onCopyRoutineToDays: (String, List<java.time.LocalDate>) -> Unit = { _, _ -> },
 ) {
     val today = state.today
     val selected = state.selectedDate
@@ -123,8 +132,33 @@ fun TodayScreen(
     }
     val greetingText = Dates.formatDigits(rawGreeting, appLocale)
 
+    // The hero card's second line reacts to the clock and to how much of the day is done.
+    // The wording lives in the five string files; only the choice is decided here.
+    val nudge = TodayNudge.forDay(
+        hour = java.time.LocalTime.now().hour,
+        total = state.routineCount,
+        completed = state.completedCount,
+    )
+    val nudgeText = Dates.formatDigits(
+        stringResource(
+            when (nudge) {
+                TodayNudge.EMPTY -> R.string.nudge_empty
+                TodayNudge.ALL_DONE -> R.string.nudge_all_done
+                TodayNudge.ONE_LEFT -> R.string.nudge_one_left
+                TodayNudge.NIGHT -> R.string.nudge_night
+                TodayNudge.MORNING -> R.string.nudge_morning
+                TodayNudge.HALFWAY -> R.string.nudge_halfway
+                TodayNudge.KEEP_GOING -> R.string.nudge_keep_going
+            },
+        ),
+        appLocale,
+    )
+
     val showSearch = state.routineCount > 8
     var query by remember { mutableStateOf("") }
+
+    // The item whose "copy to another day" sheet is open, if any.
+    var copyTarget by remember { mutableStateOf<RoutineEntity?>(null) }
 
     // Filter routines by the search box; group sections with no match disappear.
     val visibleGroups = remember(state.groups, query, showSearch) {
@@ -189,6 +223,16 @@ fun TodayScreen(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
+                        Spacer(Modifier.height(6.dp))
+                        // Dynamic nudge: reacts to the hour and to the completion ratio.
+                        Text(
+                            text = nudgeText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = brand.onHero,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                         Spacer(Modifier.height(12.dp))
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -212,6 +256,18 @@ fun TodayScreen(
                                     accentColor = brand.success,
                                 )
                             }
+                            HeroPill(
+                                text = "⏱ " + Dates.formatDigits(
+                                    stringResource(
+                                        R.string.today_focus_time,
+                                        Dates.formatDuration(state.focusSummary.todayMinutes, resources, appLocale),
+                                    ),
+                                    appLocale,
+                                ),
+                                contentColor = Color(0xFFE0E7FF),
+                                accentColor = brand.ringStart,
+                                onClick = onStartFocus,
+                            )
                             HeroPill(
                                 text = "▶ " + stringResource(R.string.today_focus_start),
                                 contentColor = Color.White,
@@ -249,6 +305,33 @@ fun TodayScreen(
             )
 
             Spacer(Modifier.height(4.dp))
+
+            // One-tap copy of the previous day's items. The button only exists when there is
+            // actually something the selected day does not already show.
+            if (state.copyFromPreviousDay.isNotEmpty()) {
+                AppButton(
+                    text = Dates.formatDigits(
+                        stringResource(
+                            R.string.copy_yesterday_to_today_count,
+                            state.copyFromPreviousDay.size,
+                        ),
+                        appLocale,
+                    ),
+                    onClick = onCopyPreviousDay,
+                    variant = AppButtonVariant.Tonal,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Rounded.ContentCopy,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = MaterialTheme.spacing.lg, vertical = MaterialTheme.spacing.xs),
+                    shape = RoundedCornerShape(16.dp),
+                )
+            }
 
             val hasAnyRoutine = state.allRoutines.isNotEmpty() ||
                 state.groups.isNotEmpty() ||
@@ -328,6 +411,8 @@ fun TodayScreen(
                             onEditRoutine = onEditRoutine,
                             onDeleteRoutine = onDeleteRoutine,
                             onMoveRoutine = onMoveRoutine,
+                            onCopyRoutine = { copyTarget = it },
+                            onStartFocusForRoutine = onStartFocusForRoutine,
                         )
                     }
                 }
@@ -354,6 +439,18 @@ fun TodayScreen(
             confettiTriggered = is100Percent
         }
         ConfettiEffect(trigger = confettiTriggered)
+    }
+
+    // Copy-to-another-day sheet, opened from an item's overflow menu.
+    val target = copyTarget
+    if (target != null) {
+        CopyToDayDialog(
+            routineTitle = target.title,
+            today = state.today,
+            localizedContext = LocalContext.current,
+            onDismiss = { copyTarget = null },
+            onConfirm = { days -> onCopyRoutineToDays(target.id, days) },
+        )
     }
 }
 
@@ -392,6 +489,8 @@ private fun RoutineGroupSectionBlock(
     onEditRoutine: (RoutineEntity) -> Unit,
     onDeleteRoutine: (RoutineEntity) -> Unit,
     onMoveRoutine: (String, Boolean) -> Unit,
+    onCopyRoutine: (RoutineEntity) -> Unit,
+    onStartFocusForRoutine: (RoutineEntity) -> Unit = {},
 ) {
     val resources = LocalContext.current.resources
     val completedCount = section.items.count { it.done }
@@ -439,6 +538,8 @@ private fun RoutineGroupSectionBlock(
                             onEditRoutine = onEditRoutine,
                             onDeleteRoutine = onDeleteRoutine,
                             onMoveRoutine = onMoveRoutine,
+                            onCopyRoutine = onCopyRoutine,
+                            onStartFocusForRoutine = onStartFocusForRoutine,
                         )
                     }
                 }
@@ -459,6 +560,8 @@ private fun TimelineRoutineRow(
     onEditRoutine: (RoutineEntity) -> Unit,
     onDeleteRoutine: (RoutineEntity) -> Unit,
     onMoveRoutine: (String, Boolean) -> Unit,
+    onCopyRoutine: (RoutineEntity) -> Unit,
+    onStartFocusForRoutine: (RoutineEntity) -> Unit = {},
 ) {
     val routine = item.routine
     val done = item.done
@@ -516,6 +619,20 @@ private fun TimelineRoutineRow(
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                     ProvideAppLocale(localizedContext) {
                         DropdownMenuItem(
+                            text = { Text(stringResource(R.string.today_focus_start)) },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Rounded.Timer,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            },
+                            onClick = {
+                                menuOpen = false
+                                onStartFocusForRoutine(routine)
+                            },
+                        )
+                        DropdownMenuItem(
                             text = { Text(stringResource(R.string.action_move_up)) },
                             leadingIcon = {
                                 Icon(
@@ -543,6 +660,20 @@ private fun TimelineRoutineRow(
                             onClick = {
                                 menuOpen = false
                                 onMoveRoutine(routine.id, false)
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.copy_to_other_day)) },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Rounded.ContentCopy,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            },
+                            onClick = {
+                                menuOpen = false
+                                onCopyRoutine(routine)
                             },
                         )
                         DropdownMenuItem(

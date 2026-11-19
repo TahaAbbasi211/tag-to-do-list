@@ -66,10 +66,12 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tag.routine.R
+import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
 import kotlin.math.abs
 
@@ -635,24 +637,33 @@ fun StatTile(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
     ) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
+        Column(
+            modifier = Modifier.padding(
+                horizontal = MaterialTheme.spacing.lg,
+                vertical = MaterialTheme.spacing.md,
+            ),
+        ) {
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
                     text = value,
-                    style = MaterialTheme.typography.displaySmall.copy(fontSize = 26.sp),
+                    style = MaterialTheme.typography.displaySmall.copy(fontSize = 24.sp, lineHeight = 30.sp),
                     color = accent,
                     fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
-                if (suffix != null) {
+                if (!suffix.isNullOrBlank()) {
                     Text(
                         text = suffix,
                         style = MaterialTheme.typography.labelLarge,
-                        color = accent.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(start = 2.dp, bottom = 3.dp),
+                        color = accent.copy(alpha = 0.85f),
+                        maxLines = 1,
+                        softWrap = false,
+                        modifier = Modifier.padding(start = 3.dp, bottom = 3.dp),
                     )
                 }
             }
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(MaterialTheme.spacing.xs))
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodySmall,

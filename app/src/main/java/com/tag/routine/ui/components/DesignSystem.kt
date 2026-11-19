@@ -51,13 +51,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tag.routine.data.Dates
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
+import java.util.Locale
 
 // ==================================================================
 // 1. AppCard
@@ -116,8 +120,44 @@ fun AppCard(
 }
 
 // ==================================================================
-// 2. SectionHeader
+// 2. ScreenHeader & SectionHeader
 // ==================================================================
+
+/**
+ * Top-of-screen page header establishing clear hierarchy with title,
+ * optional supporting subtitle, and optional trailing summary/action slot.
+ */
+@Composable
+fun ScreenHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    trailing: (@Composable () -> Unit)? = null,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            if (!subtitle.isNullOrBlank()) {
+                Spacer(Modifier.height(MaterialTheme.spacing.xs))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        trailing?.invoke()
+    }
+}
 
 /**
  * Consistent section heading across the app with clear typographic hierarchy,
@@ -218,6 +258,7 @@ fun AppButton(
                 text = text,
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
             )
             if (!loading) {
                 trailingIcon?.invoke()
@@ -303,6 +344,7 @@ fun AppChip(
     trailingCount: Int? = null,
     shape: Shape = RoundedCornerShape(percent = 50),
 ) {
+    val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
     val animatedBg by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
         animationSpec = tween(220),
@@ -323,7 +365,7 @@ fun AppChip(
         enabled = onClick != null,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
@@ -342,12 +384,16 @@ fun AppChip(
                 style = MaterialTheme.typography.labelLarge,
                 color = animatedContent,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             if (trailingCount != null && trailingCount > 0) {
                 Text(
-                    text = trailingCount.toString(),
+                    text = Dates.formatDigits(trailingCount.toString(), appLocale),
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (selected) animatedContent.copy(alpha = 0.8f) else animatedContent.copy(alpha = 0.6f),
+                    color = if (selected) animatedContent.copy(alpha = 0.9f) else animatedContent.copy(alpha = 0.75f),
+                    maxLines = 1,
+                    softWrap = false,
                 )
             }
         }

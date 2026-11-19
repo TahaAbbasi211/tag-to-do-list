@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalDate
@@ -145,6 +147,55 @@ class TagRepository(
     }
 
     suspend fun newRoutineOrder(): Int = routineDao.maxOrder() + 1
+
+    // ------------------------------------------------------------ copy items
+
+    private val copyMutex = Mutex()
+
+    /**
+     * Copies everything [sourceDay] shows onto [targetDay] and returns how many items were
+     * written.
+     *
+     * Only items are created: a copy never carries a completion log, so the tick state is
+     * not duplicated. Repeating items that already show up on [targetDay] are skipped, and
+     * a copy left over from an earlier press is recognised by its derived id (see
+     * [CopyEngine.copyId]), which makes the action safe to press twice.
+     *
+     * Runs under [copyMutex] against live DAO reads rather than the cached snapshot so
+     * rapid double taps serialize cleanly and never plan the same copy twice.
+     */
+    suspend fun copyRoutines(sourceDay: LocalDate, targetDay: LocalDate): Int = copyMutex.withLock {
+        val routines = routineDao.observeAll().first()
+        val plan = CopyEngine.plan(
+            sourceDay = sourceDay,
+            targetDay = targetDay,
+            routines = routines,
+            orderStart = routineDao.maxOrder() + 1,
+            now = System.currentTimeMillis(),
+            existingIds = routineDao.allIds().toHashSet(),
+        )
+        plan.forEach { routineDao.upsert(it) }
+        plan.size
+    }
+
+    /**
+     * Copies one routine onto each day in [targetDays] and returns how many items were
+     * written. Days the routine already appears on are skipped, as are duplicates.
+     */
+    suspend fun copyRoutineToDays(routineId: String, targetDays: List<LocalDate>): Int = copyMutex.withLock {
+        val routines = routineDao.observeAll().first()
+        val item = routines.firstOrNull { it.id == routineId } ?: return@withLock 0
+        val plan = CopyEngine.planToDays(
+            item = item,
+            targets = targetDays,
+            routines = routines,
+            orderStart = routineDao.maxOrder() + 1,
+            now = System.currentTimeMillis(),
+            existingIds = routineDao.allIds().toHashSet(),
+        )
+        plan.forEach { routineDao.upsert(it) }
+        plan.size
+    }
 
     /**
      * Moves [routineId] one slot earlier or later within its own group, then rewrites
