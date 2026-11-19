@@ -76,4 +76,24 @@ class DatesTest {
         assertTrue(enLabel.startsWith("M", ignoreCase = true))
         assertTrue(faLabel.startsWith("د"))
     }
+
+    @Test
+    fun `monthYearRange and relativeDayLabel respect calendarType and digits`() {
+        val fa = Locale.forLanguageTag("fa")
+        val en = Locale.ENGLISH
+        val esfand25 = LocalDate.of(2026, 3, 16) // 1404-12-25
+        val farvardin8 = LocalDate.of(2026, 3, 28) // 1405-01-08
+        val farvardin1 = LocalDate.of(2026, 3, 21) // 1405-01-01
+        val aban28 = LocalDate.of(2026, 11, 19) // 1405-08-28
+
+        assertEquals("اسفند ۱۴۰۴ – فروردین ۱۴۰۵", Dates.monthYearRange(esfand25, farvardin8, fa, CalendarType.JALALI))
+        assertEquals("اسفند 1404 – فروردین 1405", Dates.monthYearRange(esfand25, farvardin8, en, CalendarType.JALALI))
+        assertEquals("آبان ۱۴۰۵", Dates.monthYearRange(aban28, aban28, fa, CalendarType.JALALI))
+
+        // Beyond +/- 6 days, relativeDayLabel falls back to dayMonth in the active calendar.
+        val farLabelFa = Dates.relativeDayLabel(farvardin1, aban28, null, fa, CalendarType.JALALI)
+        val farLabelEn = Dates.relativeDayLabel(farvardin1, aban28, null, en, CalendarType.JALALI)
+        assertTrue(farLabelFa.contains("۱ فروردین"))
+        assertTrue(farLabelEn.contains("1 فروردین"))
+    }
 }
