@@ -47,6 +47,7 @@ class AppContainer(context: Context) {
                 routines = snapshot.routines,
                 digestMinutes = snapshot.settings.dailyDigestMinutes,
                 digestEnabled = snapshot.settings.notificationsEnabled && snapshot.settings.dailyDigestEnabled,
+                notificationsEnabled = snapshot.settings.notificationsEnabled,
             )
         }
     }
