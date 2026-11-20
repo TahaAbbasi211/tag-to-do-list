@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.tag.routine.widget.WidgetRefresh
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -15,6 +16,12 @@ import kotlinx.coroutines.flow.map
 private val Context.settingsStore: DataStore<Preferences> by preferencesDataStore(name = "tag_settings")
 
 class SettingsStore(private val context: Context) {
+
+    /**
+     * The widget renders with the app's language and calendar (and is redrawn on theme
+     * changes too), so those settings must trigger a widget refresh after they are saved.
+     */
+    private fun refreshWidget() = WidgetRefresh.request(context)
 
     private object Keys {
         val themeMode = intPreferencesKey("theme_mode")
@@ -83,19 +90,30 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setSeeded(value: Boolean) = context.settingsStore.edit { it[Keys.seeded] = value }
 
-    suspend fun setThemeMode(mode: Int) = context.settingsStore.edit { it[Keys.themeMode] = mode }
+    suspend fun setThemeMode(mode: Int) {
+        context.settingsStore.edit { it[Keys.themeMode] = mode }
+        refreshWidget()
+    }
 
-    suspend fun setThemePalette(palette: String) =
+    suspend fun setThemePalette(palette: String) {
         context.settingsStore.edit { it[Keys.themePalette] = palette }
+        refreshWidget()
+    }
 
-    suspend fun setDynamicColor(enabled: Boolean) =
+    suspend fun setDynamicColor(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.dynamicColor] = enabled }
+        refreshWidget()
+    }
 
-    suspend fun setLanguage(tag: String) =
+    suspend fun setLanguage(tag: String) {
         context.settingsStore.edit { it[Keys.language] = tag }
+        refreshWidget()
+    }
 
-    suspend fun setCalendarType(type: CalendarType) =
+    suspend fun setCalendarType(type: CalendarType) {
         context.settingsStore.edit { it[Keys.calendarType] = type.key }
+        refreshWidget()
+    }
 
     suspend fun setUserName(name: String) =
         context.settingsStore.edit { it[Keys.userName] = name }
