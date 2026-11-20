@@ -157,17 +157,29 @@ object ReminderScheduler {
 
     fun digestRequestCode(): Int = 7001
 
-    fun rescheduleAll(context: Context, routines: List<RoutineEntity>, digestMinutes: Int?, digestEnabled: Boolean) {
+    fun rescheduleAll(
+        context: Context,
+        routines: List<RoutineEntity>,
+        digestMinutes: Int?,
+        digestEnabled: Boolean,
+        notificationsEnabled: Boolean = true,
+        removedRoutineIds: Collection<String> = emptyList(),
+    ) {
         Notifications.ensureChannels(context)
         val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
-        routines.filter { !it.archived }.forEach { routine ->
-            if (routine.reminder && routine.timeMinutes != null) {
+        val notificationManager = NotificationManagerCompat.from(context)
+        removedRoutineIds.forEach { routineId ->
+            cancelRoutine(context, alarmManager, routineId)
+            runCatching { notificationManager.cancel(routineId.hashCode()) }
+        }
+        routines.forEach { routine ->
+            if (notificationsEnabled && !routine.archived && routine.reminder && routine.timeMinutes != null) {
                 scheduleRoutine(context, alarmManager, routine)
             } else {
                 cancelRoutine(context, alarmManager, routine.id)
             }
         }
-        if (digestEnabled && digestMinutes != null) {
+        if (notificationsEnabled && digestEnabled && digestMinutes != null) {
             scheduleDigest(context, alarmManager, digestMinutes)
         } else {
             cancelDigest(context, alarmManager)
