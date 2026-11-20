@@ -1,5 +1,6 @@
 package com.tag.routine.data
 
+import androidx.room.withTransaction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -9,8 +10,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.json.JSONArray
-import org.json.JSONObject
+import java.io.File
+import java.io.Writer
 import java.time.LocalDate
 
 /** Immutable view of everything the UI needs, emitted as one consistent snapshot. */
@@ -27,43 +28,6 @@ data class Snapshot(
     val focusSessions: List<FocusSessionEntity> = emptyList(),
     val loaded: Boolean = false,
 )
-
-/** How many rows a backup restore wrote. */
-data class RestoreResult(
-    val routines: Int,
-    val tasks: Int,
-    val tags: Int,
-)
-
-/** Outcome of a backup import, surfaced to the user in a dialog. */
-data class ImportOutcome(
-    val ok: Boolean,
-    val routines: Int = 0,
-    val tasks: Int = 0,
-    val tags: Int = 0,
-    val error: String? = null,
-)
-
-private fun JSONObject.optIntOrNull(key: String): Int? =
-    if (isNull(key)) null else optInt(key)
-
-private fun JSONObject.optLongOrNull(key: String): Long? =
-    if (isNull(key)) null else optLong(key)
-
-private fun JSONObject.optStringOrNull(key: String): String? {
-    if (isNull(key)) return null
-    val value = optString(key)
-    return value.ifBlank { null }
-}
-
-/** Non-blank string value, or null when the key is missing/blank. */
-private fun JSONObject.stringOrNull(key: String): String? = optStringOrNull(key)
-
-/** The named array as a list of objects, or an empty list when absent. */
-private fun JSONObject.array(key: String): List<JSONObject> {
-    val array = optJSONArray(key) ?: return emptyList()
-    return (0 until array.length()).mapNotNull { array.optJSONObject(it) }
-}
 
 class TagRepository(
     private val db: TagDatabase,
@@ -358,162 +322,107 @@ class TagRepository(
         taskDao.clearAllDone()
     }
 
-    /** Serialises the current snapshot to JSON for backup/export. */
-    fun exportJson(snapshot: Snapshot): String {
-        val root = JSONObject()
-        root.put("app", "Tag")
-        root.put("version", 2)
-        root.put("exportedAt", System.currentTimeMillis())
+    private val backupMutex = Mutex()
 
-        val routines = JSONArray()
-        snapshot.routines.forEach { r ->
-            routines.put(
-                JSONObject()
-                    .put("id", r.id).put("title", r.title).put("group", r.groupName)
-                    .put("icon", r.icon).put("timeMinutes", r.timeMinutes ?: JSONObject.NULL)
-                    .put("daysMask", r.daysMask).put("reminder", r.reminder)
-                    .put("colorHex", r.colorHex).put("colorId", r.colorId).put("archived", r.archived)
-                    .put("sortOrder", r.sortOrder).put("createdAt", r.createdAt)
-                    .put("dateEpochDay", r.dateEpochDay).put("repeatDaily", r.repeatDaily)
-                    .put("endDateEpochDay", r.endDateEpochDay ?: JSONObject.NULL)
-                    .put("excludedDates", r.excludedDates),
-            )
+    private val backupStorage = object : BackupStorage {
+        override suspend fun readSnapshotFresh(): Snapshot = freshSnapshot()
+
+        override suspend fun runInTransaction(block: suspend () -> Unit) {
+            db.withTransaction { block() }
         }
-        root.put("routines", routines)
 
-        val tasks = JSONArray()
-        snapshot.tasks.forEach { t ->
-            tasks.put(
-                JSONObject()
-                    .put("id", t.id).put("title", t.title).put("note", t.note)
-                    .put("tagId", t.tagId ?: JSONObject.NULL).put("priority", t.priority)
-                    .put("dueDate", t.dueDate ?: JSONObject.NULL).put("done", t.done)
-                    .put("dueTimeMinutes", t.dueTimeMinutes ?: JSONObject.NULL)
-                    .put("remindAt", t.remindAt ?: JSONObject.NULL)
-                    .put("doneAt", t.doneAt ?: JSONObject.NULL)
-                    .put("createdAt", t.createdAt),
-            )
+        override suspend fun clearAllTables() {
+            logDao.clearRoutineLogs()
+            logDao.clearTaskLogs()
+            focusDao.clear()
+            taskDao.clear()
+            routineDao.clear()
+            tagDao.clear()
         }
-        root.put("tasks", tasks)
 
-        val tags = JSONArray()
-        snapshot.tags.forEach { t ->
-            tags.put(
-                JSONObject()
-                    .put("id", t.id).put("name", t.name)
-                    .put("colorHex", t.colorHex).put("sortOrder", t.sortOrder),
-            )
+        override suspend fun insertTags(items: List<TagEntity>) = tagDao.upsertAll(items)
+
+        override suspend fun insertRoutines(items: List<RoutineEntity>) = routineDao.upsertAll(items)
+
+        override suspend fun insertTasks(items: List<TaskEntity>) = taskDao.upsertAll(items)
+
+        override suspend fun insertRoutineLogs(items: List<RoutineLogEntity>) = logDao.insertRoutineLogs(items)
+
+        override suspend fun insertTaskLogs(items: List<TaskLogEntity>) = logDao.insertTaskLogs(items)
+
+        override suspend fun insertFocusSessions(items: List<FocusSessionEntity>) = focusDao.upsertAll(items)
+
+        override suspend fun applySettings(settings: BackupSettings) {
+            settingsStore.applyBackupSettings(settings)
         }
-        root.put("tags", tags)
+    }
 
-        val logs = JSONArray()
-        snapshot.routineLogs.forEach { l ->
-            logs.put(
-                JSONObject()
-                    .put("routineId", l.routineId).put("date", l.date).put("doneAt", l.doneAt),
-            )
-        }
-        root.put("routineLogs", logs)
+    /** Reads a live, consistent snapshot directly from Room and DataStore. */
+    suspend fun freshSnapshot(): Snapshot = db.withTransaction {
+        val routines = routineDao.getAll()
+        val tasks = taskDao.getAll()
+        val tags = tagDao.getAll()
+        val routineLogs = logDao.getAllRoutineLogs()
+        val taskLogs = logDao.getAllTaskLogs()
+        val focusSessions = focusDao.getAll()
+        val settings = settingsStore.currentSettings()
+        val millis = focusSessions.filter { it.completed }.sumOf { it.endedAt - it.startedAt }
+        Snapshot(
+            routines = routines,
+            tasks = tasks,
+            tags = tags,
+            routineLogs = routineLogs,
+            taskLogs = taskLogs,
+            settings = settings,
+            focusMinutes = (millis / 60_000L).toInt(),
+            focusSessions = focusSessions,
+            loaded = true,
+        )
+    }
 
-        val taskLogs = JSONArray()
-        snapshot.taskLogs.forEach { l ->
-            taskLogs.put(
-                JSONObject()
-                    .put("taskId", l.taskId).put("date", l.date).put("doneAt", l.doneAt),
-            )
-        }
-        root.put("taskLogs", taskLogs)
+    /** Serialises the given snapshot to JSON for backup/export. */
+    fun exportJson(
+        snapshot: Snapshot,
+        appVersion: String = "1.6",
+        appVersionCode: Int = 16,
+    ): String = BackupCodec.encodeToString(
+        snapshot = snapshot,
+        appVersion = appVersion,
+        appVersionCode = appVersionCode,
+    )
 
-        return root.toString(2)
+    /** Streams a fresh backup directly into [writer]. */
+    suspend fun exportBackupTo(
+        writer: Writer,
+        appVersion: String,
+        appVersionCode: Int,
+    ) = backupMutex.withLock {
+        val fresh = freshSnapshot()
+        BackupCodec.writeBackup(
+            writer = writer,
+            snapshot = fresh,
+            appVersion = appVersion,
+            appVersionCode = appVersionCode,
+        )
     }
 
     /**
-     * Restores a backup produced by [exportJson]. Existing rows with the same id are
-     * overwritten, so importing the same file twice is safe.
-     *
-     * @return how many routines, tasks and tags were written.
+     * Restores a pre-validated [payload] using [mode], saving an automatic safety backup in
+     * [safetyDir] beforehand and executing all database changes in one atomic transaction.
      */
-    suspend fun importJson(raw: String): RestoreResult {
-        val root = JSONObject(raw)
-
-        var routineCount = 0
-        root.array("routines").forEachIndexed { i, o ->
-            val id = o.stringOrNull("id") ?: return@forEachIndexed
-            routineDao.upsert(
-                RoutineEntity(
-                    id = id,
-                    title = o.optString("title"),
-                    groupName = o.optString("group", Groups.MORNING),
-                    icon = o.optString("icon", "spark"),
-                    timeMinutes = o.optIntOrNull("timeMinutes"),
-                    daysMask = o.optInt("daysMask", Dates.EVERY_DAY),
-                    reminder = o.optBoolean("reminder", false),
-                    colorHex = o.optLong("colorHex", Palette.at(0)),
-                    colorId = o.optInt("colorId", 0),
-                    sortOrder = o.optInt("sortOrder", i),
-                    archived = o.optBoolean("archived", false),
-                    createdAt = o.optLong("createdAt", System.currentTimeMillis()),
-                    dateEpochDay = o.optLong("dateEpochDay", 0L),
-                    repeatDaily = o.optBoolean("repeatDaily", true),
-                    endDateEpochDay = o.optLongOrNull("endDateEpochDay"),
-                    excludedDates = o.optString("excludedDates", ""),
-                ),
-            )
-            routineCount++
-        }
-
-        var tagCount = 0
-        root.array("tags").forEachIndexed { i, o ->
-            val id = o.stringOrNull("id") ?: return@forEachIndexed
-            tagDao.upsert(
-                TagEntity(
-                    id = id,
-                    name = o.optString("name"),
-                    colorHex = o.optLong("colorHex", Palette.at(i)),
-                    sortOrder = o.optInt("sortOrder", i),
-                ),
-            )
-            tagCount++
-        }
-
-        var taskCount = 0
-        root.array("tasks").forEachIndexed { i, o ->
-            val id = o.stringOrNull("id") ?: return@forEachIndexed
-            taskDao.upsert(
-                TaskEntity(
-                    id = id,
-                    title = o.optString("title"),
-                    note = o.optString("note"),
-                    tagId = o.optStringOrNull("tagId"),
-                    priority = o.optInt("priority", Priorities.NORMAL),
-                    dueDate = o.optStringOrNull("dueDate"),
-                    dueTimeMinutes = o.optIntOrNull("dueTimeMinutes"),
-                    remindAt = o.optLongOrNull("remindAt"),
-                    done = o.optBoolean("done", false),
-                    doneAt = o.optLongOrNull("doneAt"),
-                    createdAt = o.optLong("createdAt", System.currentTimeMillis()),
-                ),
-            )
-            taskCount++
-        }
-
-        root.array("routineLogs").forEach { o ->
-            val routineId = o.stringOrNull("routineId") ?: return@forEach
-            val date = o.stringOrNull("date") ?: return@forEach
-            logDao.insertRoutineLog(
-                RoutineLogEntity(routineId, date, o.optLong("doneAt", System.currentTimeMillis())),
-            )
-        }
-
-        root.array("taskLogs").forEach { o ->
-            val taskId = o.stringOrNull("taskId") ?: return@forEach
-            val date = o.stringOrNull("date") ?: return@forEach
-            logDao.insertTaskLog(
-                TaskLogEntity(taskId, date, o.optLong("doneAt", System.currentTimeMillis())),
-            )
-        }
-
-        return RestoreResult(routineCount, taskCount, tagCount)
+    suspend fun restoreBackup(
+        payload: BackupPayload,
+        mode: BackupMode,
+        safetyDir: File,
+        appVersion: String,
+        appVersionCode: Int,
+    ): BackupRestoreReport = backupMutex.withLock {
+        BackupCoordinator(
+            storage = backupStorage,
+            safetyDir = safetyDir,
+            appVersion = appVersion,
+            appVersionCode = appVersionCode,
+        ).restore(payload, mode)
     }
 
     // ------------------------------------------------------------ seeding
