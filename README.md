@@ -1,10 +1,12 @@
-# ✅ Tag — Daily Routine & Task Planner (v1.6)
+# ✅ Tag — Daily Routine & Task Planner (v1.7)
 
-A clean and customizable Android routine and task planner with day-centric scheduling, Gregorian & Solar Hijri (Jalali) calendar support, safe local JSON backup & restore, a built-in focus timer, unified Material 3 design system, optional Dynamic Color, and full support for five languages.
+A clean and customizable Android routine and task planner with day-centric scheduling, Gregorian & Solar Hijri (Jalali) calendar support, safe local JSON backup & restore, a built-in focus timer, unified Material 3 design system, optional Dynamic Color, a home screen widget, and full support for five languages.
 
 📲 Download the latest APK from the [Releases](https://github.com/TahaAbbasi211/tag-to-do-list/releases) page.
 
 ## ✨ Features
+
+- 🧷 **Home screen widget (`TodayWidgetProvider`, `WidgetStateBuilder`, RemoteViews)**: A resizable widget showing today's progress as a percentage and a "3 of 5 done" counter, plus up to three upcoming unfinished items (icon, title, time) in the wider size. It reuses the app's own scheduling and completion data (`StatsEngine.scheduledOn` and the `routine_logs` rows for the day), so it can never disagree with the Today screen. A day with nothing scheduled shows a calm message instead of "0%", a finished day says so, and tapping anywhere opens the app. Checked items are deliberately not toggleable from the widget, to avoid a stale widget disagreeing with the database. Refreshes on every item/task add, edit, delete, tick, un-tick and backup restore, at midnight (`DATE_CHANGED`), on time-zone or clock changes, after a reboot or app update, and on a 30-minute platform tick. Follows the in-app language and digit style, respects the chosen calendar, and ships light/dark resources with a widget-picker preview
 
 - 💾 **Safe Backup & Restore (`BackupCodec`, `BackupCoordinator`, SAF)**: Export a full JSON backup (`formatVersion = 3` with app version, timestamp, routines with day-centric fields, tasks, tags, completion logs, focus sessions, and settings) via Android's Storage Access Framework (`CreateDocument`) with zero storage permissions. Restore via `OpenDocument` with bounded streaming validation, a pre-restore preview (creation date, item/task/focus counts, date range), **Merge** (non-destructive, duplicate-safe) or **Replace** (with an explicit warning), automatic safety backups in internal storage (last 3 kept), atomic Room `withTransaction` execution, live UI/stats refresh, reminder rescheduling/cleanup, and backward compatibility with legacy backups without `formatVersion`
 
@@ -62,7 +64,7 @@ Run the unit tests with:
 ./gradlew :app:testDebugUnitTest
 ```
 
-The suite currently holds 165 tests, covering backup validation, streaming bounds, legacy compatibility, duplicate-free merge, replace, round-trip fidelity, safety-backup retention, and mid-restore rollback (`BackupManagerTest`), Solar Hijri (Jalali) conversions, leap years, year boundaries, Saturday-start weeks and month labels (`JalaliCalendarTest`, `DatesTest`), weekly reporting (`WeeklyReportEngine`), 12-week calendar heatmap building (`HeatmapCalendar`), daily focus totals, unlinked focus sessions and per-item focus ranking (`FocusSummaryEngine`), copy rules, quick-add ranking, dynamic Today line, plus the existing stats, focus timer, ordering, migration and localization guards.
+The suite currently holds 185 tests, covering the widget state builder (`WidgetStateBuilderTest`: empty day, fully done day, partly done day, repeating and one-off items, next-item ordering by clock time, and the midnight boundary), backup validation, streaming bounds, legacy compatibility, duplicate-free merge, replace, round-trip fidelity, safety-backup retention, and mid-restore rollback (`BackupManagerTest`), Solar Hijri (Jalali) conversions, leap years, year boundaries, Saturday-start weeks and month labels (`JalaliCalendarTest`, `DatesTest`), weekly reporting (`WeeklyReportEngine`), 12-week calendar heatmap building (`HeatmapCalendar`), daily focus totals, unlinked focus sessions and per-item focus ranking (`FocusSummaryEngine`), copy rules, quick-add ranking, dynamic Today line, plus the existing stats, focus timer, ordering, migration and localization guards.
 
 ## 🔮 Future Improvements
 
@@ -72,7 +74,7 @@ The suite currently holds 165 tests, covering backup validation, streaming bound
 - [ ] Focus goals & Pomodoro break intervals
 - [ ] Task categories & recurring tasks
 - [ ] Cloud backup and sync
-- [ ] Home screen widget
+- [x] Home screen widget with today's progress and upcoming items (v1.7)
 
 ## 🤝 Contributing
 
@@ -84,6 +86,12 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 📝 Changelog
 
+- **1.7**:
+  - **Home Screen Widget (`TodayWidgetProvider`, `widget_today_info`, RemoteViews)**: Added a resizable home screen widget built on `AppWidgetProvider` and `RemoteViews` (no Glance, no new dependency, no schema change). The compact 2x2 layout shows today's completion percentage with a progress bar and a "3 of 5 done" counter; the wider 4x2 layout adds up to three upcoming unfinished items with icon, title and time. A day with nothing scheduled shows a neutral message rather than a "0%" failure, and a fully completed day gets its own message. Tapping the widget opens the app; ticking items from the widget is intentionally not implemented
+  - **Pure, Tested State Logic (`WidgetStateBuilder`)**: All widget arithmetic lives in a pure Kotlin class that takes routines, routine logs, a date and the current time and returns a simple model (mode, percent, counter, next items). It calls the existing `StatsEngine.scheduledOn` and reads the same `routine_logs` rows as `AppViewModel`, and truncates the percentage exactly like the Today screen, so the widget and the app always agree. Covered by 20 unit tests including empty days, complete days, partial days, repeating and one-off items, ordering by clock time, and the midnight boundary
+  - **Automatic Refresh (`WidgetUpdater`, `WidgetRefresh`, `WidgetUpdateReceiver`)**: The widget redraws after every routine/task add, edit, delete, tick, un-tick, copy, reorder and backup restore, at midnight (`ACTION_DATE_CHANGED`), on clock and time-zone changes, after a reboot or app update, and on the platform's 30-minute `updatePeriodMillis` tick. Database reads run off the main thread behind `goAsync` on `Dispatchers.IO`, and every failure path falls back to the neutral state, so a fresh install with an empty database cannot crash it. No exact alarms and no new permissions
+  - **Localized, Theme-Aware Appearance (`WidgetLocale`, `values-night`)**: The widget resolves strings through the app's own language setting (not just the system language), formats digits and percentages with `Dates.formatDigits` / `Dates.formatPercent`, respects the selected Gregorian/Jalali calendar for times, and mirrors correctly for RTL Persian. Light and dark palettes use the app's violet/navy identity with rounded corners, every text pair clears WCAG AA 4.5:1, and the widget picker shows a preview layout with a short description
+  - **Manifest & Tests**: Added only the widget receivers (no new `<uses-permission>`; the permission list is byte-identical to 1.6), 5-language strings (`en`, `fa`, `de`, `fr`, `tr`), and 20 unit tests in `WidgetStateBuilderTest`
 - **1.6**:
   - **Versioned Backup Format (`BackupCodec` v3 + Legacy Compatibility)**: Added `formatVersion`, `appVersion`, `appVersionCode`, and `exportedAt` metadata alongside all 6 Room tables (`routines`, `tasks`, `tags`, `routineLogs`, `taskLogs`, `focusSessions`) and user `settings`, while staying backward-compatible with earlier backups lacking `formatVersion`, `focusSessions`, `settings`, or v4 routine fields
   - **Storage Access Framework Export & Restore (`SettingsScreen`, `BackupFilePicker`)**: Replaced fixed internal-path export with `ActivityResultContracts.CreateDocument` (dated filename suggestion `tag-backup-YYYY-MM-DD.json`) and upgraded `OpenDocument` restore with zero extra manifest permissions and clear success/error feedback

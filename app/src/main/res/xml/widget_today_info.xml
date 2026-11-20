@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Home-screen widget metadata.
+
+    updatePeriodMillis is 30 minutes: the platform's floor is 30 minutes, so this is the
+    cheapest periodic refresh available and it needs no alarm and no permission. The
+    widget is also refreshed on every data change, at midnight, on a time-zone change and
+    on boot, so the periodic tick is only a safety net.
+
+    Sizes: the compact layout is 2x2 (minWidth/minHeight 110dp). The wide layout takes
+    over from 250dp, which is what a 4x2 cell block provides on a normal-density phone.
+    resizeMode lets the user stretch it horizontally and vertically.
+
+    Preview: Android 12+ renders previewLayout live; older launchers use previewImage.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:description="@string/widget_description"
+    android:initialLayout="@layout/widget_today_small"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="110dp"
+    android:previewImage="@drawable/widget_preview"
+    android:previewLayout="@layout/widget_today_preview"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen"
+    tools:targetApi="s" />

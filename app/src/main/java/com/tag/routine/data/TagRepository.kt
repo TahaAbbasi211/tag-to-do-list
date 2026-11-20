@@ -1,6 +1,7 @@
 package com.tag.routine.data
 
 import androidx.room.withTransaction
+import com.tag.routine.widget.WidgetRefresh
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,12 +34,19 @@ class TagRepository(
     private val db: TagDatabase,
     private val settingsStore: SettingsStore,
     scope: CoroutineScope,
+    /** Application context, used only to refresh the home-screen widget after writes. */
+    private val appContext: android.content.Context? = null,
 ) {
     private val routineDao = db.routines()
     private val taskDao = db.tasks()
     private val tagDao = db.tags()
     private val logDao = db.logs()
     private val focusDao = db.focus()
+
+    /** Redraws the widget after a data change; a no-op when no context was supplied. */
+    private fun notifyWidget() {
+        appContext?.let { WidgetRefresh.request(it) }
+    }
 
     /**
      * A single hot snapshot of all app data. Keeping it eager means broadcasts
@@ -87,19 +95,25 @@ class TagRepository(
         } else {
             logDao.deleteRoutineLog(routineId, iso)
         }
+        notifyWidget()
     }
 
-    suspend fun saveRoutine(item: RoutineEntity) = routineDao.upsert(item)
+    suspend fun saveRoutine(item: RoutineEntity) {
+        routineDao.upsert(item)
+        notifyWidget()
+    }
 
     suspend fun deleteRoutine(routineId: String) {
         logDao.deleteRoutineLogsFor(routineId)
         routineDao.delete(routineId)
+        notifyWidget()
     }
 
     /** Hides a repeating routine on [date] only, preserving the routine row and all logs. */
     suspend fun excludeRoutineForDate(routineId: String, date: LocalDate) {
         val item = routineDao.byId(routineId) ?: return
         routineDao.upsert(item.withExcludedDate(Dates.iso(date)))
+        notifyWidget()
     }
 
     /** Ends a repeating routine from [date] onwards without removing past history or logs. */
@@ -108,6 +122,7 @@ class TagRepository(
         val lastActive = date.minusDays(1).toEpochDay()
         val bounded = item.endDateEpochDay?.let { minOf(it, lastActive) } ?: lastActive
         routineDao.upsert(item.copy(endDateEpochDay = bounded))
+        notifyWidget()
     }
 
     suspend fun newRoutineOrder(): Int = routineDao.maxOrder() + 1
@@ -139,6 +154,7 @@ class TagRepository(
             existingIds = routineDao.allIds().toHashSet(),
         )
         plan.forEach { routineDao.upsert(it) }
+        if (plan.isNotEmpty()) notifyWidget()
         plan.size
     }
 
@@ -158,6 +174,7 @@ class TagRepository(
             existingIds = routineDao.allIds().toHashSet(),
         )
         plan.forEach { routineDao.upsert(it) }
+        if (plan.isNotEmpty()) notifyWidget()
         plan.size
     }
 
@@ -188,13 +205,17 @@ class TagRepository(
                 routineDao.upsert(item.copy(sortOrder = base + position))
             }
         }
+        notifyWidget()
     }
 
     suspend fun routine(id: String): RoutineEntity? = routineDao.byId(id)
 
     // ------------------------------------------------------------ tasks
 
-    suspend fun saveTask(item: TaskEntity) = taskDao.upsert(item)
+    suspend fun saveTask(item: TaskEntity) {
+        taskDao.upsert(item)
+        notifyWidget()
+    }
 
     suspend fun task(id: String): TaskEntity? = taskDao.byId(id)
 
@@ -208,11 +229,13 @@ class TagRepository(
         } else {
             logDao.deleteTaskLog(taskId, iso)
         }
+        notifyWidget()
     }
 
     suspend fun deleteTask(taskId: String) {
         logDao.deleteTaskLogsFor(taskId)
         taskDao.delete(taskId)
+        notifyWidget()
     }
 
     // ------------------------------------------------------------ tags
@@ -320,6 +343,7 @@ class TagRepository(
         logDao.clearRoutineLogs()
         logDao.clearTaskLogs()
         taskDao.clearAllDone()
+        notifyWidget()
     }
 
     private val backupMutex = Mutex()
@@ -422,7 +446,7 @@ class TagRepository(
             safetyDir = safetyDir,
             appVersion = appVersion,
             appVersionCode = appVersionCode,
-        ).restore(payload, mode)
+        ).restore(payload, mode).also { notifyWidget() }
     }
 
     // ------------------------------------------------------------ seeding
@@ -436,6 +460,7 @@ class TagRepository(
         val removed = routineDao.deleteSeeded()
         if (removed > 0) {
             logDao.deleteRoutineLogsForSeeded()
+            notifyWidget()
         }
     }
 

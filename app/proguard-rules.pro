@@ -14,6 +14,8 @@
 -keep class com.tag.routine.notifications.BootReceiver { *; }
 -keep class com.tag.routine.notifications.FocusTimerReceiver { *; }
 -keep class com.tag.routine.notifications.FocusTimerService { *; }
+-keep class com.tag.routine.widget.TodayWidgetProvider { *; }
+-keep class com.tag.routine.widget.WidgetUpdateReceiver { *; }
 -keep class com.tag.routine.TagApp { *; }
 -keep class com.tag.routine.MainActivity { *; }
 
