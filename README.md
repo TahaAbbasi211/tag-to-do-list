@@ -1,10 +1,12 @@
-# ✅ Tag — Daily Routine & Task Planner (v1.5)
+# ✅ Tag — Daily Routine & Task Planner (v1.6)
 
-A clean and customizable Android routine and task planner with day-centric scheduling, Gregorian & Solar Hijri (Jalali) calendar support, a built-in focus timer, unified Material 3 design system, optional Dynamic Color, and full support for five languages.
+A clean and customizable Android routine and task planner with day-centric scheduling, Gregorian & Solar Hijri (Jalali) calendar support, safe local JSON backup & restore, a built-in focus timer, unified Material 3 design system, optional Dynamic Color, and full support for five languages.
 
 📲 Download the latest APK from the [Releases](https://github.com/TahaAbbasi211/tag-to-do-list/releases) page.
 
 ## ✨ Features
+
+- 💾 **Safe Backup & Restore (`BackupCodec`, `BackupCoordinator`, SAF)**: Export a full JSON backup (`formatVersion = 3` with app version, timestamp, routines with day-centric fields, tasks, tags, completion logs, focus sessions, and settings) via Android's Storage Access Framework (`CreateDocument`) with zero storage permissions. Restore via `OpenDocument` with bounded streaming validation, a pre-restore preview (creation date, item/task/focus counts, date range), **Merge** (non-destructive, duplicate-safe) or **Replace** (with an explicit warning), automatic safety backups in internal storage (last 3 kept), atomic Room `withTransaction` execution, live UI/stats refresh, reminder rescheduling/cleanup, and backward compatibility with legacy backups without `formatVersion`
 
 - 🗓️ **Gregorian & Solar Hijri (Jalali) calendar**: Switch between **Gregorian** (default) and **Solar Hijri (Jalali)** anytime in Settings without restarting or modifying stored data — featuring Persian month names (`فروردین… اسفند`) across all 5 app languages, Saturday-start weeks, a custom Jalali date picker in Tasks, month/year headers on the Week Strip, Jalali day numbers in Copy to Another Day, month labels and Saturday-aligned columns in the Insights Heatmap, Saturday–Friday boundaries in the Weekly Report, and Jalali timestamps in Focus history
 - 📅 **Day-centric Today timeline**: Each routine/item belongs to its selected day (past, today, or future) with optional daily repeat (`Repeat daily`)
@@ -60,12 +62,13 @@ Run the unit tests with:
 ./gradlew :app:testDebugUnitTest
 ```
 
-The suite currently holds 153 tests, covering Solar Hijri (Jalali) conversions, leap years, year boundaries, Saturday-start weeks and month labels (`JalaliCalendarTest`, `DatesTest`), weekly reporting (`WeeklyReportEngine`), 12-week calendar heatmap building (`HeatmapCalendar`), daily focus totals, unlinked focus sessions and per-item focus ranking (`FocusSummaryEngine`), copy rules, quick-add ranking, dynamic Today line, plus the existing stats, focus timer, ordering, migration and localization guards.
+The suite currently holds 165 tests, covering backup validation, streaming bounds, legacy compatibility, duplicate-free merge, replace, round-trip fidelity, safety-backup retention, and mid-restore rollback (`BackupManagerTest`), Solar Hijri (Jalali) conversions, leap years, year boundaries, Saturday-start weeks and month labels (`JalaliCalendarTest`, `DatesTest`), weekly reporting (`WeeklyReportEngine`), 12-week calendar heatmap building (`HeatmapCalendar`), daily focus totals, unlinked focus sessions and per-item focus ranking (`FocusSummaryEngine`), copy rules, quick-add ranking, dynamic Today line, plus the existing stats, focus timer, ordering, migration and localization guards.
 
 ## 🔮 Future Improvements
 
 - [x] Item-linked focus sessions and per-item focus insights (v1.3)
 - [x] Solar Hijri (Jalali) calendar display and date selection (v1.5)
+- [x] Safe local JSON backup & restore with preview, merge/replace, and automatic safety backups (v1.6)
 - [ ] Focus goals & Pomodoro break intervals
 - [ ] Task categories & recurring tasks
 - [ ] Cloud backup and sync
@@ -81,6 +84,12 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 📝 Changelog
 
+- **1.6**:
+  - **Versioned Backup Format (`BackupCodec` v3 + Legacy Compatibility)**: Added `formatVersion`, `appVersion`, `appVersionCode`, and `exportedAt` metadata alongside all 6 Room tables (`routines`, `tasks`, `tags`, `routineLogs`, `taskLogs`, `focusSessions`) and user `settings`, while staying backward-compatible with earlier backups lacking `formatVersion`, `focusSessions`, `settings`, or v4 routine fields
+  - **Storage Access Framework Export & Restore (`SettingsScreen`, `BackupFilePicker`)**: Replaced fixed internal-path export with `ActivityResultContracts.CreateDocument` (dated filename suggestion `tag-backup-YYYY-MM-DD.json`) and upgraded `OpenDocument` restore with zero extra manifest permissions and clear success/error feedback
+  - **Streaming Validation, Preview & Merge/Replace (`JsonStream`, `BackupDialogs`)**: Added bounded streaming JSON parsing (protecting against oversized/corrupt files), strict schema/type/date/duplicate-ID validation before any write, a pre-restore summary dialog (item/task/focus/tag counts, date range, creation date), duplicate-safe **Merge** with ID remapping, and **Replace** guarded by an explicit warning confirmation
+  - **Atomic Transactions, Safety Backups & Reminders (`BackupCoordinator`, `SafetyBackupStore`, `ReminderScheduler`)**: Automatically saves a timestamped safety backup in `filesDir/safety-backups` (keeping the latest 3) before every Merge or Replace, executes DB writes in Room `withTransaction` with rollback on mid-restore failure, updates UI/stats immediately without restart, and reschedules restored reminders while cancelling alarms for removed routines
+  - **Tests & Localization**: Added 5-language strings (`en`, `fa`, `de`, `fr`, `tr`) with RTL & Light/Dark dialog support, and added 12 unit tests in `BackupManagerTest`
 - **1.5**:
   - **Solar Hijri (Jalali) Calendar Option (`CalendarType`, `JalaliCalendar`, `Dates`)**: Added a **Calendar type** setting in Settings (**Gregorian** by default, **Solar Hijri (Jalali)** optional) persisted in existing DataStore Preferences (`tag_settings`) with zero database schema changes and zero new dependencies. Stored Room dates and backups remain Gregorian ISO / `epochDay`
   - **Shared Jalali Layer (`JalaliCalendar` + `Dates`)**: Implemented `epochDay` ↔ Jalali conversions, 31/30/29-or-30 month lengths, leap-year calculation, Saturday-start week ordering, Persian month names (`فروردین… اسفند`) across all 5 app languages, and `Dates.formatDigits` formatting using Android ICU (`Calendar` with `@calendar=persian` pinned to `TimeZone.GMT_ZONE` / UTC noon to avoid day shifts)
