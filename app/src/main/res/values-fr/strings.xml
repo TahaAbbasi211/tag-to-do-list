@@ -414,5 +414,18 @@
     <string name="backup_error_duplicate_ids">Cette sauvegarde contient des identifiants en double incompatibles. Rien n\'a été modifié.</string>
     <string name="backup_error_safety_failed">Impossible d\'enregistrer une sauvegarde de sécurité avant la restauration. Rien n\'a été modifié.</string>
     <string name="backup_error_generic">Impossible de lire ou restaurer ce fichier de sauvegarde. Rien n\'a été modifié.</string>
+
+    <!-- Home screen widget (v1.7) -->
+    <string name="widget_label">Aujourd\'hui</string>
+    <string name="widget_description">La progression du jour et ce qui arrive ensuite.</string>
+    <string name="widget_title_today">Aujourd\'hui</string>
+    <string name="widget_counter">%1$d sur %2$d terminé</string>
+    <string name="widget_empty_title">Rien de prévu aujourd\'hui</string>
+    <string name="widget_empty_message">Une journée tranquille. Profitez-en ou ajoutez quelque chose de simple.</string>
+    <string name="widget_all_done_message">Tout est terminé pour aujourd\'hui. Beau travail.</string>
+    <string name="widget_next_header">À suivre</string>
+    <string name="widget_loading">Chargement…</string>
+    <string name="widget_preview_percent">75%</string>
+    <string name="widget_preview_counter">3 sur 4 terminé</string>
 </resources>
 
