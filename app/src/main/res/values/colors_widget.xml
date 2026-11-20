@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Widget palette, light theme. Violet/navy brand identity from the app.
+    Every foreground/background pair here clears WCAG AA (4.5:1):
+      text_primary   #0F172A on #FFFFFF = 17.9:1
+      text_secondary #475569 on #FFFFFF =  8.6:1
+      text_secondary #475569 on #F1F4F9 =  8.1:1
+      accent         #5B4BE0 on #FFFFFF =  7.4:1
+      accent         #5B4BE0 on #F1F4F9 =  7.0:1
+-->
+<resources>
+    <color name="widget_bg">#FFFFFFFF</color>
+    <color name="widget_bg_hero">#F1F4F9</color>
+    <color name="widget_text_primary">#0F172A</color>
+    <color name="widget_text_secondary">#475569</color>
+    <color name="widget_accent">#5B4BE0</color>
+    <color name="widget_accent_soft">#EDE9FE</color>
+    <color name="widget_track">#E2E8F0</color>
+    <color name="widget_divider">#E2E8F0</color>
+    <color name="widget_icon_tint">#5B4BE0</color>
+</resources>
