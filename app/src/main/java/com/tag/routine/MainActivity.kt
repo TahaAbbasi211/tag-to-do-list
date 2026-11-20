@@ -71,6 +71,7 @@ import com.tag.routine.ui.screens.SettingsScreen
 import com.tag.routine.ui.screens.TasksScreen
 import com.tag.routine.ui.screens.TodayScreen
 import com.tag.routine.ui.theme.TagTheme
+import com.tag.routine.widget.WidgetRefresh
 import kotlinx.coroutines.launch
 
 class AppViewModelFactory(private val container: AppContainer) : ViewModelProvider.Factory {
@@ -126,6 +127,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Ensures widgets catch up on day boundaries or after any skipped background refresh.
+        WidgetRefresh.request(applicationContext)
     }
 }
 
