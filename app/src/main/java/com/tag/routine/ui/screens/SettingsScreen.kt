@@ -72,20 +72,23 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import android.net.Uri
 import com.tag.routine.BuildConfig
 import com.tag.routine.R
 import com.tag.routine.data.AppConstants
 import com.tag.routine.data.AppSettings
 import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
-import com.tag.routine.data.ImportOutcome
+import com.tag.routine.ui.BackupUiState
 import com.tag.routine.ui.UiState
 import com.tag.routine.ui.components.AppButton
 import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.AppCard
-import com.tag.routine.ui.components.BackupFilePicker
+import com.tag.routine.ui.components.BackupDialogs
 import com.tag.routine.ui.components.ScreenHeader
 import com.tag.routine.ui.components.SectionHeader
+import com.tag.routine.ui.components.rememberBackupExportLauncher
+import com.tag.routine.ui.components.rememberBackupImportLauncher
 import com.tag.routine.ui.i18n.AppLanguage
 import com.tag.routine.ui.i18n.LocalizedAlertDialog
 import com.tag.routine.ui.theme.PaletteDef
@@ -95,6 +98,7 @@ import java.util.Locale
 @Composable
 fun SettingsScreen(
     state: UiState,
+    backupState: BackupUiState,
     onThemeMode: (Int) -> Unit,
     onThemePalette: (String) -> Unit,
     onDynamicColor: (Boolean) -> Unit = {},
@@ -102,8 +106,13 @@ fun SettingsScreen(
     onNotifications: (Boolean) -> Unit,
     onDigest: (Boolean) -> Unit,
     onDigestMinutes: (Int) -> Unit,
-    onExport: () -> String,
-    onImported: (ImportOutcome) -> Unit,
+    onExportUri: (Uri) -> Unit,
+    onImportUri: (Uri) -> Unit,
+    onDismissBackupDialog: () -> Unit,
+    onConfirmMergeRestore: () -> Unit,
+    onRequestReplaceRestore: () -> Unit,
+    onBackToBackupPreview: () -> Unit,
+    onConfirmReplaceRestore: () -> Unit,
     onReset: () -> Unit,
     onAddTag: (String) -> Unit,
     onDeleteTag: (String) -> Unit,
@@ -121,20 +130,17 @@ fun SettingsScreen(
     // the language the user picked.
     val localizedContext = LocalContext.current
     var showResetDialog by remember { mutableStateOf(false) }
-    var exportPath by remember { mutableStateOf<String?>(null) }
-    var importResult by remember { mutableStateOf<ImportOutcome?>(null) }
     var newTag by remember { mutableStateOf("") }
     var nameInput by remember { mutableStateOf(settings.userName) }
     var focusInput by remember { mutableStateOf(settings.focusMinutes.toString()) }
-    val pickBackup = BackupFilePicker { outcome ->
-        importResult = outcome
-        onImported(outcome)
-    }
+    val launchExport = rememberBackupExportLauncher(onExportUri)
+    val launchImport = rememberBackupImportLauncher(onImportUri)
+    val backupBusy = backupState is BackupUiState.Working
 
-    // The stored name can change elsewhere (first-launch onboarding), so mirror it
-    // into the field whenever the screen is not being edited.
+    // The stored name can change elsewhere (onboarding or backup restore), so mirror it
+    // into the field whenever the persisted name changes.
     LaunchedEffect(settings.userName) {
-        if (nameInput.isBlank()) nameInput = settings.userName
+        nameInput = settings.userName
     }
     LaunchedEffect(settings.focusMinutes) {
         focusInput = settings.focusMinutes.toString()
@@ -514,7 +520,9 @@ fun SettingsScreen(
             Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
                 AppButton(
                     text = stringResource(R.string.settings_export),
-                    onClick = { exportPath = onExport() },
+                    onClick = launchExport,
+                    enabled = !backupBusy,
+                    loading = backupState is BackupUiState.Working && backupState.isExport,
                     variant = AppButtonVariant.Secondary,
                     leadingIcon = {
                         Icon(Icons.Rounded.Backup, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -524,7 +532,9 @@ fun SettingsScreen(
                 )
                 AppButton(
                     text = stringResource(R.string.settings_import),
-                    onClick = { pickBackup() },
+                    onClick = launchImport,
+                    enabled = !backupBusy,
+                    loading = backupState is BackupUiState.Working && !backupState.isExport,
                     variant = AppButtonVariant.Secondary,
                     leadingIcon = {
                         Icon(Icons.Rounded.Restore, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -615,55 +625,16 @@ fun SettingsScreen(
         )
     }
 
-    // Export result dialog
-    exportPath?.let { path ->
-        LocalizedAlertDialog(
-            localizedContext = localizedContext,
-            onDismissRequest = { exportPath = null },
-            title = { Text(stringResource(R.string.dialog_export_title)) },
-            text = { Text(stringResource(R.string.dialog_export_body, path)) },
-            confirmButton = {
-                TextButton(onClick = { exportPath = null }) {
-                    Text(stringResource(R.string.action_ok))
-                }
-            },
-        )
-    }
-
-    // Import result dialog
-    importResult?.let { result ->
-        LocalizedAlertDialog(
-            localizedContext = localizedContext,
-            onDismissRequest = { importResult = null },
-            title = {
-                Text(
-                    stringResource(
-                        if (result.ok) R.string.dialog_import_title else R.string.dialog_import_failed,
-                    ),
-                )
-            },
-            text = {
-                if (result.ok) {
-                    Text(
-                        Dates.formatDigits(
-                            stringResource(
-                                R.string.dialog_import_body,
-                                result.routines,
-                                result.tasks,
-                                result.tags,
-                            ),
-                            appLocale,
-                        ),
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { importResult = null }) {
-                    Text(stringResource(R.string.action_ok))
-                }
-            },
-        )
-    }
+    BackupDialogs(
+        backupState = backupState,
+        calendarType = settings.calendarType,
+        localizedContext = localizedContext,
+        onDismiss = onDismissBackupDialog,
+        onConfirmMerge = onConfirmMergeRestore,
+        onRequestReplace = onRequestReplaceRestore,
+        onBackToPreview = onBackToBackupPreview,
+        onConfirmReplace = onConfirmReplaceRestore,
+    )
 }
 
 /** Titled Settings group with consistent [SectionHeader] icon badge and [AppCard] container. */

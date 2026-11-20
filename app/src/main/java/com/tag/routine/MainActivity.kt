@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.tag.routine.data.BackupMode
 import com.tag.routine.data.Dates
 import com.tag.routine.data.RoutineEntity
 import com.tag.routine.data.TaskEntity
@@ -141,6 +142,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
     var showLanguagePage by remember { mutableStateOf(false) }
 
     val focus by viewModel.focus.collectAsState()
+    val backupState by viewModel.backupUiState.collectAsState()
 
     val query by viewModel.query.collectAsState()
     val filter by viewModel.activeFilter.collectAsState()
@@ -279,6 +281,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
 
                             Tab.SETTINGS -> SettingsScreen(
                                 state = state,
+                                backupState = backupState,
                                 onThemeMode = viewModel::setThemeMode,
                                 onThemePalette = viewModel::setTheme,
                                 onDynamicColor = viewModel::setDynamicColor,
@@ -286,8 +289,13 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                                 onNotifications = viewModel::setNotificationsEnabled,
                                 onDigest = viewModel::setDigestEnabled,
                                 onDigestMinutes = viewModel::setDigestMinutes,
-                                onExport = { viewModel.exportBackup() },
-                                onImported = viewModel::importBackup,
+                                onExportUri = viewModel::exportBackupToUri,
+                                onImportUri = viewModel::inspectBackupUri,
+                                onDismissBackupDialog = viewModel::dismissBackupDialog,
+                                onConfirmMergeRestore = { viewModel.confirmRestore(BackupMode.MERGE) },
+                                onRequestReplaceRestore = viewModel::requestReplaceConfirmation,
+                                onBackToBackupPreview = viewModel::backToPreview,
+                                onConfirmReplaceRestore = { viewModel.confirmRestore(BackupMode.REPLACE) },
                                 onReset = viewModel::resetProgress,
                                 onAddTag = { name -> viewModel.addTag(name) },
                                 onDeleteTag = { id ->

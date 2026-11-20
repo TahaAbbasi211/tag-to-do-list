@@ -1,10 +1,20 @@
 package com.tag.routine.ui
 
+import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tag.routine.AppContainer
+import com.tag.routine.BuildConfig
 import com.tag.routine.data.AppConstants
 import com.tag.routine.data.AppSettings
+import com.tag.routine.data.BackupCodec
+import com.tag.routine.data.BackupErrorCode
+import com.tag.routine.data.BackupMode
+import com.tag.routine.data.BackupPayload
+import com.tag.routine.data.BackupPreview
+import com.tag.routine.data.BackupRestoreReport
+import com.tag.routine.data.BackupValidationException
 import com.tag.routine.data.CalendarType
 import com.tag.routine.data.CopyEngine
 import com.tag.routine.data.Dates
@@ -13,17 +23,18 @@ import com.tag.routine.data.FocusStats
 import com.tag.routine.data.FocusSummary
 import com.tag.routine.data.FocusSummaryEngine
 import com.tag.routine.data.Groups
-import com.tag.routine.data.ImportOutcome
 import com.tag.routine.data.Insights
 import com.tag.routine.data.Palette
 import com.tag.routine.data.Priorities
 import com.tag.routine.data.RoutineEntity
 import com.tag.routine.data.RoutineIcons
 import com.tag.routine.data.RoutineTemplate
+import com.tag.routine.data.SafetyBackupStore
 import com.tag.routine.data.Snapshot
 import com.tag.routine.data.StatsEngine
 import com.tag.routine.data.TagEntity
 import com.tag.routine.data.TaskEntity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +44,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.BufferedWriter
+import java.io.File
+import java.io.OutputStreamWriter
+import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.util.UUID
 
@@ -58,6 +74,17 @@ data class CopyFeedback(
     val fromYesterday: Boolean,
     val eventId: Long,
 )
+
+sealed interface BackupUiState {
+    data object Idle : BackupUiState
+    data class Working(val isExport: Boolean) : BackupUiState
+    data class ExportSuccess(val fileName: String) : BackupUiState
+    data object ExportError : BackupUiState
+    data class PreviewReady(val payload: BackupPayload, val preview: BackupPreview) : BackupUiState
+    data class ConfirmReplace(val payload: BackupPayload, val preview: BackupPreview) : BackupUiState
+    data class RestoreSuccess(val report: BackupRestoreReport) : BackupUiState
+    data class RestoreError(val code: BackupErrorCode) : BackupUiState
+}
 
 data class UiState(
     val loaded: Boolean = false,
@@ -320,7 +347,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
 
     fun deleteRoutine(routineId: String) = viewModelScope.launch {
         repository.deleteRoutine(routineId)
-        rescheduleReminders()
+        rescheduleReminders(removedRoutineIds = listOf(routineId))
     }
 
     fun excludeRoutineForDate(routineId: String, date: LocalDate) = viewModelScope.launch {
@@ -384,9 +411,125 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
 
     // ------------------------------------------------------------ backup
 
-    /** Applies a restore that already happened in the file picker: just re-arm reminders. */
-    fun importBackup(outcome: ImportOutcome) {
-        if (outcome.ok) rescheduleReminders()
+    private val _backupUiState = MutableStateFlow<BackupUiState>(BackupUiState.Idle)
+    val backupUiState: StateFlow<BackupUiState> = _backupUiState.asStateFlow()
+
+    fun dismissBackupDialog() {
+        _backupUiState.value = BackupUiState.Idle
+    }
+
+    fun exportBackupToUri(uri: Uri) {
+        if (_backupUiState.value is BackupUiState.Working) return
+        viewModelScope.launch {
+            _backupUiState.value = BackupUiState.Working(isExport = true)
+            val result = withContext(Dispatchers.IO) {
+                runCatching {
+                    val stream = runCatching {
+                        application.contentResolver.openOutputStream(uri, "wt")
+                    }.getOrNull() ?: application.contentResolver.openOutputStream(uri)
+                        ?: error("Could not open destination file")
+                    stream.use { out ->
+                        BufferedWriter(OutputStreamWriter(out, StandardCharsets.UTF_8)).use { writer ->
+                            repository.exportBackupTo(
+                                writer = writer,
+                                appVersion = BuildConfig.VERSION_NAME,
+                                appVersionCode = BuildConfig.VERSION_CODE,
+                            )
+                        }
+                    }
+                    resolveDisplayName(uri)
+                }
+            }
+            _backupUiState.value = result.fold(
+                onSuccess = { name -> BackupUiState.ExportSuccess(name) },
+                onFailure = { BackupUiState.ExportError },
+            )
+        }
+    }
+
+    fun inspectBackupUri(uri: Uri) {
+        if (_backupUiState.value is BackupUiState.Working) return
+        viewModelScope.launch {
+            _backupUiState.value = BackupUiState.Working(isExport = false)
+            val next = withContext(Dispatchers.IO) {
+                try {
+                    val declaredLength = runCatching {
+                        application.contentResolver.openAssetFileDescriptor(uri, "r")?.use { it.length }
+                    }.getOrNull() ?: -1L
+                    val payload = application.contentResolver.openInputStream(uri)?.use { stream ->
+                        BackupCodec.readAndValidate(stream, declaredLength)
+                    } ?: throw BackupValidationException(BackupErrorCode.IO_ERROR, "Could not open file")
+                    val preview = BackupCodec.buildPreview(payload)
+                    BackupUiState.PreviewReady(payload, preview)
+                } catch (e: BackupValidationException) {
+                    BackupUiState.RestoreError(e.code)
+                } catch (_: Throwable) {
+                    BackupUiState.RestoreError(BackupErrorCode.IO_ERROR)
+                }
+            }
+            _backupUiState.value = next
+        }
+    }
+
+    fun requestReplaceConfirmation() {
+        val current = _backupUiState.value
+        if (current is BackupUiState.PreviewReady) {
+            _backupUiState.value = BackupUiState.ConfirmReplace(current.payload, current.preview)
+        }
+    }
+
+    fun backToPreview() {
+        val current = _backupUiState.value
+        if (current is BackupUiState.ConfirmReplace) {
+            _backupUiState.value = BackupUiState.PreviewReady(current.payload, current.preview)
+        }
+    }
+
+    fun confirmRestore(mode: BackupMode) {
+        val (payload, _) = when (val current = _backupUiState.value) {
+            is BackupUiState.PreviewReady -> if (mode == BackupMode.MERGE) current.payload to current.preview else return
+            is BackupUiState.ConfirmReplace -> if (mode == BackupMode.REPLACE) current.payload to current.preview else return
+            else -> return
+        }
+        viewModelScope.launch {
+            _backupUiState.value = BackupUiState.Working(isExport = false)
+            val next = withContext(Dispatchers.IO) {
+                try {
+                    val safetyDir = File(application.filesDir, SafetyBackupStore.DIR_NAME)
+                    val report = repository.restoreBackup(
+                        payload = payload,
+                        mode = mode,
+                        safetyDir = safetyDir,
+                        appVersion = BuildConfig.VERSION_NAME,
+                        appVersionCode = BuildConfig.VERSION_CODE,
+                    )
+                    rescheduleRemindersNow(removedRoutineIds = report.removedRoutineIds)
+                    BackupUiState.RestoreSuccess(report)
+                } catch (e: BackupValidationException) {
+                    BackupUiState.RestoreError(e.code)
+                } catch (_: Throwable) {
+                    BackupUiState.RestoreError(BackupErrorCode.RESTORE_FAILED)
+                }
+            }
+            _backupUiState.value = next
+        }
+    }
+
+    private fun resolveDisplayName(uri: Uri): String {
+        val queried = runCatching {
+            application.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+                ?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                        if (idx >= 0) cursor.getString(idx) else null
+                    } else {
+                        null
+                    }
+                }
+        }.getOrNull()?.takeIf { it.isNotBlank() }
+        return queried
+            ?: uri.lastPathSegment?.substringAfterLast('/')?.takeIf { it.isNotBlank() }
+            ?: "tag-backup-${Dates.iso(Dates.today())}.json"
     }
 
     fun saveTask(
@@ -587,24 +730,24 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
 
     fun resetProgress() = viewModelScope.launch { repository.resetProgress() }
 
-    /** Writes a JSON backup into the app's external files directory and returns the path. */
-    fun exportBackup(): String {
-        val json = repository.exportJson(repository.current())
-        val dir = java.io.File(application.getExternalFilesDir(null) ?: application.filesDir, "backups")
-        dir.mkdirs()
-        val file = java.io.File(dir, "tag-backup-${Dates.iso(Dates.today())}.json")
-        file.writeText(json)
-        return file.absolutePath
+    fun rescheduleReminders(removedRoutineIds: Collection<String> = emptyList()) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                rescheduleRemindersNow(removedRoutineIds)
+            }
+        }
     }
 
-    fun rescheduleReminders() {
-        val snapshot = repository.current()
+    private suspend fun rescheduleRemindersNow(removedRoutineIds: Collection<String> = emptyList()) {
+        val snapshot = repository.freshSnapshot()
         val settings = snapshot.settings
         com.tag.routine.notifications.ReminderScheduler.rescheduleAll(
             context = application,
             routines = snapshot.routines,
             digestMinutes = settings.dailyDigestMinutes,
             digestEnabled = settings.notificationsEnabled && settings.dailyDigestEnabled,
+            notificationsEnabled = settings.notificationsEnabled,
+            removedRoutineIds = removedRoutineIds,
         )
     }
 

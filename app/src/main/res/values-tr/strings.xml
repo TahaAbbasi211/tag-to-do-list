@@ -381,5 +381,38 @@
     <string name="date_picker_next_month">Sonraki ay</string>
     <string name="date_picker_select_year">Yıl seç</string>
     <string name="date_picker_today">Bugün</string>
+
+    <!-- Yedekleme ve geri yükleme (v1.6) -->
+    <string name="dialog_export_failed_title">Dışa aktarma başarısız</string>
+    <string name="dialog_export_failed_body">Yedek dosyası kaydedilemedi. Lütfen tekrar deneyin.</string>
+    <string name="backup_preview_title">Yedek önizlemesi</string>
+    <string name="backup_preview_created">Oluşturulma</string>
+    <string name="backup_preview_created_unknown">Eski sürüm</string>
+    <string name="backup_preview_items">Öğeler</string>
+    <string name="backup_preview_tasks">Görevler</string>
+    <string name="backup_preview_focus">Odak oturumları</string>
+    <string name="backup_preview_tags">Etiketler</string>
+    <string name="backup_preview_date_range">Tarih aralığı</string>
+    <string name="backup_preview_date_range_none">Tarihli öğe yok</string>
+    <string name="backup_preview_mode_hint">Bu yedeğin nasıl geri yükleneceğini seçin:</string>
+    <string name="backup_mode_merge">Birleştir</string>
+    <string name="backup_mode_merge_desc">Mevcut verileri korur ve yinelenmeyen öğeleri ekler.</string>
+    <string name="backup_mode_replace">Değiştir</string>
+    <string name="backup_mode_replace_desc">Mevcut tüm verileri siler ve bu yedekle değiştirir.</string>
+    <string name="backup_replace_confirm_title">Tüm mevcut veriler değiştirilsin mi?</string>
+    <string name="backup_replace_confirm_body">Uyarı: Mevcut tüm öğeleriniz, görevleriniz, etiketleriniz, tamamlama geçmişiniz ve odak oturumlarınız kalıcı olarak bu yedekle değiştirilecektir.\n\nDeğişiklikten önce mevcut verilerinizin otomatik bir güvenlik yedeği bu cihaza kaydedilecektir.</string>
+    <string name="backup_replace_confirm_action">Tüm verileri değiştir</string>
+    <string name="backup_restore_merge_body">%1$d öğe, %2$d görev, %3$d etiket ve %4$d odak oturumu eklendi.</string>
+    <string name="backup_restore_merge_skipped">%1$d mevcut yinelenen öğe atlandı.</string>
+    <string name="backup_restore_replace_body">%1$d öğe, %2$d görev, %3$d etiket ve %4$d odak oturumu geri yüklendi.</string>
+    <string name="backup_restore_safety_note">Önceki verilerinizin güvenlik yedeği otomatik olarak kaydedildi.</string>
+    <string name="backup_error_too_large">Bu dosya geçerli bir Tag yedeği için çok büyük. Hiçbir veri değiştirilmedi.</string>
+    <string name="backup_error_empty">Seçilen dosya boş. Hiçbir veri değiştirilmedi.</string>
+    <string name="backup_error_invalid_format">Bu dosya geçerli bir Tag yedeği değil. Hiçbir veri değiştirilmedi.</string>
+    <string name="backup_error_unsupported_version">Bu yedek desteklenmeyen bir biçim sürümü kullanıyor. Hiçbir veri değiştirilmedi.</string>
+    <string name="backup_error_corrupt_data">Bu yedekteki bazı gerekli veriler eksik veya bozuk. Hiçbir veri değiştirilmedi.</string>
+    <string name="backup_error_duplicate_ids">Bu yedek çakışan yinelenen kimlikler içeriyor. Hiçbir veri değiştirilmedi.</string>
+    <string name="backup_error_safety_failed">Geri yüklemeden önce güvenlik yedeği oluşturulamadı. Hiçbir veri değiştirilmedi.</string>
+    <string name="backup_error_generic">Bu yedek dosyası okunamadı veya geri yüklenemedi. Hiçbir veri değiştirilmedi.</string>
 </resources>
 

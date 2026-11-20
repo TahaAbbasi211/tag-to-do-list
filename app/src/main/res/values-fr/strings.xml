@@ -381,5 +381,38 @@
     <string name="date_picker_next_month">Mois suivant</string>
     <string name="date_picker_select_year">Choisir l\'année</string>
     <string name="date_picker_today">Aujourd\'hui</string>
+
+    <!-- Sauvegarde et restauration (v1.6) -->
+    <string name="dialog_export_failed_title">Échec de l\'exportation</string>
+    <string name="dialog_export_failed_body">Impossible d\'enregistrer le fichier de sauvegarde. Veuillez réessayer.</string>
+    <string name="backup_preview_title">Aperçu de la sauvegarde</string>
+    <string name="backup_preview_created">Créée le</string>
+    <string name="backup_preview_created_unknown">Version antérieure</string>
+    <string name="backup_preview_items">Éléments</string>
+    <string name="backup_preview_tasks">Tâches</string>
+    <string name="backup_preview_focus">Sessions de concentration</string>
+    <string name="backup_preview_tags">Étiquettes</string>
+    <string name="backup_preview_date_range">Plage de dates</string>
+    <string name="backup_preview_date_range_none">Aucun élément daté</string>
+    <string name="backup_preview_mode_hint">Choisis comment restaurer cette sauvegarde :</string>
+    <string name="backup_mode_merge">Fusionner</string>
+    <string name="backup_mode_merge_desc">Conserver les données actuelles et ajouter les éléments non dupliqués.</string>
+    <string name="backup_mode_replace">Remplacer</string>
+    <string name="backup_mode_replace_desc">Effacer les données actuelles et tout remplacer par cette sauvegarde.</string>
+    <string name="backup_replace_confirm_title">Remplacer toutes les données actuelles ?</string>
+    <string name="backup_replace_confirm_body">Attention : tous tes éléments, tâches, étiquettes, historiques et sessions de concentration actuels seront définitivement remplacés par cette sauvegarde.\n\nUne sauvegarde de sécurité automatique de tes données actuelles sera enregistrée sur cet appareil au préalable.</string>
+    <string name="backup_replace_confirm_action">Tout remplacer</string>
+    <string name="backup_restore_merge_body">%1$d éléments, %2$d tâches, %3$d étiquettes et %4$d sessions ajoutés.</string>
+    <string name="backup_restore_merge_skipped">%1$d doublons existants ignorés.</string>
+    <string name="backup_restore_replace_body">%1$d éléments, %2$d tâches, %3$d étiquettes et %4$d sessions restaurés.</string>
+    <string name="backup_restore_safety_note">Une sauvegarde de sécurité de tes données précédentes a été enregistrée automatiquement.</string>
+    <string name="backup_error_too_large">Ce fichier est trop volumineux pour être une sauvegarde Tag valide. Rien n\'a été modifié.</string>
+    <string name="backup_error_empty">Le fichier sélectionné est vide. Rien n\'a été modifié.</string>
+    <string name="backup_error_invalid_format">Ce fichier n\'est pas une sauvegarde Tag valide. Rien n\'a été modifié.</string>
+    <string name="backup_error_unsupported_version">Cette sauvegarde utilise une version de format non prise en charge. Rien n\'a été modifié.</string>
+    <string name="backup_error_corrupt_data">Certaines données requises dans cette sauvegarde sont manquantes ou endommagées. Rien n\'a été modifié.</string>
+    <string name="backup_error_duplicate_ids">Cette sauvegarde contient des identifiants en double incompatibles. Rien n\'a été modifié.</string>
+    <string name="backup_error_safety_failed">Impossible d\'enregistrer une sauvegarde de sécurité avant la restauration. Rien n\'a été modifié.</string>
+    <string name="backup_error_generic">Impossible de lire ou restaurer ce fichier de sauvegarde. Rien n\'a été modifié.</string>
 </resources>
 

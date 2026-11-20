@@ -131,6 +131,7 @@ class BootReceiver : BroadcastReceiver() {
                     routines = snapshot.routines,
                     digestMinutes = snapshot.settings.dailyDigestMinutes,
                     digestEnabled = snapshot.settings.notificationsEnabled && snapshot.settings.dailyDigestEnabled,
+                    notificationsEnabled = snapshot.settings.notificationsEnabled,
                 )
             } finally {
                 pending.finish()

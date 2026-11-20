@@ -381,5 +381,38 @@
     <string name="date_picker_next_month">Nächster Monat</string>
     <string name="date_picker_select_year">Jahr wählen</string>
     <string name="date_picker_today">Heute</string>
+
+    <!-- Sicherung & Wiederherstellung (v1.6) -->
+    <string name="dialog_export_failed_title">Export fehlgeschlagen</string>
+    <string name="dialog_export_failed_body">Die Sicherungsdatei konnte nicht gespeichert werden. Bitte versuche es erneut.</string>
+    <string name="backup_preview_title">Sicherungsvorschau</string>
+    <string name="backup_preview_created">Erstellt</string>
+    <string name="backup_preview_created_unknown">Ältere Version</string>
+    <string name="backup_preview_items">Einträge</string>
+    <string name="backup_preview_tasks">Aufgaben</string>
+    <string name="backup_preview_focus">Fokussitzungen</string>
+    <string name="backup_preview_tags">Etiketten</string>
+    <string name="backup_preview_date_range">Zeitraum</string>
+    <string name="backup_preview_date_range_none">Keine datierten Einträge</string>
+    <string name="backup_preview_mode_hint">Wähle, wie diese Sicherung wiederhergestellt werden soll:</string>
+    <string name="backup_mode_merge">Zusammenführen</string>
+    <string name="backup_mode_merge_desc">Vorhandene Daten behalten und nur neue Einträge ohne Duplikate hinzufügen.</string>
+    <string name="backup_mode_replace">Ersetzen</string>
+    <string name="backup_mode_replace_desc">Aktuelle Daten löschen und vollständig durch diese Sicherung ersetzen.</string>
+    <string name="backup_replace_confirm_title">Alle aktuellen Daten ersetzen?</string>
+    <string name="backup_replace_confirm_body">Warnung: Alle deine aktuellen Einträge, Aufgaben, Etiketten, Erledigungsprotokolle und Fokussitzungen werden dauerhaft durch diese Sicherung überschrieben.\n\nZuvor wird automatisch eine Sicherheitssicherung deiner aktuellen Daten auf diesem Gerät gespeichert.</string>
+    <string name="backup_replace_confirm_action">Alle Daten ersetzen</string>
+    <string name="backup_restore_merge_body">%1$d Einträge, %2$d Aufgaben, %3$d Etiketten und %4$d Fokussitzungen hinzugefügt.</string>
+    <string name="backup_restore_merge_skipped">%1$d vorhandene Duplikate übersprungen.</string>
+    <string name="backup_restore_replace_body">%1$d Einträge, %2$d Aufgaben, %3$d Etiketten und %4$d Fokussitzungen wiederhergestellt.</string>
+    <string name="backup_restore_safety_note">Zuvor wurde automatisch eine Sicherheitssicherung deiner bisherigen Daten gespeichert.</string>
+    <string name="backup_error_too_large">Diese Datei ist zu groß für eine gültige Tag-Sicherung. Es wurde nichts geändert.</string>
+    <string name="backup_error_empty">Die ausgewählte Datei ist leer. Es wurde nichts geändert.</string>
+    <string name="backup_error_invalid_format">Diese Datei ist keine gültige Tag-Sicherung. Es wurde nichts geändert.</string>
+    <string name="backup_error_unsupported_version">Diese Sicherung verwendet eine nicht unterstützte Formatversion. Es wurde nichts geändert.</string>
+    <string name="backup_error_corrupt_data">Einige erforderliche Daten in dieser Sicherung fehlen oder sind beschädigt. Es wurde nichts geändert.</string>
+    <string name="backup_error_duplicate_ids">Diese Sicherung enthält widersprüchliche doppelte Einträge. Es wurde nichts geändert.</string>
+    <string name="backup_error_safety_failed">Vor der Wiederherstellung konnte keine Sicherheitssicherung gespeichert werden. Es wurde nichts geändert.</string>
+    <string name="backup_error_generic">Diese Sicherungsdatei konnte nicht gelesen oder wiederhergestellt werden. Es wurde nichts geändert.</string>
 </resources>
 
