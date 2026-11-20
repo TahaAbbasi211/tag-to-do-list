@@ -1,7 +1,11 @@
 package com.tag.routine
 
 import android.app.Application
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import androidx.room.Room
 import com.tag.routine.data.Dates
 import com.tag.routine.data.SettingsStore
@@ -9,6 +13,7 @@ import com.tag.routine.data.TagDatabase
 import com.tag.routine.data.TagRepository
 import com.tag.routine.notifications.FocusTimerRuntime
 import com.tag.routine.notifications.ReminderScheduler
+import com.tag.routine.widget.WidgetRefresh
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -28,7 +33,7 @@ class AppContainer(context: Context) {
 
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    val repository = TagRepository(database, settingsStore, appScope)
+    val repository = TagRepository(database, settingsStore, appScope, appContext)
 
     fun bootstrap() {
         appScope.launch {
@@ -49,6 +54,8 @@ class AppContainer(context: Context) {
                 digestEnabled = snapshot.settings.notificationsEnabled && snapshot.settings.dailyDigestEnabled,
                 notificationsEnabled = snapshot.settings.notificationsEnabled,
             )
+            // Populate any placed widgets once initial seeding/bootstrap finishes.
+            WidgetRefresh.request(appContext)
         }
     }
 
@@ -74,17 +81,57 @@ class TagApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        container = AppContainer(this)
-        // Published before bootstrap: the bootstrap work runs on another thread and reads
-        // this back through [containerOrNull], so it must never observe a half-built state.
-        containerOrNull = container
-        container.bootstrap()
+        ensureContainer(this)
+        registerDateChangeReceiver()
+    }
+
+    @Synchronized
+    internal fun initContainerIfNeeded(): AppContainer {
+        if (!this::container.isInitialized) {
+            container = AppContainer(this)
+            containerOrNull = container
+            container.bootstrap()
+        } else if (containerOrNull == null) {
+            containerOrNull = container
+        }
+        return container
+    }
+
+    /**
+     * Manifest-declared ACTION_DATE_CHANGED is blocked on Android 8+, so listen
+     * dynamically while the app process is alive without alarms or extra permissions.
+     */
+    private fun registerDateChangeReceiver() {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action == Intent.ACTION_DATE_CHANGED) {
+                    WidgetRefresh.request(context)
+                }
+            }
+        }
+        val filter = IntentFilter(Intent.ACTION_DATE_CHANGED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("UnspecifiedRegisterReceiverFlag")
+            registerReceiver(receiver, filter)
+        }
     }
 
     companion object {
-        /** Set once [onCreate] has run; receivers can be invoked before that on some devices. */
+        /** Set once [onCreate] or [ensureContainer] has run. */
         @Volatile
         var containerOrNull: AppContainer? = null
             private set
+
+        /**
+         * Returns the live [AppContainer], initializing it on demand (without an Activity)
+         * if a widget or broadcast receiver runs before [TagApp.onCreate].
+         */
+        fun ensureContainer(context: Context): AppContainer? {
+            containerOrNull?.let { return it }
+            val app = context.applicationContext as? TagApp ?: return null
+            return app.initContainerIfNeeded()
+        }
     }
 }
