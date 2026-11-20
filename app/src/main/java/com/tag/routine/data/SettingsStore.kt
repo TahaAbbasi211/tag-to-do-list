@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.settingsStore: DataStore<Preferences> by preferencesDataStore(name = "tag_settings")
@@ -125,5 +126,27 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setTemplatesCardDismissed(dismissed: Boolean) = context.settingsStore.edit {
         it[Keys.templatesCardDismissed] = dismissed
+    }
+
+    suspend fun currentSettings(): AppSettings = settings.first()
+
+    /** Atomically applies preferences from a validated backup without touching active timer state. */
+    suspend fun applyBackupSettings(backup: BackupSettings) {
+        context.settingsStore.edit { prefs ->
+            prefs[Keys.themeMode] = backup.themeMode.coerceIn(0, 2)
+            prefs[Keys.themePalette] = BackupSettings.validPalette(backup.themePalette)
+            prefs[Keys.dynamicColor] = backup.dynamicColor
+            prefs[Keys.language] = BackupSettings.validLanguage(backup.language)
+            prefs[Keys.calendarType] = backup.calendarType.key
+            prefs[Keys.userName] = backup.userName
+            prefs[Keys.notifications] = backup.notificationsEnabled
+            prefs[Keys.digestEnabled] = backup.dailyDigestEnabled
+            prefs[Keys.digestMinutes] = backup.dailyDigestMinutes.coerceIn(0, 1439)
+            prefs[Keys.haptics] = backup.hapticsEnabled
+            prefs[Keys.focusMinutes] = AppConstants.clampFocusMinutes(backup.focusMinutes)
+            prefs[Keys.templatesCardDismissed] = backup.templatesCardDismissed
+            prefs[Keys.onboarded] = true
+            prefs[Keys.seeded] = true
+        }
     }
 }
