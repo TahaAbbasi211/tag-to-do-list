@@ -102,14 +102,23 @@ interface RoutineDao {
     @Query("SELECT * FROM routines ORDER BY sortOrder, createdAt")
     fun observeAll(): Flow<List<RoutineEntity>>
 
+    @Query("SELECT * FROM routines ORDER BY sortOrder, createdAt")
+    suspend fun getAll(): List<RoutineEntity>
+
     @Query("SELECT * FROM routines WHERE id = :id")
     suspend fun byId(id: String): RoutineEntity?
 
     @Upsert
     suspend fun upsert(item: RoutineEntity)
 
+    @Upsert
+    suspend fun upsertAll(items: List<RoutineEntity>)
+
     @Query("DELETE FROM routines WHERE id = :id")
     suspend fun delete(id: String)
+
+    @Query("DELETE FROM routines")
+    suspend fun clear()
 
     @Query("SELECT COUNT(*) FROM routines")
     suspend fun count(): Int
@@ -135,14 +144,23 @@ interface TaskDao {
     @Query("SELECT * FROM tasks ORDER BY done ASC, createdAt DESC")
     fun observeAll(): Flow<List<TaskEntity>>
 
+    @Query("SELECT * FROM tasks ORDER BY done ASC, createdAt DESC")
+    suspend fun getAll(): List<TaskEntity>
+
     @Query("SELECT * FROM tasks WHERE id = :id")
     suspend fun byId(id: String): TaskEntity?
 
     @Upsert
     suspend fun upsert(item: TaskEntity)
 
+    @Upsert
+    suspend fun upsertAll(items: List<TaskEntity>)
+
     @Query("DELETE FROM tasks WHERE id = :id")
     suspend fun delete(id: String)
+
+    @Query("DELETE FROM tasks")
+    suspend fun clear()
 
     @Query("SELECT COUNT(*) FROM tasks")
     suspend fun count(): Int
@@ -159,14 +177,23 @@ interface TagDao {
     @Query("SELECT * FROM tags ORDER BY sortOrder, name")
     fun observeAll(): Flow<List<TagEntity>>
 
+    @Query("SELECT * FROM tags ORDER BY sortOrder, name")
+    suspend fun getAll(): List<TagEntity>
+
     @Query("SELECT * FROM tags WHERE id = :id")
     suspend fun byId(id: String): TagEntity?
 
     @Upsert
     suspend fun upsert(item: TagEntity)
 
+    @Upsert
+    suspend fun upsertAll(items: List<TagEntity>)
+
     @Query("DELETE FROM tags WHERE id = :id")
     suspend fun delete(id: String)
+
+    @Query("DELETE FROM tags")
+    suspend fun clear()
 
     @Query("SELECT COUNT(*) FROM tags")
     suspend fun count(): Int
@@ -186,11 +213,20 @@ interface LogDao {
     @Query("SELECT * FROM routine_logs")
     fun observeAllRoutineLogs(): Flow<List<RoutineLogEntity>>
 
+    @Query("SELECT * FROM routine_logs")
+    suspend fun getAllRoutineLogs(): List<RoutineLogEntity>
+
     @Query("SELECT * FROM task_logs")
     fun observeAllTaskLogs(): Flow<List<TaskLogEntity>>
 
+    @Query("SELECT * FROM task_logs")
+    suspend fun getAllTaskLogs(): List<TaskLogEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRoutineLog(log: RoutineLogEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertRoutineLogs(logs: List<RoutineLogEntity>)
 
     @Query("DELETE FROM routine_logs WHERE routineId = :routineId AND date = :date")
     suspend fun deleteRoutineLog(routineId: String, date: String)
@@ -203,6 +239,9 @@ interface LogDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTaskLog(log: TaskLogEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTaskLogs(logs: List<TaskLogEntity>)
 
     @Query("DELETE FROM task_logs WHERE taskId = :taskId AND date = :date")
     suspend fun deleteTaskLog(taskId: String, date: String)
@@ -222,11 +261,17 @@ interface FocusDao {
     @Query("SELECT * FROM focus_sessions ORDER BY startedAt DESC")
     fun observeAll(): Flow<List<FocusSessionEntity>>
 
+    @Query("SELECT * FROM focus_sessions ORDER BY startedAt DESC")
+    suspend fun getAll(): List<FocusSessionEntity>
+
     @Query("SELECT * FROM focus_sessions WHERE startedAt >= :from ORDER BY startedAt DESC")
     fun observeSince(from: Long): Flow<List<FocusSessionEntity>>
 
     @Upsert
     suspend fun upsert(item: FocusSessionEntity)
+
+    @Upsert
+    suspend fun upsertAll(items: List<FocusSessionEntity>)
 
     @Query("SELECT COUNT(*) FROM focus_sessions")
     suspend fun count(): Int
