@@ -68,6 +68,38 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
+
+        <!--
+            Home-screen widget (v1.7). This is the only component added for the widget and
+            it declares no permission: APPWIDGET_UPDATE is the widget protocol action and
+            the rest are system broadcasts the widget needs so it is never showing
+            yesterday. No new <uses-permission> is introduced.
+        -->
+        <receiver
+            android:name=".widget.TodayWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_label"
+            tools:ignore="ExportedReceiver">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_today_info" />
+        </receiver>
+
+        <!-- Redraws the widget when the day, the clock or the boot state changes. -->
+        <receiver
+            android:name=".widget.WidgetUpdateReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.DATE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
