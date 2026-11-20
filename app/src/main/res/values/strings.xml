@@ -381,4 +381,37 @@
     <string name="date_picker_next_month">Next month</string>
     <string name="date_picker_select_year">Select year</string>
     <string name="date_picker_today">Today</string>
+
+    <!-- Backup & restore (v1.6) -->
+    <string name="dialog_export_failed_title">Export failed</string>
+    <string name="dialog_export_failed_body">Could not save the backup file. Please try again.</string>
+    <string name="backup_preview_title">Backup preview</string>
+    <string name="backup_preview_created">Created</string>
+    <string name="backup_preview_created_unknown">Earlier version</string>
+    <string name="backup_preview_items">Items</string>
+    <string name="backup_preview_tasks">Tasks</string>
+    <string name="backup_preview_focus">Focus sessions</string>
+    <string name="backup_preview_tags">Tags</string>
+    <string name="backup_preview_date_range">Date range</string>
+    <string name="backup_preview_date_range_none">No dated items</string>
+    <string name="backup_preview_mode_hint">Choose how to restore this backup:</string>
+    <string name="backup_mode_merge">Merge</string>
+    <string name="backup_mode_merge_desc">Keep existing data and add non-duplicate items from this backup.</string>
+    <string name="backup_mode_replace">Replace</string>
+    <string name="backup_mode_replace_desc">Delete current data and replace everything with this backup.</string>
+    <string name="backup_replace_confirm_title">Replace all current data?</string>
+    <string name="backup_replace_confirm_body">Warning: All of your current items, tasks, tags, completion history, and focus sessions will be permanently replaced by this backup.\n\nAn automatic safety backup of your current data will be saved on this device first.</string>
+    <string name="backup_replace_confirm_action">Replace all data</string>
+    <string name="backup_restore_merge_body">Added %1$d items, %2$d tasks, %3$d tags, and %4$d focus sessions.</string>
+    <string name="backup_restore_merge_skipped">Skipped %1$d existing duplicates.</string>
+    <string name="backup_restore_replace_body">Restored %1$d items, %2$d tasks, %3$d tags, and %4$d focus sessions.</string>
+    <string name="backup_restore_safety_note">A safety backup of your previous data was saved automatically.</string>
+    <string name="backup_error_too_large">This file is too large to be a valid Tag backup. Nothing was changed.</string>
+    <string name="backup_error_empty">The selected file is empty. Nothing was changed.</string>
+    <string name="backup_error_invalid_format">This file is not a valid Tag backup. Nothing was changed.</string>
+    <string name="backup_error_unsupported_version">This backup uses an unsupported format version. Nothing was changed.</string>
+    <string name="backup_error_corrupt_data">Some required data in this backup is missing or damaged. Nothing was changed.</string>
+    <string name="backup_error_duplicate_ids">This backup contains conflicting duplicate entries. Nothing was changed.</string>
+    <string name="backup_error_safety_failed">Could not save a safety backup before restoring. Nothing was changed.</string>
+    <string name="backup_error_generic">Could not read or restore this backup file. Nothing was changed.</string>
 </resources>
