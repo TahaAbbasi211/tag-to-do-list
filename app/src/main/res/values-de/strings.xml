@@ -414,5 +414,18 @@
     <string name="backup_error_duplicate_ids">Diese Sicherung enthält widersprüchliche doppelte Einträge. Es wurde nichts geändert.</string>
     <string name="backup_error_safety_failed">Vor der Wiederherstellung konnte keine Sicherheitssicherung gespeichert werden. Es wurde nichts geändert.</string>
     <string name="backup_error_generic">Diese Sicherungsdatei konnte nicht gelesen oder wiederhergestellt werden. Es wurde nichts geändert.</string>
+
+    <!-- Home screen widget (v1.7) -->
+    <string name="widget_label">Heute</string>
+    <string name="widget_description">Der heutige Fortschritt und was als Nächstes ansteht.</string>
+    <string name="widget_title_today">Heute</string>
+    <string name="widget_counter">%1$d von %2$d erledigt</string>
+    <string name="widget_empty_title">Heute ist nichts geplant</string>
+    <string name="widget_empty_message">Ein ruhiger Tag. Genieße ihn oder füge etwas Kleines hinzu.</string>
+    <string name="widget_all_done_message">Alles für heute erledigt. Gut gemacht.</string>
+    <string name="widget_next_header">Als Nächstes</string>
+    <string name="widget_loading">Wird geladen…</string>
+    <string name="widget_preview_percent">75%</string>
+    <string name="widget_preview_counter">3 von 4 erledigt</string>
 </resources>
 
