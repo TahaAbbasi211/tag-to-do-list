@@ -414,5 +414,18 @@
     <string name="backup_error_duplicate_ids">این فایل بکاپ دارای شناسه‌های تکراری ناسازگار است. هیچ داده‌ای تغییر نکرد.</string>
     <string name="backup_error_safety_failed">ساخت بکاپ ایمنی پیش از بازیابی ممکن نشد. هیچ داده‌ای تغییر نکرد.</string>
     <string name="backup_error_generic">خواندن یا بازیابی این فایل بکاپ ممکن نشد. هیچ داده‌ای تغییر نکرد.</string>
+
+    <!-- Home screen widget (v1.7) -->
+    <string name="widget_label">امروز</string>
+    <string name="widget_description">پیشرفت امروز و کارهای بعدی.</string>
+    <string name="widget_title_today">امروز</string>
+    <string name="widget_counter">%1$d از %2$d انجام شد</string>
+    <string name="widget_empty_title">امروز چیزی برنامه‌ریزی نشده</string>
+    <string name="widget_empty_message">روز آرامی است. از آن لذت ببر یا یک کار کوچک اضافه کن.</string>
+    <string name="widget_all_done_message">همه‌ی کارهای امروز انجام شد. آفرین.</string>
+    <string name="widget_next_header">بعدی‌ها</string>
+    <string name="widget_loading">در حال بارگذاری…</string>
+    <string name="widget_preview_percent">۷۵٪</string>
+    <string name="widget_preview_counter">۳ از ۴ انجام شد</string>
 </resources>
 
