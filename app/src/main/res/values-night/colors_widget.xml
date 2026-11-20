@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Widget palette, dark theme (values-night). Deep navy surfaces with the app's violet.
+    Contrast against the surfaces actually used:
+      text_primary   #F1F5F9 on #111726 = 15.9:1
+      text_secondary #A0AEC0 on #111726 =  8.4:1
+      text_secondary #A0AEC0 on #182236 =  7.4:1
+      accent         #A99BFF on #111726 =  8.6:1
+      accent         #A99BFF on #182236 =  7.6:1
+-->
+<resources>
+    <color name="widget_bg">#FF111726</color>
+    <color name="widget_bg_hero">#FF182236</color>
+    <color name="widget_text_primary">#FFF1F5F9</color>
+    <color name="widget_text_secondary">#FFA0AEC0</color>
+    <color name="widget_accent">#FFA99BFF</color>
+    <color name="widget_accent_soft">#FF2A2153</color>
+    <color name="widget_track">#FF2E3E5C</color>
+    <color name="widget_divider">#FF2E3E5C</color>
+    <color name="widget_icon_tint">#FFA99BFF</color>
+</resources>
