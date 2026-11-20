@@ -153,8 +153,8 @@
     <string name="settings_new_tag">برچسب جدید</string>
     <string name="settings_delete_tag">حذف برچسب</string>
     <string name="settings_data">داده‌ها</string>
-    <string name="settings_export">تهیه نسخه پشتیبان</string>
-    <string name="settings_import">بازگرداندن پشتیبان</string>
+    <string name="settings_export">خروجی بکاپ</string>
+    <string name="settings_import">بازیابی از بکاپ</string>
     <string name="settings_reset">پاک کردن همه پیشرفت</string>
     <string name="settings_about">درباره</string>
     <string name="settings_version">نسخه %1$s</string>
@@ -381,5 +381,38 @@
     <string name="date_picker_next_month">ماه بعد</string>
     <string name="date_picker_select_year">انتخاب سال</string>
     <string name="date_picker_today">امروز</string>
+
+    <!-- پشتیبان‌گیری و بازیابی (نسخه ۱.۶) -->
+    <string name="dialog_export_failed_title">خروجی بکاپ ناموفق بود</string>
+    <string name="dialog_export_failed_body">ذخیره فایل بکاپ ممکن نشد. لطفاً دوباره تلاش کنید.</string>
+    <string name="backup_preview_title">پیش‌نمایش بکاپ</string>
+    <string name="backup_preview_created">تاریخ ساخت</string>
+    <string name="backup_preview_created_unknown">نسخه قدیمی‌تر</string>
+    <string name="backup_preview_items">آیتم‌ها</string>
+    <string name="backup_preview_tasks">کارها</string>
+    <string name="backup_preview_focus">جلسات تمرکز</string>
+    <string name="backup_preview_tags">برچسب‌ها</string>
+    <string name="backup_preview_date_range">بازه تاریخ</string>
+    <string name="backup_preview_date_range_none">بدون تاریخ ثبت‌شده</string>
+    <string name="backup_preview_mode_hint">روش بازیابی این بکاپ را انتخاب کنید:</string>
+    <string name="backup_mode_merge">ادغام</string>
+    <string name="backup_mode_merge_desc">داده‌های فعلی حفظ می‌شوند و فقط موارد غیرتکراری از بکاپ اضافه می‌شوند.</string>
+    <string name="backup_mode_replace">جایگزینی</string>
+    <string name="backup_mode_replace_desc">همه داده‌های فعلی پاک شده و با محتوای این بکاپ جایگزین می‌شوند.</string>
+    <string name="backup_replace_confirm_title">همه داده‌های فعلی جایگزین شوند؟</string>
+    <string name="backup_replace_confirm_body">هشدار: تمام آیتم‌ها، کارها، برچسب‌ها، سابقه انجام و جلسات تمرکز فعلی شما به‌طور کامل با این بکاپ جایگزین و داده‌های فعلی حذف می‌شوند.\n\nپیش از تغییر، یک بکاپ ایمنی از داده‌های فعلی به‌صورت خودکار روی دستگاه ذخیره می‌شود.</string>
+    <string name="backup_replace_confirm_action">جایگزینی همه داده‌ها</string>
+    <string name="backup_restore_merge_body">%1$d آیتم، %2$d کار، %3$d برچسب و %4$d جلسه تمرکز اضافه شد.</string>
+    <string name="backup_restore_merge_skipped">%1$d مورد تکراری موجود رد شد.</string>
+    <string name="backup_restore_replace_body">%1$d آیتم، %2$d کار، %3$d برچسب و %4$d جلسه تمرکز بازیابی شد.</string>
+    <string name="backup_restore_safety_note">پیش از بازیابی، یک بکاپ ایمنی از داده‌های قبلی شما ذخیره شد.</string>
+    <string name="backup_error_too_large">اندازه این فایل برای بکاپ معتبر Tag بیش از حد بزرگ است. هیچ داده‌ای تغییر نکرد.</string>
+    <string name="backup_error_empty">فایل انتخاب‌شده خالی است. هیچ داده‌ای تغییر نکرد.</string>
+    <string name="backup_error_invalid_format">این فایل یک بکاپ معتبر Tag نیست. هیچ داده‌ای تغییر نکرد.</string>
+    <string name="backup_error_unsupported_version">نسخه فرمت این بکاپ پشتیبانی نمی‌شود. هیچ داده‌ای تغییر نکرد.</string>
+    <string name="backup_error_corrupt_data">بخشی از اطلاعات ضروری این بکاپ ناقص یا خراب است. هیچ داده‌ای تغییر نکرد.</string>
+    <string name="backup_error_duplicate_ids">این فایل بکاپ دارای شناسه‌های تکراری ناسازگار است. هیچ داده‌ای تغییر نکرد.</string>
+    <string name="backup_error_safety_failed">ساخت بکاپ ایمنی پیش از بازیابی ممکن نشد. هیچ داده‌ای تغییر نکرد.</string>
+    <string name="backup_error_generic">خواندن یا بازیابی این فایل بکاپ ممکن نشد. هیچ داده‌ای تغییر نکرد.</string>
 </resources>
 
