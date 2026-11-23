@@ -427,4 +427,6 @@
     <string name="widget_loading">Loading…</string>
     <string name="widget_preview_percent">75%</string>
     <string name="widget_preview_counter">3 of 4 done</string>
+    <string name="widget_mark_done_action">Mark as done</string>
+    <string name="widget_mark_done_cd">Mark %1$s as done</string>
 </resources>

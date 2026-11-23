@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.view.View
 import android.widget.RemoteViews
 import com.tag.routine.MainActivity
@@ -29,6 +30,7 @@ object WidgetRenderer {
         val iconId: Int,
         val titleId: Int,
         val timeId: Int,
+        val checkId: Int,
     )
 
     private val rowSlots = listOf(
@@ -37,18 +39,21 @@ object WidgetRenderer {
             R.id.widget_item_icon_1,
             R.id.widget_item_title_1,
             R.id.widget_item_time_1,
+            R.id.widget_item_check_1,
         ),
         RowSlot(
             R.id.widget_row_2,
             R.id.widget_item_icon_2,
             R.id.widget_item_title_2,
             R.id.widget_item_time_2,
+            R.id.widget_item_check_2,
         ),
         RowSlot(
             R.id.widget_row_3,
             R.id.widget_item_icon_3,
             R.id.widget_item_title_3,
             R.id.widget_item_time_3,
+            R.id.widget_item_check_3,
         ),
     )
 
@@ -135,17 +140,18 @@ object WidgetRenderer {
         }
 
         if (wide) {
-            bindItems(views, localized, locale, state)
+            bindItems(context, views, localized, locale, state)
         }
 
-        // Tapping anywhere opens the app. Checked items are intentionally not toggleable
-        // from the widget: a stale widget could then disagree with the database.
+        // Tapping the row body or anywhere else on the widget opens the app; only the
+        // dedicated check button on each wide-widget row triggers mark-done.
         views.setOnClickPendingIntent(R.id.widget_root, openApp(context))
 
         return views
     }
 
     private fun bindItems(
+        context: Context,
         views: RemoteViews,
         localized: Context,
         locale: Locale,
@@ -186,6 +192,14 @@ object WidgetRenderer {
                 views.setImageViewResource(slot.iconId, iconRes(item.icon))
                 views.setContentDescription(slot.iconId, item.title)
                 views.setTextViewText(slot.titleId, item.title)
+                views.setContentDescription(
+                    slot.checkId,
+                    localized.getString(R.string.widget_mark_done_cd, item.title),
+                )
+                views.setOnClickPendingIntent(
+                    slot.checkId,
+                    markDoneIntent(context, index, item.id, state.epochDay),
+                )
                 val time = item.timeMinutes
                 if (time == null) {
                     views.setViewVisibility(slot.timeId, View.GONE)
@@ -195,6 +209,33 @@ object WidgetRenderer {
                 }
             }
         }
+    }
+
+    /** Explicit immutable broadcast PendingIntent that marks one open widget row done. */
+    private fun markDoneIntent(
+        context: Context,
+        rowIndex: Int,
+        routineId: String,
+        epochDay: Long,
+    ): PendingIntent {
+        val intent = Intent(context, WidgetActionReceiver::class.java).apply {
+            action = WidgetActionReceiver.ACTION_MARK_DONE
+            data = Uri.Builder()
+                .scheme("tag")
+                .authority("widget-action")
+                .appendPath(epochDay.toString())
+                .appendPath(rowIndex.toString())
+                .appendPath(routineId)
+                .build()
+            putExtra(WidgetActionReceiver.EXTRA_ROUTINE_ID, routineId)
+            putExtra(WidgetActionReceiver.EXTRA_EPOCH_DAY, epochDay)
+        }
+        return PendingIntent.getBroadcast(
+            context,
+            WidgetActionDecider.requestCodeFor(rowIndex, routineId, epochDay),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
     }
 
     /** PendingIntent that opens the app's main screen. */

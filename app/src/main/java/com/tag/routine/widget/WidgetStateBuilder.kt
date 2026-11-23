@@ -45,6 +45,7 @@ data class WidgetState(
     val total: Int,
     /** At most [WidgetStateBuilder.MAX_NEXT_ITEMS] open items, in the order they come up. */
     val nextItems: List<WidgetItem>,
+    val epochDay: Long = 0L,
 ) {
     val hasItems: Boolean get() = total > 0
 }
@@ -128,6 +129,7 @@ object WidgetStateBuilder {
             completed = completed,
             total = total,
             nextItems = next,
+            epochDay = date.toEpochDay(),
         )
     }
 

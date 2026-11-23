@@ -35,10 +35,25 @@ class WidgetConfigTest {
     }
 
     @Test
+    fun manifestDeclaresPrivateWidgetActionReceiver() {
+        val manifest = read("src/main/AndroidManifest.xml")
+        // Attributes may follow the receiver name, so allow any non-'>' characters
+        // between the name and the tag terminator.
+        val block = Regex(
+            """<receiver\b[^>]*WidgetActionReceiver[^>]*(?:/>|>.*?</receiver>)""",
+            RegexOption.DOT_MATCHES_ALL,
+        ).find(manifest)?.value
+            ?: error("WidgetActionReceiver receiver missing in AndroidManifest.xml")
+        assertTrue("WidgetActionReceiver must be exported=false", block.contains("""android:exported="false""""))
+        assertFalse("WidgetActionReceiver must not expose an intent-filter", block.contains("intent-filter"))
+    }
+
+    @Test
     fun proguardKeepsWidgetReceivers() {
         val rules = read("proguard-rules.pro")
         assertTrue(rules.contains("com.tag.routine.widget.TodayWidgetProvider"))
         assertTrue(rules.contains("com.tag.routine.widget.WidgetUpdateReceiver"))
+        assertTrue(rules.contains("com.tag.routine.widget.WidgetActionReceiver"))
     }
 
     @Test
@@ -52,6 +67,13 @@ class WidgetConfigTest {
             assertTrue("missing widget_item_icon_$idx", "widget_item_icon_$idx" in ids)
             assertTrue("missing widget_item_title_$idx", "widget_item_title_$idx" in ids)
             assertTrue("missing widget_item_time_$idx", "widget_item_time_$idx" in ids)
+            assertTrue("missing widget_item_check_$idx", "widget_item_check_$idx" in ids)
+            val buttonBlock = Regex(
+                """<ImageView[^>]*widget_item_check_$idx[^>]*/>""",
+                RegexOption.DOT_MATCHES_ALL,
+            ).find(wide)?.value ?: error("missing ImageView block for widget_item_check_$idx")
+            assertTrue("widget_item_check_$idx width must be 40dp", buttonBlock.contains("""android:layout_width="40dp""""))
+            assertTrue("widget_item_check_$idx height must be 40dp", buttonBlock.contains("""android:layout_height="40dp""""))
         }
         assertOnlyRemoteViewsSafe(wide, "widget_today_wide.xml")
     }
@@ -61,6 +83,7 @@ class WidgetConfigTest {
         val small = read("src/main/res/layout/widget_today_small.xml")
         assertTrue(small.contains("""android:text="@string/widget_title_today""""))
         assertTrue(small.contains("""android:text="@string/widget_loading""""))
+        assertFalse("small widget layout must remain unchanged without check buttons", small.contains("widget_item_check"))
         assertOnlyRemoteViewsSafe(small, "widget_today_small.xml")
     }
 
