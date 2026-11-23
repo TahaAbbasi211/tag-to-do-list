@@ -18,4 +18,5 @@
     <color name="widget_track">#E2E8F0</color>
     <color name="widget_divider">#E2E8F0</color>
     <color name="widget_icon_tint">#5B4BE0</color>
+    <color name="widget_check_ripple">#335B4BE0</color>
 </resources>
