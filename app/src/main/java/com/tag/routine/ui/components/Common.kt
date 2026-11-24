@@ -44,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -53,6 +54,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -219,75 +221,85 @@ fun ProgressRing(
     val resolvedEnd = endColor ?: brand.ringEnd
     val target = progress.coerceIn(0f, 1f)
     val level = LocalAnimationLevel.current
-    val animated by animateFloatAsState(
+    val animated = animateFloatAsState(
         targetValue = target,
         animationSpec = if (level.allowsMotion) TagMotion.gentleSpring() else TagMotion.instantTween(),
         label = "progress-ring",
     )
-    val sweep = if (animate && level.allowsMotion) animated else target
+    val animateSweep = animate && level.allowsMotion
 
-    Canvas(
-        modifier = modifier.semantics {
-            contentDescription?.let { this.contentDescription = it }
-            progressBarRangeInfo = ProgressBarRangeInfo(target, 0f..1f)
-        },
-    ) {
-        val stroke = strokeWidth.toPx()
-        val inset = stroke / 2f
-        val arcSize = Size(size.width - stroke, size.height - stroke)
-
-        // 1. Background track ring
-        drawArc(
-            color = resolvedTrack,
-            startAngle = 0f,
-            sweepAngle = 360f,
-            useCenter = false,
-            topLeft = Offset(inset, inset),
-            size = arcSize,
-            style = Stroke(width = stroke, cap = StrokeCap.Round),
-        )
-
-        if (sweep > 0.001f) {
-            // 2. Soft shadow / glow arc layered beneath the progress arc
-            val glowWidth = stroke + 6.dp.toPx()
-            val glowInset = glowWidth / 2f
-            val glowSize = Size(size.width - glowWidth, size.height - glowWidth)
-            rotate(-90f) {
-                drawArc(
-                    brush = Brush.sweepGradient(
-                        colors = listOf(
-                            resolvedStart.copy(alpha = 0.28f),
-                            resolvedEnd.copy(alpha = 0.32f),
-                            resolvedStart.copy(alpha = 0.28f),
-                        ),
-                        center = center,
-                    ),
-                    startAngle = 0f,
-                    sweepAngle = 360f * sweep,
-                    useCenter = false,
-                    topLeft = Offset(glowInset, glowInset),
-                    size = glowSize,
-                    style = Stroke(width = glowWidth, cap = StrokeCap.Round),
-                )
+    Spacer(
+        modifier = modifier
+            .semantics {
+                contentDescription?.let { this.contentDescription = it }
+                progressBarRangeInfo = ProgressBarRangeInfo(target, 0f..1f)
             }
-
-            // 3. Crisp progress arc with seamless sweep gradient starting and ending at the same color
-            rotate(-90f) {
-                drawArc(
-                    brush = Brush.sweepGradient(
-                        colors = listOf(resolvedStart, resolvedEnd, resolvedStart),
-                        center = center,
+            .drawWithCache {
+                val stroke = strokeWidth.toPx()
+                val inset = stroke / 2f
+                val arcSize = Size(size.width - stroke, size.height - stroke)
+                val glowWidth = stroke + 6.dp.toPx()
+                val glowInset = glowWidth / 2f
+                val glowSize = Size(size.width - glowWidth, size.height - glowWidth)
+                val center = Offset(size.width / 2f, size.height / 2f)
+                val glowBrush = Brush.sweepGradient(
+                    colors = listOf(
+                        resolvedStart.copy(alpha = 0.28f),
+                        resolvedEnd.copy(alpha = 0.32f),
+                        resolvedStart.copy(alpha = 0.28f),
                     ),
-                    startAngle = 0f,
-                    sweepAngle = 360f * sweep,
-                    useCenter = false,
-                    topLeft = Offset(inset, inset),
-                    size = arcSize,
-                    style = Stroke(width = stroke, cap = StrokeCap.Round),
+                    center = center,
                 )
-            }
-        }
-    }
+                val arcBrush = Brush.sweepGradient(
+                    colors = listOf(resolvedStart, resolvedEnd, resolvedStart),
+                    center = center,
+                )
+                val trackStroke = Stroke(width = stroke, cap = StrokeCap.Round)
+                val glowStroke = Stroke(width = glowWidth, cap = StrokeCap.Round)
+
+                onDrawBehind {
+                    if (size.minDimension <= 0f) return@onDrawBehind
+                    val sweep = if (animateSweep) animated.value else target
+
+                    // 1. Background track ring
+                    drawArc(
+                        color = resolvedTrack,
+                        startAngle = 0f,
+                        sweepAngle = 360f,
+                        useCenter = false,
+                        topLeft = Offset(inset, inset),
+                        size = arcSize,
+                        style = trackStroke,
+                    )
+
+                    if (sweep > 0.001f) {
+                        // 2. Soft shadow / glow arc layered beneath the progress arc
+                        rotate(-90f) {
+                            drawArc(
+                                brush = glowBrush,
+                                startAngle = 0f,
+                                sweepAngle = 360f * sweep,
+                                useCenter = false,
+                                topLeft = Offset(glowInset, glowInset),
+                                size = glowSize,
+                                style = glowStroke,
+                            )
+
+                            // 3. Crisp progress arc with seamless sweep gradient starting and ending at the same color
+                            drawArc(
+                                brush = arcBrush,
+                                startAngle = 0f,
+                                sweepAngle = 360f * sweep,
+                                useCenter = false,
+                                topLeft = Offset(inset, inset),
+                                size = arcSize,
+                                style = trackStroke,
+                            )
+                        }
+                    }
+                }
+            },
+    )
 }
 
 /** Ring with centred content, used for the hero card and stat tiles. */
@@ -399,7 +411,11 @@ fun AnimatedCheck(
                 .clip(RoundedCornerShape(percent = 50)),
             contentAlignment = Alignment.Center,
         ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clearAndSetSemantics {},
+            ) {
                 val value = fill.value.coerceIn(0f, 1.15f)
                 val radius = this.size.minDimension / 2f
 
@@ -482,72 +498,112 @@ fun TodayEmptyState(
                 .clearAndSetSemantics {},
             contentAlignment = Alignment.Center,
         ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val phase = driftState?.value ?: 0f
-                val bob = sin(phase) * 3.dp.toPx()
-                val horizonY = size.height * 0.72f
-                val centerX = size.width * 0.5f
+            Spacer(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clearAndSetSemantics {}
+                    .drawWithCache {
+                        val horizonY = size.height * 0.72f
+                        val centerX = size.width * 0.5f
+                        val haloRadius = size.minDimension * 0.45f
+                        val sunRadius = 24.dp.toPx()
+                        val bobMaxPx = 3.dp.toPx()
+                        val haloOffsetY = horizonY - 12.dp.toPx()
+                        val sunOffsetY = horizonY - 10.dp.toPx()
+                        val leftAccentCenter = Offset(size.width * 0.22f, size.height * 0.34f)
+                        val rightAccentCenter = Offset(size.width * 0.80f, size.height * 0.28f)
+                        val rectLeft = size.width * 0.74f
+                        val rectTop = size.height * 0.52f
+                        val rectSize = Size(10.dp.toPx(), 10.dp.toPx())
+                        val rectCorner = androidx.compose.ui.geometry.CornerRadius(3.dp.toPx())
+                        val leftAccentRadius = 5.dp.toPx()
+                        val rightAccentRadius = 4.dp.toPx()
+                        val horizonStart = Offset(size.width * 0.16f, horizonY)
+                        val horizonEnd = Offset(size.width * 0.84f, horizonY)
+                        val horizonStroke = 2.5.dp.toPx()
+                        val subHorizonY = horizonY + 10.dp.toPx()
+                        val subHorizonStart = Offset(size.width * 0.28f, subHorizonY)
+                        val subHorizonEnd = Offset(size.width * 0.72f, subHorizonY)
+                        val subHorizonStroke = 2.dp.toPx()
 
-                // Outer warm sun halo
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            tertiaryColor.copy(alpha = 0.28f),
-                            primaryColor.copy(alpha = 0.10f),
-                            Color.Transparent,
-                        ),
-                        center = Offset(centerX, horizonY - 12.dp.toPx() + bob),
-                        radius = size.minDimension * 0.45f,
-                    ),
-                    radius = size.minDimension * 0.45f,
-                    center = Offset(centerX, horizonY - 12.dp.toPx() + bob),
-                )
+                        val haloBrush = Brush.radialGradient(
+                            colors = listOf(
+                                tertiaryColor.copy(alpha = 0.28f),
+                                primaryColor.copy(alpha = 0.10f),
+                                Color.Transparent,
+                            ),
+                            center = Offset.Zero,
+                            radius = haloRadius,
+                        )
+                        val sunBrush = Brush.verticalGradient(
+                            colors = listOf(tertiaryColor, primaryColor.copy(alpha = 0.85f)),
+                            startY = -sunRadius,
+                            endY = sunRadius,
+                        )
+                        val leftAccentColor = secondaryColor.copy(alpha = 0.65f)
+                        val rightAccentColor = primaryColor.copy(alpha = 0.55f)
+                        val rectAccentColor = tertiaryColor.copy(alpha = 0.48f)
+                        val horizonColor = primaryColor.copy(alpha = 0.35f)
+                        val subHorizonColor = secondaryColor.copy(alpha = 0.28f)
 
-                // Rising sun disc
-                val sunRadius = 24.dp.toPx()
-                val sunCenter = Offset(centerX, horizonY - 10.dp.toPx() + bob * 0.7f)
-                drawCircle(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(tertiaryColor, primaryColor.copy(alpha = 0.85f)),
-                    ),
-                    radius = sunRadius,
-                    center = sunCenter,
-                )
+                        onDrawBehind {
+                            val phase = driftState?.value ?: 0f
+                            val bob = sin(phase) * bobMaxPx
 
-                // Floating decorative geometric accents
-                drawCircle(
-                    color = secondaryColor.copy(alpha = 0.65f),
-                    radius = 5.dp.toPx(),
-                    center = Offset(size.width * 0.22f, size.height * 0.34f - bob),
-                )
-                drawCircle(
-                    color = primaryColor.copy(alpha = 0.55f),
-                    radius = 4.dp.toPx(),
-                    center = Offset(size.width * 0.80f, size.height * 0.28f + bob),
-                )
-                drawRoundRect(
-                    color = tertiaryColor.copy(alpha = 0.48f),
-                    topLeft = Offset(size.width * 0.74f, size.height * 0.52f - bob * 0.6f),
-                    size = Size(10.dp.toPx(), 10.dp.toPx()),
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(3.dp.toPx()),
-                )
+                            // Outer warm sun halo
+                            translate(left = centerX, top = haloOffsetY + bob) {
+                                drawCircle(
+                                    brush = haloBrush,
+                                    radius = haloRadius,
+                                    center = Offset.Zero,
+                                )
+                            }
 
-                // Gentle horizon arc
-                drawLine(
-                    color = primaryColor.copy(alpha = 0.35f),
-                    start = Offset(size.width * 0.16f, horizonY),
-                    end = Offset(size.width * 0.84f, horizonY),
-                    strokeWidth = 2.5.dp.toPx(),
-                    cap = StrokeCap.Round,
-                )
-                drawLine(
-                    color = secondaryColor.copy(alpha = 0.28f),
-                    start = Offset(size.width * 0.28f, horizonY + 10.dp.toPx()),
-                    end = Offset(size.width * 0.72f, horizonY + 10.dp.toPx()),
-                    strokeWidth = 2.dp.toPx(),
-                    cap = StrokeCap.Round,
-                )
-            }
+                            // Rising sun disc
+                            translate(left = centerX, top = sunOffsetY + bob * 0.7f) {
+                                drawCircle(
+                                    brush = sunBrush,
+                                    radius = sunRadius,
+                                    center = Offset.Zero,
+                                )
+                            }
+
+                            // Floating decorative geometric accents
+                            drawCircle(
+                                color = leftAccentColor,
+                                radius = leftAccentRadius,
+                                center = Offset(leftAccentCenter.x, leftAccentCenter.y - bob),
+                            )
+                            drawCircle(
+                                color = rightAccentColor,
+                                radius = rightAccentRadius,
+                                center = Offset(rightAccentCenter.x, rightAccentCenter.y + bob),
+                            )
+                            drawRoundRect(
+                                color = rectAccentColor,
+                                topLeft = Offset(rectLeft, rectTop - bob * 0.6f),
+                                size = rectSize,
+                                cornerRadius = rectCorner,
+                            )
+
+                            // Gentle horizon arc
+                            drawLine(
+                                color = horizonColor,
+                                start = horizonStart,
+                                end = horizonEnd,
+                                strokeWidth = horizonStroke,
+                                cap = StrokeCap.Round,
+                            )
+                            drawLine(
+                                color = subHorizonColor,
+                                start = subHorizonStart,
+                                end = subHorizonEnd,
+                                strokeWidth = subHorizonStroke,
+                                cap = StrokeCap.Round,
+                            )
+                        }
+                    },
+            )
         }
         Spacer(Modifier.height(12.dp))
         Text(
@@ -642,7 +698,11 @@ fun TasksEmptyState(
                 .clearAndSetSemantics {},
             contentAlignment = Alignment.Center,
         ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clearAndSetSemantics {},
+            ) {
                 val p = pulsePhase?.value ?: 0f
                 val drift = sin(p) * 2.5.dp.toPx()
                 val cardW = size.width * 0.64f

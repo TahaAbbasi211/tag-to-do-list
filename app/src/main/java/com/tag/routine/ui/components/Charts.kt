@@ -527,6 +527,9 @@ fun TrendSparkline(
     val fullPath = remember { Path() }
     val segmentPath = remember { Path() }
     val pathMeasure = remember { PathMeasure() }
+    val activeIndices = remember(hasDataMask) {
+        hasDataMask.withIndex().filter { it.value }.map { it.index }
+    }
 
     Canvas(
         modifier = modifier
@@ -534,9 +537,7 @@ fun TrendSparkline(
             .clearAndSetSemantics {},
     ) {
         val count = ratios.size
-        if (count < 2) return@Canvas
-        val activeIndices = hasDataMask.withIndex().filter { it.value }.map { it.index }
-        if (activeIndices.size < 2) return@Canvas
+        if (count < 2 || activeIndices.size < 2) return@Canvas
 
         val padY = 6.dp.toPx()
         val usableH = (size.height - padY * 2f).coerceAtLeast(1f)
@@ -1152,7 +1153,12 @@ fun MiniRing(
         }
     }
     val shown = if (level.isOff) target else sweepAnim.value.coerceIn(0f, 1f)
-    Canvas(modifier = modifier.size(size)) {
+    Canvas(
+        modifier = Modifier
+            .clearAndSetSemantics {}
+            .then(modifier)
+            .size(size),
+    ) {
         val strokePx = stroke.toPx()
         val inset = strokePx / 2f
         val arcSize = Size(this.size.width - strokePx, this.size.height - strokePx)
