@@ -3,7 +3,6 @@ package com.tag.routine.ui.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -67,7 +66,8 @@ import com.tag.routine.data.HeatmapCalendar
 import com.tag.routine.data.HeatmapIntensity
 import com.tag.routine.data.WeeklyReportEngine
 import com.tag.routine.ui.accessibility.AccessibilityLabels
-import com.tag.routine.ui.accessibility.rememberReducedMotion
+import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.TagMotion
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
 import kotlinx.coroutines.flow.first
@@ -126,13 +126,15 @@ fun WeekStrip(
                 val isFuture = date.isAfter(today)
                 val ratio = dotFor(date)
                 val hasItems = hasItemsFor(date)
+                val level = LocalAnimationLevel.current
+                val colorSpec = if (level.isOff) TagMotion.instantTween<Color>(0) else TagMotion.quickTween()
                 val container by animateColorAsState(
                     targetValue = when {
                         isSelected -> MaterialTheme.colorScheme.primary
                         isToday -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
                         else -> MaterialTheme.colorScheme.surfaceContainer
                     },
-                    animationSpec = tween(220),
+                    animationSpec = colorSpec,
                     label = "week-bg",
                 )
                 val contentColor by animateColorAsState(
@@ -142,7 +144,7 @@ fun WeekStrip(
                         isToday -> MaterialTheme.colorScheme.primary
                         else -> MaterialTheme.colorScheme.onSurfaceVariant
                     },
-                    animationSpec = tween(220),
+                    animationSpec = colorSpec,
                     label = "week-fg",
                 )
                 Column(
@@ -224,14 +226,21 @@ fun WeeklyBarChart(
     val useHorizontalScroll = fontScale > 1.25f
     val trackHeight = (barHeight - 34.dp).coerceAtLeast(64.dp)
     val data = stats.takeLast(7)
-    val reducedMotion = rememberReducedMotion()
+    val level = LocalAnimationLevel.current
     val reveal = remember { Animatable(0f) }
-    LaunchedEffect(data.map { it.ratio to it.date }) {
-        if (reducedMotion) {
+    LaunchedEffect(data.map { it.ratio to it.date }, level) {
+        if (level.isOff) {
             reveal.snapTo(1f)
         } else {
             reveal.snapTo(0f)
-            reveal.animateTo(1f, tween(650))
+            reveal.animateTo(
+                1f,
+                if (level == com.tag.routine.ui.motion.AnimationLevel.FULL) {
+                    TagMotion.emphasizedTween()
+                } else {
+                    TagMotion.quickTween()
+                },
+            )
         }
     }
 
@@ -791,13 +800,13 @@ fun MiniRing(
     stroke: androidx.compose.ui.unit.Dp = 4.dp,
     color: Color = MaterialTheme.colorScheme.primary,
 ) {
-    val reducedMotion = rememberReducedMotion()
+    val level = LocalAnimationLevel.current
     val animated by animateFloatAsState(
         targetValue = progress.coerceIn(0f, 1f),
-        animationSpec = tween(600),
+        animationSpec = if (level.allowsMotion) TagMotion.emphasizedTween() else TagMotion.instantTween(0),
         label = "mini-ring",
     )
-    val shown = if (reducedMotion) progress.coerceIn(0f, 1f) else animated
+    val shown = if (level.isOff) progress.coerceIn(0f, 1f) else animated
     Canvas(modifier = modifier.size(size)) {
         val strokePx = stroke.toPx()
         val inset = strokePx / 2f

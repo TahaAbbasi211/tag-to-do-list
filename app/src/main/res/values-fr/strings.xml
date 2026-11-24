@@ -440,4 +440,14 @@
     <string name="a11y_chart_summary">Taux d\'achèvement des sept derniers jours : %1$s</string>
     <string name="a11y_no_data">Aucune donnée</string>
     <string name="a11y_focus_remaining">Temps restant</string>
+
+    <!-- Living UI & Motion (v2.0) -->
+    <string name="settings_animation_level">Niveau d\'animation</string>
+    <string name="settings_animation_level_sub">Contrôler les mouvements, particules et effets d\'ambiance</string>
+    <string name="animation_level_auto">Auto</string>
+    <string name="animation_level_full">Complet</string>
+    <string name="animation_level_reduced">Réduit</string>
+    <string name="animation_level_off">Désactivé</string>
+    <string name="today_all_done_celebration">Tout est terminé pour aujourd\'hui !</string>
+    <string name="streak_milestone_banner">Cap des %1$d jours atteint ! Continuez ainsi !</string>
 </resources>

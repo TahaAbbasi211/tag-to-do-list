@@ -440,4 +440,14 @@
     <string name="a11y_chart_summary">درصد تکمیل هفت روز گذشته: %1$s</string>
     <string name="a11y_no_data">بدون داده</string>
     <string name="a11y_focus_remaining">زمان باقی‌مانده</string>
+
+    <!-- Living UI & Motion (v2.0) -->
+    <string name="settings_animation_level">سطح انیمیشن</string>
+    <string name="settings_animation_level_sub">کنترل حرکت، ذرات و افکت‌های محیطی</string>
+    <string name="animation_level_auto">خودکار</string>
+    <string name="animation_level_full">کامل</string>
+    <string name="animation_level_reduced">کم</string>
+    <string name="animation_level_off">خاموش</string>
+    <string name="today_all_done_celebration">همه انجام شد!</string>
+    <string name="streak_milestone_banner">نقطه عطف زنجیره %1$d روزه! عالی پیش می‌ری!</string>
 </resources>

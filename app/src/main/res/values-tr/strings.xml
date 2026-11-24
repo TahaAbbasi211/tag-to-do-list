@@ -440,4 +440,14 @@
     <string name="a11y_chart_summary">Son yedi günün günlük tamamlanma oranı: %1$s</string>
     <string name="a11y_no_data">Veri yok</string>
     <string name="a11y_focus_remaining">Kalan süre</string>
+
+    <!-- Living UI & Motion (v2.0) -->
+    <string name="settings_animation_level">Animasyon düzeyi</string>
+    <string name="settings_animation_level_sub">Hareket, parçacık ve ortam efektlerini yönetin</string>
+    <string name="animation_level_auto">Otomatik</string>
+    <string name="animation_level_full">Tam</string>
+    <string name="animation_level_reduced">Azaltılmış</string>
+    <string name="animation_level_off">Kapalı</string>
+    <string name="today_all_done_celebration">Bugün için her şey tamam!</string>
+    <string name="streak_milestone_banner">%1$d günlük seri dönüm noktası! Devam et!</string>
 </resources>

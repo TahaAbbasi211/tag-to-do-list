@@ -1,21 +1,11 @@
 package com.tag.routine.ui.components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -55,10 +45,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -68,7 +58,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tag.routine.data.Dates
-import com.tag.routine.ui.accessibility.rememberReducedMotion
+import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.TagMotion
+import com.tag.routine.ui.motion.breathing
+import com.tag.routine.ui.motion.pressScale
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
 import java.util.Locale
@@ -94,16 +87,10 @@ fun AppCard(
 ) {
     if (onClick != null) {
         val interactionSource = remember { MutableInteractionSource() }
-        val isPressed by interactionSource.collectIsPressedAsState()
-        val scale by animateFloatAsState(
-            targetValue = if (isPressed) 0.985f else 1f,
-            animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-            label = "card-press",
-        )
 
         Card(
             onClick = onClick,
-            modifier = modifier.scale(scale),
+            modifier = modifier.pressScale(pressedScale = 0.985f, interactionSource = interactionSource),
             shape = shape,
             colors = CardDefaults.cardColors(
                 containerColor = containerColor,
@@ -239,11 +226,10 @@ fun AppButton(
     shape: Shape = MaterialTheme.shapes.medium,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val pressScale by animateFloatAsState(
-        targetValue = if (isPressed && enabled && !loading) 0.96f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "btn-press",
+    val scaleMod = Modifier.pressScale(
+        enabled = enabled && !loading,
+        pressedScale = 0.96f,
+        interactionSource = interactionSource,
     )
 
     val contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
@@ -282,7 +268,7 @@ fun AppButton(
         AppButtonVariant.Primary -> {
             Button(
                 onClick = onClick,
-                modifier = modifier.scale(pressScale),
+                modifier = modifier.then(scaleMod),
                 enabled = enabled && !loading,
                 shape = shape,
                 contentPadding = contentPadding,
@@ -296,7 +282,7 @@ fun AppButton(
         AppButtonVariant.Secondary -> {
             OutlinedButton(
                 onClick = onClick,
-                modifier = modifier.scale(pressScale),
+                modifier = modifier.then(scaleMod),
                 enabled = enabled && !loading,
                 shape = shape,
                 contentPadding = contentPadding,
@@ -310,7 +296,7 @@ fun AppButton(
         AppButtonVariant.Tonal -> {
             Button(
                 onClick = onClick,
-                modifier = modifier.scale(pressScale),
+                modifier = modifier.then(scaleMod),
                 enabled = enabled && !loading,
                 shape = shape,
                 contentPadding = contentPadding,
@@ -324,7 +310,7 @@ fun AppButton(
         AppButtonVariant.Text -> {
             TextButton(
                 onClick = onClick,
-                modifier = modifier.scale(pressScale),
+                modifier = modifier.then(scaleMod),
                 enabled = enabled && !loading,
                 shape = shape,
                 contentPadding = contentPadding,
@@ -357,14 +343,16 @@ fun AppChip(
     shape: Shape = RoundedCornerShape(percent = 50),
 ) {
     val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val level = LocalAnimationLevel.current
+    val chipSpec = if (level.isOff) TagMotion.instantTween<Color>(0) else TagMotion.quickTween()
     val animatedBg by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
-        animationSpec = tween(220),
+        animationSpec = chipSpec,
         label = "chip-bg",
     )
     val animatedContent by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-        animationSpec = tween(220),
+        animationSpec = chipSpec,
         label = "chip-content",
     )
 
@@ -428,36 +416,6 @@ fun EmptyState(
     modifier: Modifier = Modifier,
     action: (@Composable () -> Unit)? = null,
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "empty-pulse")
-    val reducedMotion = rememberReducedMotion()
-    val pulseScale: Float
-    val pulseAlpha: Float
-    if (reducedMotion) {
-        pulseScale = 1f
-        pulseAlpha = 1f
-    } else {
-        val scaleAnim by infiniteTransition.animateFloat(
-            initialValue = 0.96f,
-            targetValue = 1.04f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1800, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse,
-            ),
-            label = "empty-pulse-scale",
-        )
-        val alphaAnim by infiniteTransition.animateFloat(
-            initialValue = 0.75f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1800, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse,
-            ),
-            label = "empty-pulse-alpha",
-        )
-        pulseScale = scaleAnim
-        pulseAlpha = alphaAnim
-    }
-
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -467,14 +425,13 @@ fun EmptyState(
         Box(
             modifier = Modifier
                 .size(72.dp)
-                .scale(pulseScale)
+                .breathing(minScale = 0.96f, maxScale = 1.04f, minAlpha = 0.78f, maxAlpha = 1f)
                 .clip(RoundedCornerShape(24.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)),
+                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f))
+                .clearAndSetSemantics {},
             contentAlignment = Alignment.Center,
         ) {
-            Box(Modifier.graphicsLayer { alpha = pulseAlpha }) {
-                icon()
-            }
+            icon()
         }
         Spacer(Modifier.height(18.dp))
         Text(
@@ -598,20 +555,21 @@ fun <T> AppBottomNav(
         ) {
             items.forEach { item ->
                 val selected = current == item.value
+                val level = LocalAnimationLevel.current
 
                 val animatedBg by animateColorAsState(
                     targetValue = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.16f) else Color.Transparent,
-                    animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                    animationSpec = if (level.isOff) TagMotion.instantTween(0) else TagMotion.snappySpring(),
                     label = "nav-bg",
                 )
                 val animatedTint by animateColorAsState(
                     targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    animationSpec = tween(200),
+                    animationSpec = if (level.isOff) TagMotion.instantTween(0) else TagMotion.quickTween(),
                     label = "nav-tint",
                 )
                 val iconScale by animateFloatAsState(
-                    targetValue = if (selected) 1.08f else 1f,
-                    animationSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioMediumBouncy),
+                    targetValue = if (selected && level.allowsMotion) 1.08f else 1f,
+                    animationSpec = if (level.isOff) TagMotion.instantTween(0) else TagMotion.bouncySpring(),
                     label = "nav-scale",
                 )
 

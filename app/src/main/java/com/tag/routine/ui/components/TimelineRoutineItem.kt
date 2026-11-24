@@ -1,7 +1,6 @@
 package com.tag.routine.ui.components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -51,6 +50,8 @@ import androidx.compose.ui.unit.sp
 import com.tag.routine.data.AppSettings
 import com.tag.routine.data.RoutineColors
 import com.tag.routine.ui.accessibility.AccessibilityLabels
+import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.TagMotion
 import com.tag.routine.ui.theme.TagTheme
 
 /**
@@ -102,9 +103,11 @@ fun TimelineRoutineItem(
         null
     }
 
+    val level = LocalAnimationLevel.current
+    val colorSpec = if (level.isOff) TagMotion.instantTween<Color>(0) else TagMotion.quickTween()
     val circleFill by animateColorAsState(
         targetValue = if (done) lerp(accentColor, surfaceColor, if (isDark) 0.25f else 0.15f) else accentColor,
-        animationSpec = tween(durationMillis = 220),
+        animationSpec = colorSpec,
         label = "timeline-circle-fill",
     )
     val titleColor by animateColorAsState(
@@ -113,7 +116,7 @@ fun TimelineRoutineItem(
         } else {
             MaterialTheme.colorScheme.onSurface
         },
-        animationSpec = tween(durationMillis = 220),
+        animationSpec = colorSpec,
         label = "timeline-title-color",
     )
 

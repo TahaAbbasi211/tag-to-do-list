@@ -1,22 +1,10 @@
 package com.tag.routine.ui.components
 
-import android.os.Build
-import android.view.HapticFeedbackConstants
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
@@ -56,16 +43,15 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
@@ -77,7 +63,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tag.routine.R
-import com.tag.routine.ui.accessibility.rememberReducedMotion
+import com.tag.routine.ui.motion.CheckDraw
+import com.tag.routine.ui.motion.ConfettiBurst
+import com.tag.routine.ui.motion.HapticKind
+import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.TagMotion
+import com.tag.routine.ui.motion.breathing
+import com.tag.routine.ui.motion.floatY
+import com.tag.routine.ui.motion.rememberTagHaptics
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
 import kotlin.math.abs
@@ -188,13 +181,13 @@ fun ProgressRing(
     val resolvedStart = startColor ?: brand.ringStart
     val resolvedEnd = endColor ?: brand.ringEnd
     val target = progress.coerceIn(0f, 1f)
-    val reducedMotion = rememberReducedMotion()
+    val level = LocalAnimationLevel.current
     val animated by animateFloatAsState(
         targetValue = target,
-        animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
+        animationSpec = if (level.allowsMotion) TagMotion.gentleSpring() else TagMotion.instantTween(),
         label = "progress-ring",
     )
-    val sweep = if (animate && !reducedMotion) animated else target
+    val sweep = if (animate && level.allowsMotion) animated else target
 
     Canvas(
         modifier = modifier.semantics {
@@ -305,66 +298,51 @@ fun AnimatedCheck(
     contentDescription: String? = null,
     stateDescription: String? = null,
 ) {
-    val reducedMotion = rememberReducedMotion()
+    val level = LocalAnimationLevel.current
+    val haptics = rememberTagHaptics()
     val scale = remember { Animatable(1f) }
-    LaunchedEffect(checked) {
-        if (reducedMotion || !checked) {
+    LaunchedEffect(checked, level) {
+        if (level.isOff || !checked) {
             scale.snapTo(1f)
         } else {
-            scale.animateTo(1.22f, animationSpec = tween(durationMillis = 110, easing = FastOutSlowInEasing))
-            scale.animateTo(
-                1f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessMedium,
-                ),
-            )
+            scale.animateTo(1.22f, animationSpec = TagMotion.instantTween())
+            scale.animateTo(1f, animationSpec = TagMotion.bouncySpring())
         }
     }
 
     val fill = remember { Animatable(if (checked) 1f else 0f) }
-    LaunchedEffect(checked) {
-        if (reducedMotion) {
+    LaunchedEffect(checked, level) {
+        if (level.isOff) {
             fill.snapTo(if (checked) 1f else 0f)
         } else {
             fill.animateTo(
                 targetValue = if (checked) 1f else 0f,
-                animationSpec = spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessMediumLow),
+                animationSpec = TagMotion.bouncySpring(),
             )
         }
     }
 
-    val view = LocalView.current
     val border = MaterialTheme.colorScheme.outline
     val schemeSurface = MaterialTheme.colorScheme.surfaceContainerHigh
 
+    val colorSpec = if (level.isOff) TagMotion.instantTween<Color>(0) else TagMotion.quickTween()
     val animBorderColor by animateColorAsState(
         targetValue = if (checked) accent else border,
-        animationSpec = tween(durationMillis = 200),
+        animationSpec = colorSpec,
         label = "check-border",
     )
     val animBgColor by animateColorAsState(
         targetValue = if (checked) accent else schemeSurface,
-        animationSpec = tween(durationMillis = 200),
+        animationSpec = colorSpec,
         label = "check-bg",
     )
-
-    fun performHaptic() {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-            } else {
-                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            }
-        } catch (_: Exception) {}
-    }
 
     Box(
         modifier = modifier
             .minimumInteractiveComponentSize()
             .clip(RoundedCornerShape(percent = 50))
             .clickable {
-                performHaptic()
+                haptics(HapticKind.CONFIRM)
                 onClick()
             }
             .semantics {
@@ -373,181 +351,64 @@ fun AnimatedCheck(
             },
         contentAlignment = Alignment.Center,
     ) {
-        Canvas(
+        Box(
             modifier = Modifier
                 .size(size)
-                .scale(scale.value)
+                .graphicsLayer {
+                    val s = scale.value
+                    scaleX = s
+                    scaleY = s
+                }
                 .clip(RoundedCornerShape(percent = 50)),
+            contentAlignment = Alignment.Center,
         ) {
-        val value = fill.value
-        val radius = this.size.minDimension / 2f
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val value = fill.value.coerceIn(0f, 1.15f)
+                val radius = this.size.minDimension / 2f
 
-        if (value <= 0.01f) {
-            drawCircle(color = animBgColor, radius = radius)
-            drawCircle(
-                color = animBorderColor,
-                radius = radius - 1.dp.toPx(),
-                style = Stroke(width = 1.6.dp.toPx()),
-            )
-        } else {
-            drawCircle(color = accent.copy(alpha = 0.16f + 0.2f * value), radius = radius)
-            drawCircle(color = animBgColor, radius = radius * value.coerceAtLeast(0.55f))
-        }
+                if (value <= 0.01f) {
+                    drawCircle(color = animBgColor, radius = radius)
+                    drawCircle(
+                        color = animBorderColor,
+                        radius = radius - 1.dp.toPx(),
+                        style = Stroke(width = 1.6.dp.toPx()),
+                    )
+                } else {
+                    drawCircle(color = accent.copy(alpha = 0.16f + 0.2f * value.coerceAtMost(1f)), radius = radius)
+                    drawCircle(color = animBgColor, radius = radius * value.coerceIn(0.55f, 1f))
+                }
+            }
 
-        // Tick: revealed by progress so it draws itself on.
-        val w = this.size.width
-        val h = this.size.height
-        val tick = Path().apply {
-            moveTo(w * 0.29f, h * 0.53f)
-            lineTo(w * 0.44f, h * 0.68f)
-            lineTo(w * 0.72f, h * 0.35f)
-        }
-        if (value > 0.2f) {
-            val reveal = ((value - 0.2f) / 0.8f).coerceIn(0f, 1f)
-            drawPath(
-                path = tick,
+            CheckDraw(
+                progressProvider = { ((fill.value - 0.18f) / 0.82f).coerceIn(0f, 1f) },
+                modifier = Modifier.fillMaxSize(),
                 color = Color.White,
-                style = Stroke(
-                    width = 2.4.dp.toPx(),
-                    cap = StrokeCap.Round,
-                ),
-                alpha = reveal,
+                strokeWidth = 2.4.dp,
             )
-        }
         }
     }
 }
 
-private data class ConfettiParticle(
-    val startX: Float,
-    val startY: Float,
-    val vx: Float,
-    val vy: Float,
-    val size: Float,
-    val rotationSpeed: Float,
-    val color: Color,
-    val isCircle: Boolean,
-)
-
 /**
  * Pure Canvas celebratory confetti explosion when reaching 100% progress.
- * Built with zero external dependencies.
+ * Built with zero external dependencies and deterministic seeded particles.
  */
 @Composable
 fun ConfettiEffect(
     trigger: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    if (!trigger) return
-    // Respect the system "remove animations" setting: no confetti motion at all.
-    if (rememberReducedMotion()) return
-
-    val anim = remember { Animatable(0f) }
-    LaunchedEffect(trigger) {
-        anim.snapTo(0f)
-        anim.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis = 2400, easing = LinearOutSlowInEasing),
-        )
-    }
-
-    val particles = remember {
-        val palette = listOf(
-            Color(0xFFFFD700), // Gold
-            Color(0xFFFF6B6B), // Coral
-            Color(0xFF4FD9C0), // Mint / Teal
-            Color(0xFFA78BFA), // Purple
-            Color(0xFF60A5FA), // Sky Blue
-            Color(0xFFF472B6), // Pink
-            Color(0xFFF59E0B), // Amber
-            Color(0xFF34D399), // Emerald
-        )
-        List(55) { index ->
-            val random = java.util.Random(index.toLong() * 37L + 23L)
-            val angle = random.nextFloat() * 2f * Math.PI.toFloat()
-            val speed = 200f + random.nextFloat() * 480f
-            ConfettiParticle(
-                startX = 0.25f + random.nextFloat() * 0.5f,
-                startY = 0.12f + random.nextFloat() * 0.08f,
-                vx = kotlin.math.cos(angle) * speed,
-                vy = kotlin.math.sin(angle) * speed - 180f,
-                size = 12f + random.nextFloat() * 16f,
-                rotationSpeed = (random.nextFloat() - 0.5f) * 14f,
-                color = palette[index % palette.size],
-                isCircle = index % 3 == 0,
-            )
-        }
-    }
-
-    if (anim.value < 1f) {
-        Canvas(modifier = modifier.fillMaxSize()) {
-            val t = anim.value
-            val gravity = 650f
-            val alpha = (1f - (t * 1.15f).coerceIn(0f, 1f))
-
-            particles.forEach { p ->
-                val x = (p.startX * size.width) + p.vx * t
-                val y = (p.startY * size.height) + p.vy * t + 0.5f * gravity * t * t
-                val rot = p.rotationSpeed * t * 360f
-
-                rotate(rot, pivot = Offset(x, y)) {
-                    if (p.isCircle) {
-                        drawCircle(
-                            color = p.color.copy(alpha = alpha),
-                            radius = p.size / 2f,
-                            center = Offset(x, y),
-                        )
-                    } else {
-                        drawRect(
-                            color = p.color.copy(alpha = alpha),
-                            topLeft = Offset(x - p.size / 2f, y - p.size / 3f),
-                            size = Size(p.size, p.size * 0.65f),
-                        )
-                    }
-                }
-            }
-        }
-    }
+    ConfettiBurst(trigger = trigger, modifier = modifier)
 }
 
 /**
- * Warm and friendly empty state for the Today screen with a large pulsing icon.
+ * Warm and friendly empty state for the Today screen with a large floating/breathing icon.
  * Removes the old "+" button in the center so only the FAB remains.
  */
 @Composable
 fun TodayEmptyState(
     modifier: Modifier = Modifier,
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val reducedMotion = rememberReducedMotion()
-    val pulseScale: Float
-    val pulseAlpha: Float
-    if (reducedMotion) {
-        pulseScale = 1f
-        pulseAlpha = 1f
-    } else {
-        val scaleAnim by infiniteTransition.animateFloat(
-            initialValue = 0.94f,
-            targetValue = 1.06f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1500, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse,
-            ),
-            label = "pulseScale",
-        )
-        val alphaAnim by infiniteTransition.animateFloat(
-            initialValue = 0.7f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1500, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse,
-            ),
-            label = "pulseAlpha",
-        )
-        pulseScale = scaleAnim
-        pulseAlpha = alphaAnim
-    }
-
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -557,18 +418,18 @@ fun TodayEmptyState(
         Box(
             modifier = Modifier
                 .size(96.dp)
-                .scale(pulseScale)
+                .breathing(minScale = 0.95f, maxScale = 1.05f, minAlpha = 0.82f, maxAlpha = 1f)
+                .floatY(amplitudeDp = 4.dp)
                 .clip(RoundedCornerShape(30.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.75f)),
+                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.75f))
+                .clearAndSetSemantics {},
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = Icons.Rounded.AutoAwesome,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(48.dp)
-                    .graphicsLayer { alpha = pulseAlpha },
+                modifier = Modifier.size(48.dp),
             )
         }
         Spacer(Modifier.height(20.dp))
@@ -654,13 +515,13 @@ fun ThinProgressBar(
     track: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
     height: Dp = 8.dp,
 ) {
-    val reducedMotion = rememberReducedMotion()
+    val level = LocalAnimationLevel.current
     val animated by animateFloatAsState(
         targetValue = progress.coerceIn(0f, 1f),
-        animationSpec = tween(600),
+        animationSpec = if (level.allowsMotion) TagMotion.emphasizedTween() else TagMotion.instantTween(),
         label = "thin-bar",
     )
-    val barProgress = if (reducedMotion) progress.coerceIn(0f, 1f) else animated
+    val barProgress = if (level.isOff) progress.coerceIn(0f, 1f) else animated
     Box(
         modifier = modifier
             .height(height)

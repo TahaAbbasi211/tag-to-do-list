@@ -2,7 +2,6 @@ package com.tag.routine.ui.screens
 
 import android.os.Build
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -75,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import android.net.Uri
 import com.tag.routine.BuildConfig
 import com.tag.routine.R
+import com.tag.routine.data.AnimationSetting
 import com.tag.routine.data.AppConstants
 import com.tag.routine.data.AppSettings
 import com.tag.routine.data.CalendarType
@@ -92,6 +92,11 @@ import com.tag.routine.ui.components.rememberBackupExportLauncher
 import com.tag.routine.ui.components.rememberBackupImportLauncher
 import com.tag.routine.ui.i18n.AppLanguage
 import com.tag.routine.ui.i18n.LocalizedAlertDialog
+import com.tag.routine.ui.motion.HapticKind
+import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.TagMotion
+import com.tag.routine.ui.motion.pressScale
+import com.tag.routine.ui.motion.rememberTagHaptics
 import com.tag.routine.ui.theme.PaletteDef
 import com.tag.routine.ui.theme.spacing
 import java.util.Locale
@@ -103,6 +108,7 @@ fun SettingsScreen(
     onThemeMode: (Int) -> Unit,
     onThemePalette: (String) -> Unit,
     onDynamicColor: (Boolean) -> Unit = {},
+    onAnimationSetting: (AnimationSetting) -> Unit = {},
     onCalendarType: (CalendarType) -> Unit = {},
     onNotifications: (Boolean) -> Unit,
     onDigest: (Boolean) -> Unit,
@@ -238,6 +244,27 @@ fun SettingsScreen(
                     onSelect = onThemePalette,
                 )
             }
+            Spacer(Modifier.height(spacing.md))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+            Spacer(Modifier.height(spacing.md))
+            Text(
+                text = stringResource(R.string.settings_animation_level),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = stringResource(R.string.settings_animation_level_sub),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(spacing.sm))
+            AnimationLevelSelector(
+                current = settings.animationSetting,
+                stackVertically = stackInputRow,
+                onSelect = onAnimationSetting,
+            )
         }
 
         // 3. Languages
@@ -719,6 +746,43 @@ private fun CalendarTypeSelector(
 }
 
 @Composable
+private fun AnimationLevelSelector(
+    current: AnimationSetting,
+    stackVertically: Boolean,
+    onSelect: (AnimationSetting) -> Unit,
+) {
+    val options = listOf(
+        AnimationSetting.AUTO to stringResource(R.string.animation_level_auto),
+        AnimationSetting.FULL to stringResource(R.string.animation_level_full),
+        AnimationSetting.REDUCED to stringResource(R.string.animation_level_reduced),
+        AnimationSetting.OFF to stringResource(R.string.animation_level_off),
+    )
+    if (stackVertically) {
+        SegmentedOptionRow(
+            options = options,
+            current = current,
+            stackVertically = true,
+            onSelect = onSelect,
+        )
+    } else {
+        Column(verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)) {
+            SegmentedOptionRow(
+                options = options.take(2),
+                current = current,
+                stackVertically = false,
+                onSelect = onSelect,
+            )
+            SegmentedOptionRow(
+                options = options.drop(2),
+                current = current,
+                stackVertically = false,
+                onSelect = onSelect,
+            )
+        }
+    }
+}
+
+@Composable
 private fun <T> SegmentedOptionRow(
     options: List<Pair<T, String>>,
     current: T,
@@ -726,24 +790,30 @@ private fun <T> SegmentedOptionRow(
     onSelect: (T) -> Unit,
 ) {
     val spacing = MaterialTheme.spacing
+    val level = LocalAnimationLevel.current
+    val haptics = rememberTagHaptics()
+    val colorSpec = if (level.isOff) TagMotion.instantTween<Color>(0) else TagMotion.quickTween()
     val renderOption: @Composable (Modifier, T, String) -> Unit = { itemModifier, value, label ->
         val selected = current == value
         val bg by animateColorAsState(
             targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
-            animationSpec = tween(220),
+            animationSpec = colorSpec,
             label = "seg-bg",
         )
         val fg by animateColorAsState(
             targetValue = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-            animationSpec = tween(220),
+            animationSpec = colorSpec,
             label = "seg-fg",
         )
         Surface(
-            modifier = itemModifier,
+            modifier = itemModifier.pressScale(),
             shape = MaterialTheme.shapes.small,
             color = bg,
             border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
-            onClick = { onSelect(value) },
+            onClick = {
+                haptics(HapticKind.TICK)
+                onSelect(value)
+            },
         ) {
             Box(
                 modifier = (if (stackVertically) Modifier.fillMaxWidth() else Modifier.fillMaxSize())

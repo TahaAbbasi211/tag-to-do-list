@@ -138,6 +138,7 @@ class BackupManagerTest {
             onboarded = true,
             focusMinutes = 45,
             templatesCardDismissed = true,
+            animationSetting = AnimationSetting.REDUCED,
         )
         return Snapshot(
             routines = routines,
@@ -528,6 +529,47 @@ class BackupManagerTest {
         assertNull(preview.exportedAt)
         assertNull(preview.dateRangeStart)
         assertNull(preview.dateRangeEnd)
+    }
+
+    @Test
+    fun `reads v1_9 formatVersion 3 settings missing animationSetting and defaults to AUTO`() {
+        val v19Json = """
+            {
+              "app": "Tag",
+              "formatVersion": 3,
+              "appVersion": "1.9",
+              "appVersionCode": 19,
+              "exportedAt": 1763640000000,
+              "routines": [],
+              "tasks": [],
+              "tags": [],
+              "routineLogs": [],
+              "taskLogs": [],
+              "focusSessions": [],
+              "settings": {
+                "themeMode": 2,
+                "themePalette": "teal",
+                "dynamicColor": true,
+                "language": "fa",
+                "calendarType": "jalali",
+                "userName": "Taha",
+                "notificationsEnabled": true,
+                "dailyDigestEnabled": false,
+                "dailyDigestMinutes": 540,
+                "hapticsEnabled": false,
+                "focusMinutes": 30,
+                "templatesCardDismissed": true
+              }
+            }
+        """.trimIndent()
+
+        val payload = BackupCodec.parseAndValidate(v19Json)
+        val settings = payload.settings
+        assertNotNull(settings)
+        assertEquals(AnimationSetting.AUTO, settings!!.animationSetting)
+        assertEquals("teal", settings.themePalette)
+        assertEquals(CalendarType.JALALI, settings.calendarType)
+        assertFalse(settings.hapticsEnabled)
     }
 
     // ---------------------------------------------------------------- round-trip

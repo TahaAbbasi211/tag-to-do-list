@@ -21,7 +21,16 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.tag.routine.data.AnimationSetting
 import com.tag.routine.data.AppSettings
+import com.tag.routine.ui.motion.DayPhase
+import com.tag.routine.ui.motion.DayPhaseColors
+import com.tag.routine.ui.motion.LocalAmbientAnimationsActive
+import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.LocalHapticsEnabled
+import com.tag.routine.ui.motion.rememberIsLifecycleResumed
+import com.tag.routine.ui.motion.rememberResolvedAnimationLevel
+import java.time.LocalTime
 
 // ------------------------------------------------------------------ palette definitions
 
@@ -163,30 +172,29 @@ private fun lightScheme(def: PaletteDef.Def): ColorScheme =
 
 // ------------------------------------------------------------------ brand & dynamic adapter
 
-private fun ensureDarkHeroStop(color: Color, maxLuminance: Float = 0.085f): Color {
-    var result = color
-    var step = 0
-    while (result.luminance() > maxLuminance && step < 12) {
-        result = lerp(result, Color(0xFF0B1020), 0.25f)
-        step++
-    }
-    return result
-}
-
-private fun brandFor(def: PaletteDef.Def, dark: Boolean, dynamicScheme: ColorScheme? = null): TagBrand {
+private fun brandFor(
+    def: PaletteDef.Def,
+    dark: Boolean,
+    dayPhase: DayPhase = DayPhase.NOON,
+    dynamicScheme: ColorScheme? = null,
+): TagBrand {
     val primary = dynamicScheme?.primary ?: (if (dark) def.primary else def.primaryDeep)
     val secondary = dynamicScheme?.secondary ?: (if (dark) def.secondary else def.secondaryDeep)
     val tertiary = dynamicScheme?.tertiary ?: def.tertiary
 
-    val heroBase = Color(0xFF0E1426)
-    val heroStart = ensureDarkHeroStop(lerp(primary, heroBase, if (dark) 0.56f else 0.42f))
-    val heroMid = ensureDarkHeroStop(lerp(primary, heroBase, if (dark) 0.46f else 0.34f))
-    val heroEnd = ensureDarkHeroStop(lerp(secondary, Color(0xFF0A1D2C), if (dark) 0.62f else 0.48f))
+    val phaseTints = DayPhaseColors.compute(
+        phase = dayPhase,
+        primary = primary,
+        secondary = secondary,
+        tertiary = tertiary,
+        dark = dark,
+        isDynamic = dynamicScheme != null,
+    )
 
     return TagBrand(
-        heroStart = heroStart,
-        heroMid = heroMid,
-        heroEnd = heroEnd,
+        heroStart = phaseTints.heroStart,
+        heroMid = phaseTints.heroMid,
+        heroEnd = phaseTints.heroEnd,
         ringStart = lerp(primary, Color.White, 0.45f),
         ringEnd = lerp(secondary, Color.White, 0.28f),
         streak = tertiary,
@@ -201,6 +209,7 @@ private fun brandFor(def: PaletteDef.Def, dark: Boolean, dynamicScheme: ColorSch
         onHeroMuted = Color(0xFFE2E8F0),
         cardBorder = if (dark) Color(0x1FFFFFFF) else Color(0x1A0F172A),
         isDark = dark,
+        auroraColors = phaseTints.auroraColors,
     )
 }
 
@@ -231,6 +240,9 @@ fun TagTheme(
     themeMode: Int = AppSettings.ThemeMode.SYSTEM,
     paletteKey: String = AppSettings.Palettes.VIOLET,
     dynamicColor: Boolean = false,
+    animationSetting: AnimationSetting = AnimationSetting.AUTO,
+    hapticsEnabled: Boolean = true,
+    dayPhase: DayPhase = DayPhase.of(LocalTime.now().hour),
     content: @Composable () -> Unit,
 ) {
     val dark = when (themeMode) {
@@ -244,7 +256,9 @@ fun TagTheme(
     val scheme = chooseScheme(context, dark, dynamicColor, def)
 
     val dynamicScheme = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) scheme else null
-    val brand = brandFor(def, dark, dynamicScheme)
+    val brand = brandFor(def = def, dark = dark, dayPhase = dayPhase, dynamicScheme = dynamicScheme)
+    val animationLevel = rememberResolvedAnimationLevel(animationSetting)
+    val lifecycleResumed = rememberIsLifecycleResumed()
 
     val view = LocalView.current
     if (!view.isInEditMode) {
@@ -261,6 +275,9 @@ fun TagTheme(
     CompositionLocalProvider(
         LocalTagBrand provides brand,
         LocalAppSpacing provides AppSpacing(),
+        LocalAnimationLevel provides animationLevel,
+        LocalHapticsEnabled provides hapticsEnabled,
+        LocalAmbientAnimationsActive provides (animationLevel.allowsAmbient && lifecycleResumed),
     ) {
         MaterialTheme(
             colorScheme = scheme,

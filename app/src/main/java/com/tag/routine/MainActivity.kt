@@ -111,6 +111,8 @@ class MainActivity : ComponentActivity() {
                     themeMode = state.settings.themeMode,
                     paletteKey = state.settings.themePalette,
                     dynamicColor = state.settings.dynamicColor,
+                    animationSetting = state.settings.animationSetting,
+                    hapticsEnabled = state.settings.hapticsEnabled,
                 ) {
                     // First launch: ask for a name before showing the app itself.
                     // The flag lives in the settings store, so this only ever shows once.
@@ -296,6 +298,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                                 onThemeMode = viewModel::setThemeMode,
                                 onThemePalette = viewModel::setTheme,
                                 onDynamicColor = viewModel::setDynamicColor,
+                                onAnimationSetting = viewModel::setAnimationSetting,
                                 onCalendarType = viewModel::setCalendarType,
                                 onNotifications = viewModel::setNotificationsEnabled,
                                 onDigest = viewModel::setDigestEnabled,

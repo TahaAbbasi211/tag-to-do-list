@@ -440,4 +440,14 @@
     <string name="a11y_chart_summary">Daily completion for the last seven days: %1$s</string>
     <string name="a11y_no_data">No data</string>
     <string name="a11y_focus_remaining">Time remaining</string>
+
+    <!-- Living UI & Motion (v2.0) -->
+    <string name="settings_animation_level">Animation level</string>
+    <string name="settings_animation_level_sub">Control motion, particles, and ambient effects</string>
+    <string name="animation_level_auto">Auto</string>
+    <string name="animation_level_full">Full</string>
+    <string name="animation_level_reduced">Reduced</string>
+    <string name="animation_level_off">Off</string>
+    <string name="today_all_done_celebration">All done for today!</string>
+    <string name="streak_milestone_banner">%1$d-day streak milestone! Keep going!</string>
 </resources>

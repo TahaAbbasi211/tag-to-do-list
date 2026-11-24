@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tag.routine.AppContainer
 import com.tag.routine.BuildConfig
+import com.tag.routine.data.AnimationSetting
 import com.tag.routine.data.AppConstants
 import com.tag.routine.data.AppSettings
 import com.tag.routine.data.BackupCodec
@@ -722,6 +723,10 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun setHaptics(enabled: Boolean) = viewModelScope.launch { repository.setHaptics(enabled) }
+
+    fun setAnimationSetting(setting: AnimationSetting) = viewModelScope.launch {
+        repository.setAnimationSetting(setting)
+    }
 
     /** Stores the default focus length used when the Focus screen opens. */
     fun setFocusMinutes(minutes: Int) = viewModelScope.launch {
