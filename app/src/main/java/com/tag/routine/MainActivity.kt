@@ -1,9 +1,16 @@
 package com.tag.routine
 
 import android.Manifest
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
+import android.view.animation.PathInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -13,6 +20,7 @@ import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -50,6 +58,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -59,6 +68,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -110,7 +120,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Must run before super.onCreate so the splash theme is consumed correctly.
-        installSplashScreen()
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition { !viewModel.state.value.loaded }
+        installLivingSplashExit(splashScreen)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -153,6 +165,66 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         // Ensures widgets catch up on day boundaries or after any skipped background refresh.
         WidgetRefresh.request(applicationContext)
+    }
+
+    /**
+     * Smoothly fades the splash backdrop and scales/lifts the launcher icon upward toward
+     * the Today hero while honoring system reduced-motion settings and API guards.
+     */
+    private fun installLivingSplashExit(splashScreen: SplashScreen) {
+        splashScreen.setOnExitAnimationListener { splashProvider ->
+            val animatorsEnabled = runCatching { ValueAnimator.areAnimatorsEnabled() }.getOrDefault(true)
+            val durationScale = runCatching {
+                Settings.Global.getFloat(
+                    contentResolver,
+                    Settings.Global.ANIMATOR_DURATION_SCALE,
+                    1f,
+                )
+            }.getOrDefault(1f)
+            if (!animatorsEnabled || durationScale <= 0f) {
+                runCatching { splashProvider.remove() }
+                return@setOnExitAnimationListener
+            }
+
+            runCatching {
+                val rootView = splashProvider.view
+                val iconView = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    runCatching { splashProvider.iconView }.getOrNull()
+                } else {
+                    null
+                }
+                val interpolator = PathInterpolator(0.05f, 0.7f, 0.1f, 1f)
+                val heroLiftPx = -resources.displayMetrics.density * 36f
+                val animators = mutableListOf<Animator>(
+                    ObjectAnimator.ofFloat(rootView, View.ALPHA, 1f, 0f),
+                )
+                if (iconView != null) {
+                    animators += ObjectAnimator.ofFloat(iconView, View.SCALE_X, 1f, 1.18f)
+                    animators += ObjectAnimator.ofFloat(iconView, View.SCALE_Y, 1f, 1.18f)
+                    animators += ObjectAnimator.ofFloat(iconView, View.TRANSLATION_Y, 0f, heroLiftPx)
+                    animators += ObjectAnimator.ofFloat(iconView, View.ALPHA, 1f, 0f)
+                }
+                AnimatorSet().apply {
+                    playTogether(animators)
+                    duration = TagMotion.DURATION_STANDARD.toLong()
+                    setInterpolator(interpolator)
+                    addListener(
+                        object : AnimatorListenerAdapter() {
+                            override fun onAnimationEnd(animation: Animator) {
+                                runCatching { splashProvider.remove() }
+                            }
+
+                            override fun onAnimationCancel(animation: Animator) {
+                                runCatching { splashProvider.remove() }
+                            }
+                        },
+                    )
+                    start()
+                }
+            }.onFailure {
+                runCatching { splashProvider.remove() }
+            }
+        }
     }
 }
 
@@ -237,11 +309,40 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
         }
     }
 
+    val entryLevel = LocalAnimationLevel.current
+    val rootEnter = remember { Animatable(if (entryLevel.isOff) 1f else 0f) }
+    LaunchedEffect(Unit) {
+        if (entryLevel.isOff) {
+            rootEnter.snapTo(1f)
+        } else {
+            rootEnter.animateTo(
+                targetValue = 1f,
+                animationSpec = if (entryLevel == AnimationLevel.FULL) {
+                    TagMotion.emphasizedTween()
+                } else {
+                    TagMotion.quickTween()
+                },
+            )
+        }
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    val p = rootEnter.value.coerceIn(0f, 1f)
+                    alpha = p
+                    if (entryLevel == AnimationLevel.FULL) {
+                        val s = 0.975f + 0.025f * p
+                        scaleX = s
+                        scaleY = s
+                    }
+                },
+        ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Box(
                     modifier = Modifier
