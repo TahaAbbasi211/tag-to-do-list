@@ -68,12 +68,14 @@ import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.AppChip
 import com.tag.routine.ui.components.EmptyState
+import com.tag.routine.ui.components.LargeScreenFrame
 import com.tag.routine.ui.components.MetaPill
 import com.tag.routine.ui.components.RingWithLabel
 import com.tag.routine.ui.components.RoutineIconMap
 import com.tag.routine.ui.components.ScreenHeader
 import com.tag.routine.ui.components.SectionHeader
 import com.tag.routine.ui.components.StatTile
+import com.tag.routine.ui.components.StatTilePair
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
 import java.time.ZoneId
@@ -85,6 +87,33 @@ import java.util.Locale
  */
 @Composable
 fun FocusScreen(
+    routines: List<RoutineEntity>,
+    focus: FocusState,
+    stats: FocusStats,
+    defaultMinutes: Int,
+    calendarType: CalendarType = CalendarType.GREGORIAN,
+    onStart: (RoutineEntity, Int) -> Unit,
+    onPause: () -> Unit,
+    onResume: () -> Unit,
+    onFinish: () -> Unit,
+) {
+    LargeScreenFrame {
+        FocusContent(
+            routines = routines,
+            focus = focus,
+            stats = stats,
+            defaultMinutes = defaultMinutes,
+            calendarType = calendarType,
+            onStart = onStart,
+            onPause = onPause,
+            onResume = onResume,
+            onFinish = onFinish,
+        )
+    }
+}
+
+@Composable
+private fun FocusContent(
     routines: List<RoutineEntity>,
     focus: FocusState,
     stats: FocusStats,
@@ -246,6 +275,7 @@ private fun FocusSetupCard(
 ) {
     val spacing = MaterialTheme.spacing
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val fontScale = LocalDensity.current.fontScale
 
     AppCard(
         modifier = Modifier.fillMaxWidth(),
@@ -265,11 +295,15 @@ private fun FocusSetupCard(
             ) {
                 RingWithLabel(
                     progress = 1f,
-                    ringSize = 196.dp,
+                    ringSize = if (fontScale > 1.4f) 244.dp else 196.dp,
                     strokeWidth = 14.dp,
                     trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                     startColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
                     endColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.38f),
+                    contentDescription = Dates.formatDigits(
+                        stringResource(R.string.focus_minutes, effectiveMinutes),
+                        appLocale,
+                    ),
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -432,7 +466,8 @@ private fun RunningSession(
 ) {
     val brand = tagBrand()
     val spacing = MaterialTheme.spacing
-    val stackButtons = LocalDensity.current.fontScale > 1.35f
+    val fontScale = LocalDensity.current.fontScale
+    val stackButtons = fontScale > 1.35f
     val statusColor = if (focus.running) brand.success else brand.warning
 
     AppCard(
@@ -467,8 +502,17 @@ private fun RunningSession(
 
             RingWithLabel(
                 progress = focus.progress,
-                ringSize = 216.dp,
+                ringSize = if (fontScale > 1.4f) 268.dp else 216.dp,
                 strokeWidth = 16.dp,
+                contentDescription = Dates.formatDigits(
+                    stringResource(R.string.a11y_focus_remaining) + " " +
+                        "%02d:%02d".format(
+                            Locale.ROOT,
+                            focus.remainingSeconds / 60,
+                            focus.remainingSeconds % 60,
+                        ),
+                    appLocale,
+                ),
             ) {
                 val mins = focus.remainingSeconds / 60
                 val secs = focus.remainingSeconds % 60
@@ -572,73 +616,46 @@ private fun FocusStatsGrid(stats: FocusStats, appLocale: Locale) {
     val daySuffix = stringResource(R.string.streak_days_short)
 
     Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Max),
-            horizontalArrangement = Arrangement.spacedBy(spacing.md),
-        ) {
+        StatTilePair { tileModifier ->
             StatTile(
                 value = Dates.formatDuration(stats.todayMinutes, resources, appLocale),
                 label = stringResource(R.string.focus_stat_today),
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+                modifier = tileModifier,
                 accent = MaterialTheme.colorScheme.primary,
             )
             StatTile(
                 value = Dates.formatDuration(stats.weekMinutes, resources, appLocale),
                 label = stringResource(R.string.focus_stat_week),
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+                modifier = tileModifier,
                 accent = brand.success,
             )
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Max),
-            horizontalArrangement = Arrangement.spacedBy(spacing.md),
-        ) {
+        StatTilePair { tileModifier ->
             StatTile(
                 value = Dates.formatDigits("${stats.totalSessions}", appLocale),
                 label = stringResource(R.string.focus_stat_sessions),
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+                modifier = tileModifier,
                 accent = MaterialTheme.colorScheme.tertiary,
             )
             StatTile(
                 value = Dates.formatDigits("${stats.streak}", appLocale),
                 label = stringResource(R.string.focus_stat_streak),
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+                modifier = tileModifier,
                 accent = brand.streak,
                 suffix = daySuffix,
             )
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Max),
-            horizontalArrangement = Arrangement.spacedBy(spacing.md),
-        ) {
+        StatTilePair { tileModifier ->
             StatTile(
                 value = Dates.formatDuration(stats.totalMinutes, resources, appLocale),
                 label = stringResource(R.string.focus_stat_total),
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+                modifier = tileModifier,
                 accent = MaterialTheme.colorScheme.secondary,
             )
             StatTile(
                 value = Dates.formatDuration(stats.averageSessionMinutes, resources, appLocale),
                 label = stringResource(R.string.focus_stat_average),
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+                modifier = tileModifier,
                 accent = MaterialTheme.colorScheme.primary,
             )
         }

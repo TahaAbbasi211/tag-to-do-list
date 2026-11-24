@@ -83,6 +83,8 @@ fun TaskEditorSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
+        // Cap the sheet on tablets/landscape so it does not stretch edge to edge.
+        sheetMaxWidth = 640.dp,
     ) {
         // The sheet lives in its own window, which resets LocalContext to the Activity's
         // (system-locale) context. Re-provide the app's language so the editor is not
@@ -131,8 +133,9 @@ fun TaskEditorSheet(
                             fontWeight = FontWeight.Medium,
                         )
                         Spacer(Modifier.height(8.dp))
-                        Row(
+                        FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             FilterPill(
@@ -162,7 +165,10 @@ fun TaskEditorSheet(
                         fontWeight = FontWeight.Medium,
                     )
                     Spacer(Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
                         listOf(
                             Triple(Priorities.LOW, stringResource(R.string.priority_low), Color(0xFF4FD9C0)),
                             Triple(Priorities.NORMAL, stringResource(R.string.priority_medium), Color(0xFFFFB65C)),

@@ -429,5 +429,15 @@
     <string name="widget_preview_counter">3 sur 4 terminé</string>
     <string name="widget_mark_done_action">Marquer comme terminé</string>
     <string name="widget_mark_done_cd">Marquer %1$s comme terminé</string>
+    <!-- Accessibility & large screens (v1.9) -->
+    <string name="cd_clear_search">Effacer la recherche</string>
+    <string name="a11y_status_done">Terminé</string>
+    <string name="a11y_status_not_done">Non terminé</string>
+    <string name="a11y_no_time">Aucune heure</string>
+    <string name="a11y_progress">%1$d%% terminé</string>
+    <string name="a11y_heatmap_cell">%1$s · %2$s terminé (%3$d sur %4$d)</string>
+    <string name="a11y_heatmap_guide">Intensité : plus la case est foncée, plus d\'éléments ont été terminés.</string>
+    <string name="a11y_chart_summary">Taux d\'achèvement des sept derniers jours : %1$s</string>
+    <string name="a11y_no_data">Aucune donnée</string>
+    <string name="a11y_focus_remaining">Temps restant</string>
 </resources>
-

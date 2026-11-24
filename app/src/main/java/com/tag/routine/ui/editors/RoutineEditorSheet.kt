@@ -27,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -118,6 +119,8 @@ fun RoutineEditorSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
+        // Cap the sheet on tablets/landscape so it does not stretch edge to edge.
+        sheetMaxWidth = 640.dp,
     ) {
         // The sheet is hosted in its own window, which replaces LocalContext with the
         // Activity's system-locale context. Re-provide the app language so the editor
@@ -235,8 +238,9 @@ fun RoutineEditorSheet(
                     fontWeight = FontWeight.Medium,
                 )
                 Spacer(Modifier.height(8.dp))
-                Row(
+                FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     groups.forEach { g ->
                         FilterPill(
@@ -265,6 +269,7 @@ fun RoutineEditorSheet(
                         val isSelected = icon == emoji
                         Box(
                             modifier = Modifier
+                                .minimumInteractiveComponentSize()
                                 .size(46.dp)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
@@ -302,6 +307,7 @@ fun RoutineEditorSheet(
                         val resolvedHex = RoutineColors.hexFor(spec.id, isDark)
                         Box(
                             modifier = Modifier
+                                .minimumInteractiveComponentSize()
                                 .size(38.dp)
                                 .clip(CircleShape)
                                 .background(Color(resolvedHex))
@@ -360,7 +366,7 @@ fun RoutineEditorSheet(
                             val selected = (daysMask and option.bit) != 0
                             Box(
                                 modifier = Modifier
-                                    .sizeIn(minWidth = 36.dp, minHeight = 36.dp)
+                                    .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
                                     .clip(RoundedCornerShape(percent = 50))
                                     .background(
                                         if (selected) MaterialTheme.colorScheme.primary

@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -58,11 +59,13 @@ import com.tag.routine.ui.UiState
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.EmptyState
 import com.tag.routine.ui.components.HeatmapGrid
+import com.tag.routine.ui.components.LargeScreenFrame
 import com.tag.routine.ui.components.MiniRing
 import com.tag.routine.ui.components.RingWithLabel
 import com.tag.routine.ui.components.ScreenHeader
 import com.tag.routine.ui.components.SectionHeader
 import com.tag.routine.ui.components.StatTile
+import com.tag.routine.ui.components.StatTilePair
 import com.tag.routine.ui.components.ThinProgressBar
 import com.tag.routine.ui.components.WeeklyBarChart
 import com.tag.routine.ui.theme.spacing
@@ -74,12 +77,20 @@ import kotlin.math.abs
 
 @Composable
 fun InsightsScreen(state: UiState) {
+    LargeScreenFrame {
+        InsightsContent(state)
+    }
+}
+
+@Composable
+private fun InsightsContent(state: UiState) {
     val insights = state.insights
     val focusSummary = state.focusSummary
     val spacing = MaterialTheme.spacing
     val brand = tagBrand()
     val resources = LocalContext.current.resources
     val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val fontScale = LocalDensity.current.fontScale
     val daySuffix = stringResource(R.string.streak_days_short)
 
     val hasAnyInsightsData = insights != null &&
@@ -196,11 +207,15 @@ fun InsightsScreen(state: UiState) {
                     Spacer(Modifier.height(spacing.lg))
                     RingWithLabel(
                         progress = (insights.weeklyConsistency / 100f).coerceIn(0f, 1f),
-                        ringSize = 136.dp,
+                        ringSize = if (fontScale > 1.4f) 200.dp else 136.dp,
                         strokeWidth = 12.dp,
                         trackColor = brand.chartTrack,
                         startColor = MaterialTheme.colorScheme.primary,
                         endColor = brand.success,
+                        contentDescription = Dates.formatDigits(
+                            stringResource(R.string.a11y_progress, insights.weeklyConsistency),
+                            appLocale,
+                        ),
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
@@ -226,51 +241,33 @@ fun InsightsScreen(state: UiState) {
         // Key metrics grid (2 balanced columns so large fonts never cramp)
         item {
             Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(IntrinsicSize.Max),
-                    horizontalArrangement = Arrangement.spacedBy(spacing.md),
-                ) {
+                StatTilePair { tileModifier ->
                     StatTile(
                         value = Dates.formatDigits("${insights.currentStreak}", appLocale),
                         label = stringResource(R.string.insights_current_streak),
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
+                        modifier = tileModifier,
                         accent = brand.streak,
                         suffix = daySuffix,
                     )
                     StatTile(
                         value = Dates.formatDigits("${insights.bestStreak}", appLocale),
                         label = stringResource(R.string.insights_best_streak),
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
+                        modifier = tileModifier,
                         accent = MaterialTheme.colorScheme.primary,
                         suffix = daySuffix,
                     )
                 }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(IntrinsicSize.Max),
-                    horizontalArrangement = Arrangement.spacedBy(spacing.md),
-                ) {
+                StatTilePair { tileModifier ->
                     StatTile(
                         value = Dates.formatDigits("${insights.totalCompletions}", appLocale),
                         label = stringResource(R.string.insights_completions),
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
+                        modifier = tileModifier,
                         accent = brand.success,
                     )
                     StatTile(
                         value = Dates.formatDuration(focusSummary.totalMinutes, resources, appLocale),
                         label = stringResource(R.string.insights_focus_time),
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
+                        modifier = tileModifier,
                         accent = MaterialTheme.colorScheme.secondary,
                     )
                 }
@@ -383,19 +380,12 @@ fun InsightsScreen(state: UiState) {
                     Column(modifier = Modifier.padding(spacing.lg)) {
                         SectionHeader(title = stringResource(R.string.insights_streak_forecast))
                         Spacer(Modifier.height(spacing.md))
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Max),
-                            horizontalArrangement = Arrangement.spacedBy(spacing.md),
-                        ) {
+                        StatTilePair { tileModifier ->
                             insights.bestWeekday?.let { day ->
                                 StatTile(
                                     value = weekdayName(day, appLocale),
                                     label = stringResource(R.string.insights_best_weekday),
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight(),
+                                    modifier = tileModifier,
                                     accent = brand.success,
                                 )
                             }
@@ -403,9 +393,7 @@ fun InsightsScreen(state: UiState) {
                                 StatTile(
                                     value = weekdayName(day, appLocale),
                                     label = stringResource(R.string.insights_worst_weekday),
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight(),
+                                    modifier = tileModifier,
                                     accent = MaterialTheme.colorScheme.tertiary,
                                 )
                             }
@@ -516,26 +504,17 @@ fun InsightsScreen(state: UiState) {
                     verticalArrangement = Arrangement.spacedBy(spacing.md),
                 ) {
                     SectionHeader(title = stringResource(R.string.insights_tasks))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(IntrinsicSize.Max),
-                        horizontalArrangement = Arrangement.spacedBy(spacing.md),
-                    ) {
+                    StatTilePair { tileModifier ->
                         StatTile(
                             value = Dates.formatDigits("${state.totalTasks}", appLocale),
                             label = stringResource(R.string.insights_total_tasks),
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight(),
+                            modifier = tileModifier,
                             accent = MaterialTheme.colorScheme.primary,
                         )
                         StatTile(
                             value = Dates.formatDigits("${state.doneTasks}", appLocale),
                             label = stringResource(R.string.insights_completed),
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight(),
+                            modifier = tileModifier,
                             accent = brand.success,
                         )
                     }
@@ -718,51 +697,33 @@ private fun WeeklyReportCard(
                 subtitle = subtitle,
             )
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Max),
-                horizontalArrangement = Arrangement.spacedBy(spacing.md),
-            ) {
+            StatTilePair { tileModifier ->
                 StatTile(
                     value = report.currentWeekPercent?.let { Dates.formatPercent(it, appLocale) } ?: "–",
                     label = stringResource(R.string.insights_this_week),
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
+                    modifier = tileModifier,
                     accent = MaterialTheme.colorScheme.primary,
                 )
                 StatTile(
                     value = report.previousWeekPercent?.let { Dates.formatPercent(it, appLocale) } ?: "–",
                     label = stringResource(R.string.insights_last_week),
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
+                    modifier = tileModifier,
                     accent = MaterialTheme.colorScheme.secondary,
                 )
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Max),
-                horizontalArrangement = Arrangement.spacedBy(spacing.md),
-            ) {
+            StatTilePair { tileModifier ->
                 StatTile(
                     value = Dates.formatDigits("${report.perfectDaysCurrentWeek}", appLocale),
                     label = stringResource(R.string.insights_perfect_days),
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
+                    modifier = tileModifier,
                     accent = brand.success,
                     suffix = daySuffix,
                 )
                 StatTile(
                     value = Dates.formatDigits("${report.currentStreak}", appLocale),
                     label = stringResource(R.string.insights_streak),
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
+                    modifier = tileModifier,
                     accent = brand.streak,
                     suffix = daySuffix,
                 )

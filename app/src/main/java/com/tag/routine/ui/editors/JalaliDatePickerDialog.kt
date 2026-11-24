@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -91,7 +92,9 @@ fun JalaliDatePickerDialog(
             val selectedLocal = remember(selected) { JalaliCalendar.toLocalDate(selected) }
 
             AppCard(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .widthIn(max = 560.dp)
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 containerColor = MaterialTheme.colorScheme.surface,
                 elevation = 3.dp,
@@ -212,7 +215,9 @@ fun JalaliDatePickerDialog(
                                     rowYears.forEach { yr ->
                                         val isCurrentYear = yr == displayYear
                                         Surface(
-                                            modifier = Modifier.weight(1f),
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .heightIn(min = 48.dp),
                                             shape = RoundedCornerShape(12.dp),
                                             color = if (isCurrentYear) {
                                                 MaterialTheme.colorScheme.primary
@@ -320,7 +325,7 @@ fun JalaliDatePickerDialog(
                                             Box(
                                                 modifier = Modifier
                                                     .weight(1f)
-                                                    .sizeIn(minHeight = 40.dp)
+                                                    .sizeIn(minHeight = 48.dp)
                                                     .clip(RoundedCornerShape(percent = 50))
                                                     .background(bgColor)
                                                     .then(borderModifier)

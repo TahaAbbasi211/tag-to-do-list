@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -44,6 +45,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModel
@@ -319,27 +323,36 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                         }
                     }
                 }
-                PillNavBar(
-                    current = tab,
-                    onSelect = {
-                        // Leaving Settings always drops its sub-page, so returning to
-                        // Settings later starts on the list rather than a stale page.
-                        if (it != Tab.SETTINGS) showLanguagePage = false
-                        tab = it
-                    },
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .windowInsetsPadding(WindowInsets.navigationBars)
                         .padding(horizontal = 16.dp, vertical = 10.dp),
-                )
+                    contentAlignment = Alignment.Center,
+                ) {
+                    PillNavBar(
+                        current = tab,
+                        onSelect = {
+                            // Leaving Settings always drops its sub-page, so returning to
+                            // Settings later starts on the list rather than a stale page.
+                            if (it != Tab.SETTINGS) showLanguagePage = false
+                            tab = it
+                        },
+                        modifier = Modifier
+                            .widthIn(max = 640.dp)
+                            .fillMaxWidth(),
+                    )
+                }
             }
 
             SnackbarHost(
                 hostState = snackbarHostState,
+                // Copy/restore feedback is announced by TalkBack as it appears.
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .windowInsetsPadding(WindowInsets.navigationBars)
-                    .padding(bottom = 96.dp, start = 16.dp, end = 16.dp),
+                    .padding(bottom = 96.dp, start = 16.dp, end = 16.dp)
+                    .semantics { liveRegion = LiveRegionMode.Polite },
             )
         }
     }

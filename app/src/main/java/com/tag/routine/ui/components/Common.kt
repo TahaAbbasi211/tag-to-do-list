@@ -40,6 +40,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -64,6 +65,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -71,6 +77,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tag.routine.R
+import com.tag.routine.ui.accessibility.rememberReducedMotion
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
 import kotlin.math.abs
@@ -174,20 +181,27 @@ fun ProgressRing(
     startColor: Color? = null,
     endColor: Color? = null,
     animate: Boolean = true,
+    contentDescription: String? = null,
 ) {
     val brand = tagBrand()
     val resolvedTrack = trackColor ?: MaterialTheme.colorScheme.surfaceContainerHighest
     val resolvedStart = startColor ?: brand.ringStart
     val resolvedEnd = endColor ?: brand.ringEnd
     val target = progress.coerceIn(0f, 1f)
+    val reducedMotion = rememberReducedMotion()
     val animated by animateFloatAsState(
         targetValue = target,
         animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
         label = "progress-ring",
     )
-    val sweep = if (animate) animated else target
+    val sweep = if (animate && !reducedMotion) animated else target
 
-    Canvas(modifier = modifier) {
+    Canvas(
+        modifier = modifier.semantics {
+            contentDescription?.let { this.contentDescription = it }
+            progressBarRangeInfo = ProgressBarRangeInfo(target, 0f..1f)
+        },
+    ) {
         val stroke = strokeWidth.toPx()
         val inset = stroke / 2f
         val arcSize = Size(size.width - stroke, size.height - stroke)
@@ -256,9 +270,18 @@ fun RingWithLabel(
     trackColor: Color? = null,
     startColor: Color? = null,
     endColor: Color? = null,
+    contentDescription: String? = null,
     content: @Composable () -> Unit,
 ) {
-    Box(modifier = modifier.size(ringSize), contentAlignment = Alignment.Center) {
+    Box(
+        modifier = modifier
+            .size(ringSize)
+            .semantics(mergeDescendants = contentDescription != null) {
+                contentDescription?.let { this.contentDescription = it }
+                progressBarRangeInfo = ProgressBarRangeInfo(progress.coerceIn(0f, 1f), 0f..1f)
+            },
+        contentAlignment = Alignment.Center,
+    ) {
         ProgressRing(
             progress = progress,
             modifier = Modifier.size(ringSize),
@@ -279,10 +302,15 @@ fun AnimatedCheck(
     modifier: Modifier = Modifier,
     size: Dp = 30.dp,
     accent: Color = MaterialTheme.colorScheme.primary,
+    contentDescription: String? = null,
+    stateDescription: String? = null,
 ) {
+    val reducedMotion = rememberReducedMotion()
     val scale = remember { Animatable(1f) }
     LaunchedEffect(checked) {
-        if (checked) {
+        if (reducedMotion || !checked) {
+            scale.snapTo(1f)
+        } else {
             scale.animateTo(1.22f, animationSpec = tween(durationMillis = 110, easing = FastOutSlowInEasing))
             scale.animateTo(
                 1f,
@@ -291,17 +319,19 @@ fun AnimatedCheck(
                     stiffness = Spring.StiffnessMedium,
                 ),
             )
-        } else {
-            scale.snapTo(1f)
         }
     }
 
     val fill = remember { Animatable(if (checked) 1f else 0f) }
     LaunchedEffect(checked) {
-        fill.animateTo(
-            targetValue = if (checked) 1f else 0f,
-            animationSpec = spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessMediumLow),
-        )
+        if (reducedMotion) {
+            fill.snapTo(if (checked) 1f else 0f)
+        } else {
+            fill.animateTo(
+                targetValue = if (checked) 1f else 0f,
+                animationSpec = spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessMediumLow),
+            )
+        }
     }
 
     val view = LocalView.current
@@ -329,16 +359,26 @@ fun AnimatedCheck(
         } catch (_: Exception) {}
     }
 
-    Canvas(
+    Box(
         modifier = modifier
-            .size(size)
-            .scale(scale.value)
+            .minimumInteractiveComponentSize()
             .clip(RoundedCornerShape(percent = 50))
             .clickable {
                 performHaptic()
                 onClick()
+            }
+            .semantics {
+                contentDescription?.let { this.contentDescription = it }
+                stateDescription?.let { this.stateDescription = it }
             },
+        contentAlignment = Alignment.Center,
     ) {
+        Canvas(
+            modifier = Modifier
+                .size(size)
+                .scale(scale.value)
+                .clip(RoundedCornerShape(percent = 50)),
+        ) {
         val value = fill.value
         val radius = this.size.minDimension / 2f
 
@@ -374,6 +414,7 @@ fun AnimatedCheck(
                 alpha = reveal,
             )
         }
+        }
     }
 }
 
@@ -398,6 +439,8 @@ fun ConfettiEffect(
     modifier: Modifier = Modifier,
 ) {
     if (!trigger) return
+    // Respect the system "remove animations" setting: no confetti motion at all.
+    if (rememberReducedMotion()) return
 
     val anim = remember { Animatable(0f) }
     LaunchedEffect(trigger) {
@@ -476,24 +519,34 @@ fun TodayEmptyState(
     modifier: Modifier = Modifier,
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 0.94f,
-        targetValue = 1.06f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "pulseScale",
-    )
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.7f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "pulseAlpha",
-    )
+    val reducedMotion = rememberReducedMotion()
+    val pulseScale: Float
+    val pulseAlpha: Float
+    if (reducedMotion) {
+        pulseScale = 1f
+        pulseAlpha = 1f
+    } else {
+        val scaleAnim by infiniteTransition.animateFloat(
+            initialValue = 0.94f,
+            targetValue = 1.06f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1500, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse,
+            ),
+            label = "pulseScale",
+        )
+        val alphaAnim by infiniteTransition.animateFloat(
+            initialValue = 0.7f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1500, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse,
+            ),
+            label = "pulseAlpha",
+        )
+        pulseScale = scaleAnim
+        pulseAlpha = alphaAnim
+    }
 
     Column(
         modifier = modifier
@@ -601,11 +654,13 @@ fun ThinProgressBar(
     track: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
     height: Dp = 8.dp,
 ) {
+    val reducedMotion = rememberReducedMotion()
     val animated by animateFloatAsState(
         targetValue = progress.coerceIn(0f, 1f),
         animationSpec = tween(600),
         label = "thin-bar",
     )
+    val barProgress = if (reducedMotion) progress.coerceIn(0f, 1f) else animated
     Box(
         modifier = modifier
             .height(height)
@@ -614,7 +669,7 @@ fun ThinProgressBar(
     ) {
         Box(
             Modifier
-                .fillMaxWidth(animated)
+                .fillMaxWidth(barProgress)
                 .height(height)
                 .clip(RoundedCornerShape(percent = 50))
                 .background(color),

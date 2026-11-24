@@ -45,6 +45,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -58,12 +61,14 @@ import com.tag.routine.ui.DueState
 import com.tag.routine.ui.TaskFilter
 import com.tag.routine.ui.TaskRow
 import com.tag.routine.ui.UiState
+import com.tag.routine.ui.accessibility.AccessibilityLabels
 import com.tag.routine.ui.components.AnimatedCheck
 import com.tag.routine.ui.components.AppButton
 import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.AppChip
 import com.tag.routine.ui.components.EmptyState
+import com.tag.routine.ui.components.LargeScreenFrame
 import com.tag.routine.ui.components.MetaPill
 import com.tag.routine.ui.components.ScreenHeader
 import com.tag.routine.ui.components.SectionHeader
@@ -100,7 +105,7 @@ fun TasksScreen(
         },
     )
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    LargeScreenFrame {
         Column(modifier = Modifier.fillMaxSize()) {
             // Page header
             ScreenHeader(
@@ -388,6 +393,10 @@ private fun TaskRowCard(
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
+    val doneLabel = stringResource(R.string.a11y_status_done)
+    val notDoneLabel = stringResource(R.string.a11y_status_not_done)
+    val deleteActionLabel = stringResource(R.string.action_delete)
+    val editActionLabel = stringResource(R.string.action_edit)
 
     AppCard(
         modifier = Modifier.fillMaxWidth(),
@@ -421,6 +430,7 @@ private fun TaskRowCard(
                 onClick = { onToggleTask(task.id) },
                 size = 28.dp,
                 accent = MaterialTheme.colorScheme.primary,
+                stateDescription = AccessibilityLabels.checkState(done, doneLabel, notDoneLabel),
             )
             Spacer(Modifier.width(spacing.md))
 
@@ -430,6 +440,19 @@ private fun TaskRowCard(
                     .weight(1f)
                     .clip(MaterialTheme.shapes.small)
                     .clickable { onEditTask(task) }
+                    // Swipe-to-delete has a TalkBack equivalent on the row itself.
+                    .semantics {
+                        customActions = listOf(
+                            CustomAccessibilityAction(deleteActionLabel) {
+                                onDeleteTask(task.id)
+                                true
+                            },
+                            CustomAccessibilityAction(editActionLabel) {
+                                onEditTask(task)
+                                true
+                            },
+                        )
+                    }
                     .padding(vertical = spacing.xs),
             ) {
                 Text(
@@ -494,7 +517,6 @@ private fun TaskRowCard(
             // Delete button
             IconButton(
                 onClick = { onDeleteTask(task.id) },
-                modifier = Modifier.size(38.dp),
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Delete,
