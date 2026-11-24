@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -64,8 +65,10 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -85,6 +88,7 @@ import com.tag.routine.ui.components.AppButton
 import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.ConfettiEffect
+import com.tag.routine.ui.components.LargeScreenFrame
 import com.tag.routine.ui.components.RingWithLabel
 import com.tag.routine.ui.components.SectionHeader
 import com.tag.routine.ui.components.SwipeToDelete
@@ -179,7 +183,7 @@ fun TodayScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    LargeScreenFrame {
         Column(modifier = Modifier.fillMaxSize()) {
             // Hero progress card, painted with the brand gradient (always deep enough for >= 4.5:1 contrast).
             val brand = tagBrand()
@@ -199,19 +203,40 @@ fun TodayScreen(
                         RoundedCornerShape(28.dp),
                     ),
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(MaterialTheme.spacing.xl),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
+                val stackHero = LocalDensity.current.fontScale > 1.35f
+                val heroRing: @Composable () -> Unit = {
+                    RingWithLabel(
+                        progress = state.progress,
+                        ringSize = if (stackHero) 176.dp else 118.dp,
+                        strokeWidth = 12.dp,
+                        trackColor = Color.White.copy(alpha = 0.18f),
+                        startColor = brand.ringStart,
+                        endColor = brand.ringEnd,
+                        contentDescription = Dates.formatDigits(
+                            stringResource(
+                                R.string.today_complete_count,
+                                state.completedCount,
+                                state.routineCount,
+                            ),
+                            appLocale,
+                        ),
+                    ) {
+                        Text(
+                            text = Dates.formatPercent((state.progress * 100).toInt(), appLocale),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = brand.onHero,
+                        )
+                    }
+                }
+                val heroInfo: @Composable (Modifier) -> Unit = { heroModifier ->
+                    Column(modifier = heroModifier) {
                         Text(
                             text = greetingText,
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             color = brand.onHero,
-                            maxLines = 2,
+                            maxLines = if (stackHero) 4 else 2,
                             overflow = TextOverflow.Ellipsis,
                         )
                         Spacer(Modifier.height(4.dp))
@@ -236,7 +261,7 @@ fun TodayScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = brand.onHero,
                             fontWeight = FontWeight.Medium,
-                            maxLines = 2,
+                            maxLines = if (stackHero) 4 else 2,
                             overflow = TextOverflow.Ellipsis,
                         )
                         Spacer(Modifier.height(12.dp))
@@ -282,20 +307,28 @@ fun TodayScreen(
                             )
                         }
                     }
-                    RingWithLabel(
-                        progress = state.progress,
-                        ringSize = 118.dp,
-                        strokeWidth = 12.dp,
-                        trackColor = Color.White.copy(alpha = 0.18f),
-                        startColor = brand.ringStart,
-                        endColor = brand.ringEnd,
+                }
+                // Large fonts stack the ring under the greeting instead of squeezing both.
+                if (stackHero) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(MaterialTheme.spacing.xl),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text(
-                            text = Dates.formatPercent((state.progress * 100).toInt(), appLocale),
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = brand.onHero,
-                        )
+                        heroInfo(Modifier.fillMaxWidth())
+                        Spacer(Modifier.height(MaterialTheme.spacing.lg))
+                        heroRing()
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(MaterialTheme.spacing.xl),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        heroInfo(Modifier.weight(1f))
+                        heroRing()
                     }
                 }
             }
@@ -372,7 +405,7 @@ fun TodayScreen(
                             IconButton(onClick = { query = "" }) {
                                 Icon(
                                     imageVector = Icons.Rounded.Close,
-                                    contentDescription = null,
+                                    contentDescription = stringResource(R.string.cd_clear_search),
                                     modifier = Modifier.size(18.dp),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
@@ -471,6 +504,7 @@ private fun HeroPill(
 ) {
     Box(
         modifier = Modifier
+            .heightIn(min = 48.dp)
             .clip(RoundedCornerShape(percent = 50))
             .background(Color(0xFF0A0F1E).copy(alpha = 0.68f))
             .border(1.dp, accentColor.copy(alpha = 0.55f), RoundedCornerShape(percent = 50))
@@ -478,13 +512,14 @@ private fun HeroPill(
                 if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
             )
             .padding(horizontal = 12.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelMedium,
             color = contentColor,
             fontWeight = FontWeight.Bold,
-            maxLines = 1,
+            maxLines = 2,
         )
     }
 }
@@ -579,6 +614,10 @@ private fun TimelineRoutineRow(
     val timeLabel = routine.timeMinutes?.let { Dates.formatDigits(Dates.timeLabel(it, appLocale), appLocale) }
     var menuOpen by remember { mutableStateOf(false) }
     val view = LocalView.current
+    // Read the row aloud as one sentence and offer every swipe/edit action to TalkBack.
+    val doneLabel = stringResource(R.string.a11y_status_done)
+    val notDoneLabel = stringResource(R.string.a11y_status_not_done)
+    val noTimeLabel = stringResource(R.string.a11y_no_time)
 
     fun performHaptic() {
         try {
@@ -598,6 +637,46 @@ private fun TimelineRoutineRow(
         timeLabel = timeLabel,
         isFirst = isFirst,
         isLast = isLast,
+        doneLabel = doneLabel,
+        notDoneLabel = notDoneLabel,
+        noTimeLabel = noTimeLabel,
+        accessibilityLocale = appLocale,
+        customAccessibilityActions = buildList {
+            add(
+                CustomAccessibilityAction(stringResource(R.string.action_delete)) {
+                    onDeleteRoutine(routine)
+                    true
+                },
+            )
+            add(
+                CustomAccessibilityAction(stringResource(R.string.action_edit)) {
+                    onEditRoutine(routine)
+                    true
+                },
+            )
+            add(
+                CustomAccessibilityAction(stringResource(R.string.copy_to_other_day)) {
+                    onCopyRoutine(routine)
+                    true
+                },
+            )
+            if (canMoveUp) {
+                add(
+                    CustomAccessibilityAction(stringResource(R.string.action_move_up)) {
+                        onMoveRoutine(routine.id, true)
+                        true
+                    },
+                )
+            }
+            if (canMoveDown) {
+                add(
+                    CustomAccessibilityAction(stringResource(R.string.action_move_down)) {
+                        onMoveRoutine(routine.id, false)
+                        true
+                    },
+                )
+            }
+        },
         onToggle = {
             performHaptic()
             onToggleRoutine(routine.id, !done)
@@ -611,7 +690,6 @@ private fun TimelineRoutineRow(
             Box {
                 IconButton(
                     onClick = { menuOpen = true },
-                    modifier = Modifier.size(32.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.MoreVert,
@@ -967,7 +1045,6 @@ private fun FirstDayTemplatesCard(
             }
             IconButton(
                 onClick = onDismiss,
-                modifier = Modifier.size(32.dp),
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Close,
