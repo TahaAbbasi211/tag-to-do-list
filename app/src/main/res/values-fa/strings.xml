@@ -450,4 +450,7 @@
     <string name="animation_level_off">خاموش</string>
     <string name="today_all_done_celebration">همه انجام شد!</string>
     <string name="streak_milestone_banner">نقطه عطف زنجیره %1$d روزه! عالی پیش می‌ری!</string>
+    <string name="focus_calm_mode_enter">برای حالت آرامش حلقه را لمس کنید</string>
+    <string name="focus_calm_mode_exit">برای نمایش کنترل‌ها حلقه را لمس کنید</string>
+    <string name="focus_session_completed">جلسه تمرکز کامل شد!</string>
 </resources>

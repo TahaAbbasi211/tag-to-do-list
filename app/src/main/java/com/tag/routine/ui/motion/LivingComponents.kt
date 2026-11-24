@@ -28,6 +28,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -54,6 +55,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -63,6 +65,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.tag.routine.ui.theme.tagBrand
 import kotlin.math.PI
@@ -566,51 +569,57 @@ fun DigitRoll(
     }
 
     val duration = TagMotion.levelAdjustedDuration(TagMotion.DURATION_QUICK, level)
-    Row(
-        modifier = modifier.semantics { contentDescription = text },
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        text.forEachIndexed { index, ch ->
-            key(text.length - 1 - index) {
-                if (Character.isDigit(ch)) {
-                    AnimatedContent(
-                        targetState = ch,
-                        transitionSpec = {
-                            val slideOffset: (Int) -> Int = { height ->
-                                if (targetState > initialState) height / 2 else -height / 2
-                            }
-                            val exitOffset: (Int) -> Int = { height ->
-                                if (targetState > initialState) -height / 2 else height / 2
-                            }
-                            ContentTransform(
-                                targetContentEnter = slideInVertically(
-                                    animationSpec = tween(duration, easing = TagMotion.EmphasizedDecelerate),
-                                    initialOffsetY = slideOffset,
-                                ) + fadeIn(tween(duration)),
-                                initialContentExit = slideOutVertically(
-                                    animationSpec = tween(duration, easing = TagMotion.EmphasizedAccelerate),
-                                    targetOffsetY = exitOffset,
-                                ) + fadeOut(tween(duration)),
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Row(
+            modifier = modifier.semantics { contentDescription = text },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            text.forEachIndexed { index, ch ->
+                key(text.length - 1 - index) {
+                    if (Character.isDigit(ch)) {
+                        AnimatedContent(
+                            targetState = ch,
+                            transitionSpec = {
+                                val slideOffset: (Int) -> Int = { height ->
+                                    if (targetState > initialState) height / 2 else -height / 2
+                                }
+                                val exitOffset: (Int) -> Int = { height ->
+                                    if (targetState > initialState) -height / 2 else height / 2
+                                }
+                                ContentTransform(
+                                    targetContentEnter = slideInVertically(
+                                        animationSpec = tween(duration, easing = TagMotion.EmphasizedDecelerate),
+                                        initialOffsetY = slideOffset,
+                                    ) + fadeIn(tween(duration)),
+                                    initialContentExit = slideOutVertically(
+                                        animationSpec = tween(duration, easing = TagMotion.EmphasizedAccelerate),
+                                        targetOffsetY = exitOffset,
+                                    ) + fadeOut(tween(duration)),
+                                )
+                            },
+                            label = "digit-$index",
+                        ) { digit ->
+                            Text(
+                                text = digit.toString(),
+                                style = style,
+                                color = color,
+                                fontWeight = fontWeight,
+                                maxLines = 1,
+                                softWrap = false,
+                                modifier = Modifier.clearAndSetSemantics {},
                             )
-                        },
-                        label = "digit-$index",
-                    ) { digit ->
+                        }
+                    } else {
                         Text(
-                            text = digit.toString(),
+                            text = ch.toString(),
                             style = style,
                             color = color,
                             fontWeight = fontWeight,
+                            maxLines = 1,
+                            softWrap = false,
                             modifier = Modifier.clearAndSetSemantics {},
                         )
                     }
-                } else {
-                    Text(
-                        text = ch.toString(),
-                        style = style,
-                        color = color,
-                        fontWeight = fontWeight,
-                        modifier = Modifier.clearAndSetSemantics {},
-                    )
                 }
             }
         }

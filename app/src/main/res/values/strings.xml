@@ -450,4 +450,7 @@
     <string name="animation_level_off">Off</string>
     <string name="today_all_done_celebration">All done for today!</string>
     <string name="streak_milestone_banner">%1$d-day streak milestone! Keep going!</string>
+    <string name="focus_calm_mode_enter">Tap ring for calm mode</string>
+    <string name="focus_calm_mode_exit">Tap ring to show controls</string>
+    <string name="focus_session_completed">Focus session complete!</string>
 </resources>

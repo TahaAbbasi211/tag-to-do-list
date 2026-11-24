@@ -450,4 +450,7 @@
     <string name="animation_level_off">Aus</string>
     <string name="today_all_done_celebration">Alles für heute erledigt!</string>
     <string name="streak_milestone_banner">%1$d-Tage-Meilenstein erreicht! Weiter so!</string>
+    <string name="focus_calm_mode_enter">Ring antippen für Ruhemodus</string>
+    <string name="focus_calm_mode_exit">Ring antippen für Steuerung</string>
+    <string name="focus_session_completed">Fokussitzung abgeschlossen!</string>
 </resources>

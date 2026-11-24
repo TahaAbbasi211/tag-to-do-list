@@ -70,6 +70,7 @@ import androidx.compose.ui.unit.sp
 import com.tag.routine.R
 import com.tag.routine.ui.motion.CheckDraw
 import com.tag.routine.ui.motion.ConfettiBurst
+import com.tag.routine.ui.motion.CountUpText
 import com.tag.routine.ui.motion.HapticKind
 import com.tag.routine.ui.motion.LocalAmbientAnimationsActive
 import com.tag.routine.ui.motion.LocalAnimationLevel
@@ -680,6 +681,60 @@ fun StatTile(
     accent: Color = MaterialTheme.colorScheme.primary,
     suffix: String? = null,
 ) {
+    StatTileFrame(
+        label = label,
+        modifier = modifier,
+        accent = accent,
+        suffix = suffix,
+    ) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.displaySmall.copy(fontSize = 24.sp, lineHeight = 30.sp),
+            color = accent,
+            fontWeight = FontWeight.Bold,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/** Count-up numeric variant of [StatTile] that preserves layout, suffix styling, and font scaling. */
+@Composable
+fun AnimatedStatTile(
+    count: Int,
+    format: (Int) -> String,
+    label: String,
+    modifier: Modifier = Modifier,
+    accent: Color = MaterialTheme.colorScheme.primary,
+    suffix: String? = null,
+    animateFromZero: Boolean = true,
+) {
+    StatTileFrame(
+        label = label,
+        modifier = modifier,
+        accent = accent,
+        suffix = suffix,
+    ) {
+        CountUpText(
+            value = count,
+            format = format,
+            style = MaterialTheme.typography.displaySmall.copy(fontSize = 24.sp, lineHeight = 30.sp),
+            color = accent,
+            fontWeight = FontWeight.Bold,
+            maxLines = 2,
+            animateFromZero = animateFromZero,
+        )
+    }
+}
+
+@Composable
+private fun StatTileFrame(
+    label: String,
+    modifier: Modifier = Modifier,
+    accent: Color,
+    suffix: String?,
+    valueContent: @Composable () -> Unit,
+) {
     AppCard(
         modifier = modifier,
         shape = MaterialTheme.shapes.medium,
@@ -693,14 +748,7 @@ fun StatTile(
             ),
         ) {
             Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.displaySmall.copy(fontSize = 24.sp, lineHeight = 30.sp),
-                    color = accent,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                valueContent()
                 if (!suffix.isNullOrBlank()) {
                     Text(
                         text = suffix,

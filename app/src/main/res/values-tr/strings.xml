@@ -450,4 +450,7 @@
     <string name="animation_level_off">Kapalı</string>
     <string name="today_all_done_celebration">Bugün için her şey tamam!</string>
     <string name="streak_milestone_banner">%1$d günlük seri dönüm noktası! Devam et!</string>
+    <string name="focus_calm_mode_enter">Sakin mod için halkaya dokunun</string>
+    <string name="focus_calm_mode_exit">Kontrolleri göstermek için halkaya dokunun</string>
+    <string name="focus_session_completed">Odak oturumu tamamlandı!</string>
 </resources>

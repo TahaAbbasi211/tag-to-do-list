@@ -11,12 +11,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -75,6 +78,7 @@ import com.tag.routine.ui.editors.TemplatePickerSheet
 import com.tag.routine.ui.i18n.LocalizedAlertDialog
 import com.tag.routine.ui.i18n.LocalizedApp
 import com.tag.routine.ui.motion.AnimationLevel
+import com.tag.routine.ui.motion.FocusMotionLogic
 import com.tag.routine.ui.motion.LocalAnimationLevel
 import com.tag.routine.ui.motion.TagMotion
 import com.tag.routine.ui.screens.FocusScreen
@@ -168,9 +172,20 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
     var showTemplatesSheet by remember { mutableStateOf(false) }
     // Settings owns a small sub-page stack: null means the settings list.
     var showLanguagePage by remember { mutableStateOf(false) }
+    var focusCalmMode by remember { mutableStateOf(false) }
 
     val focus by viewModel.focus.collectAsState()
     val backupState by viewModel.backupUiState.collectAsState()
+
+    LaunchedEffect(tab, focus.routineId) {
+        if (tab != Tab.FOCUS || focus.routineId == null) {
+            focusCalmMode = false
+        }
+    }
+
+    BackHandler(enabled = focusCalmMode && tab == Tab.FOCUS) {
+        focusCalmMode = false
+    }
 
     val query by viewModel.query.collectAsState()
     val filter by viewModel.activeFilter.collectAsState()
@@ -340,6 +355,13 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                                     stats = state.focusStats,
                                     defaultMinutes = state.settings.focusMinutes,
                                     calendarType = state.settings.calendarType,
+                                    calmMode = focusCalmMode,
+                                    onToggleCalmMode = {
+                                        focusCalmMode = FocusMotionLogic.resolveCalmMode(
+                                            requestedCalm = !focusCalmMode,
+                                            hasActiveSession = focus.routineId != null,
+                                        )
+                                    },
                                     onStart = viewModel::startFocus,
                                     onPause = viewModel::pauseFocus,
                                     onResume = viewModel::resumeFocus,
@@ -383,25 +405,40 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                         }
                     }
                 }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.navigationBars)
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                    contentAlignment = Alignment.Center,
+                val navLevel = LocalAnimationLevel.current
+                AnimatedVisibility(
+                    visible = !(focusCalmMode && tab == Tab.FOCUS && focus.routineId != null),
+                    enter = when {
+                        navLevel.isOff -> fadeIn(TagMotion.instantTween(0))
+                        navLevel == AnimationLevel.REDUCED -> fadeIn(TagMotion.quickTween())
+                        else -> fadeIn(TagMotion.standardTween()) + slideInVertically(TagMotion.standardTween()) { it }
+                    },
+                    exit = when {
+                        navLevel.isOff -> fadeOut(TagMotion.instantTween(0))
+                        navLevel == AnimationLevel.REDUCED -> fadeOut(TagMotion.quickTween())
+                        else -> fadeOut(TagMotion.quickTween()) + slideOutVertically(TagMotion.quickTween()) { it }
+                    },
                 ) {
-                    PillNavBar(
-                        current = tab,
-                        onSelect = {
-                            // Leaving Settings always drops its sub-page, so returning to
-                            // Settings later starts on the list rather than a stale page.
-                            if (it != Tab.SETTINGS) showLanguagePage = false
-                            tab = it
-                        },
+                    Box(
                         modifier = Modifier
-                            .widthIn(max = 640.dp)
-                            .fillMaxWidth(),
-                    )
+                            .fillMaxWidth()
+                            .windowInsetsPadding(WindowInsets.navigationBars)
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        PillNavBar(
+                            current = tab,
+                            onSelect = {
+                                // Leaving Settings always drops its sub-page, so returning to
+                                // Settings later starts on the list rather than a stale page.
+                                if (it != Tab.SETTINGS) showLanguagePage = false
+                                tab = it
+                            },
+                            modifier = Modifier
+                                .widthIn(max = 640.dp)
+                                .fillMaxWidth(),
+                        )
+                    }
                 }
             }
 

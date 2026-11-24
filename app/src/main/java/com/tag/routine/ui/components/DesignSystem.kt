@@ -354,6 +354,7 @@ fun AppChip(
 ) {
     val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
     val level = LocalAnimationLevel.current
+    val haptics = rememberTagHaptics()
     val chipSpec = if (level.isOff) TagMotion.instantTween<Color>(0) else TagMotion.quickTween()
     val animatedBg by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -365,13 +366,33 @@ fun AppChip(
         animationSpec = chipSpec,
         label = "chip-content",
     )
+    val animatedBorderColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+        animationSpec = chipSpec,
+        label = "chip-border",
+    )
+    val selectionScale by animateFloatAsState(
+        targetValue = if (selected && level == com.tag.routine.ui.motion.AnimationLevel.FULL) 1.03f else 1f,
+        animationSpec = if (level.isOff) TagMotion.instantTween(0) else TagMotion.bouncySpring(),
+        label = "chip-select-scale",
+    )
 
     Surface(
-        modifier = modifier.minimumInteractiveComponentSize(),
+        modifier = modifier
+            .minimumInteractiveComponentSize()
+            .then(if (onClick != null) Modifier.pressScale(pressedScale = 0.95f) else Modifier)
+            .graphicsLayer {
+                scaleX = selectionScale
+                scaleY = selectionScale
+            }
+            .semantics { this.selected = selected },
         shape = shape,
         color = animatedBg,
-        border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f)),
-        onClick = onClick ?: {},
+        border = BorderStroke(1.dp, animatedBorderColor),
+        onClick = {
+            haptics(HapticKind.TICK)
+            onClick?.invoke()
+        },
         enabled = onClick != null,
     ) {
         Row(

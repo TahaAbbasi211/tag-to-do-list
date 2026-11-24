@@ -450,4 +450,7 @@
     <string name="animation_level_off">Désactivé</string>
     <string name="today_all_done_celebration">Tout est terminé pour aujourd\'hui !</string>
     <string name="streak_milestone_banner">Cap des %1$d jours atteint ! Continuez ainsi !</string>
+    <string name="focus_calm_mode_enter">Touchez l\'anneau pour le mode calme</string>
+    <string name="focus_calm_mode_exit">Touchez l\'anneau pour afficher les contrôles</string>
+    <string name="focus_session_completed">Session de concentration terminée !</string>
 </resources>
