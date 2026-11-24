@@ -1,5 +1,6 @@
 package com.tag.routine.ui.theme
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -203,6 +204,24 @@ private fun brandFor(def: PaletteDef.Def, dark: Boolean, dynamicScheme: ColorSch
     )
 }
 
+// The SDK_INT >= 31 guard below is real; lint's NewApi analysis does not propagate it
+// through these Compose Material3 color helpers, so suppress only this false positive.
+@SuppressLint("NewApi")
+private fun chooseScheme(
+    context: Context,
+    dark: Boolean,
+    dynamicColor: Boolean,
+    def: PaletteDef.Def,
+): ColorScheme {
+    val brand = if (dark) darkScheme(def) else lightScheme(def)
+    if (Build.VERSION.SDK_INT >= 31) {
+        if (dynamicColor) {
+            return if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+    }
+    return brand
+}
+
 /**
  * Root theme composable supporting Light, Dark, custom brand palettes,
  * Material You Dynamic Color (on Android 12+), and the unified spacing system.
@@ -222,13 +241,7 @@ fun TagTheme(
     val context = LocalContext.current
     val def = paletteFor(paletteKey)
 
-    val scheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        dark -> darkScheme(def)
-        else -> lightScheme(def)
-    }
+    val scheme = chooseScheme(context, dark, dynamicColor, def)
 
     val dynamicScheme = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) scheme else null
     val brand = brandFor(def, dark, dynamicScheme)

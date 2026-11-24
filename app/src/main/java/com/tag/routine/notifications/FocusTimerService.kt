@@ -12,7 +12,6 @@ import android.os.Build
 import android.os.IBinder
 import android.os.SystemClock
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.tag.routine.MainActivity
@@ -359,7 +358,7 @@ class FocusTimerService : Service() {
     private fun updateNotification(run: ActiveFocusRun) {
         if (!Notifications.canPost(this)) return
         runCatching {
-            NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, buildNotification(run))
+            Notifications.post(this, NOTIFICATION_ID, buildNotification(run))
         }
     }
 
@@ -444,7 +443,7 @@ class FocusTimerService : Service() {
             .setContentIntent(openApp)
             .build()
         runCatching {
-            NotificationManagerCompat.from(this).notify(FINISHED_NOTIFICATION_ID, done)
+            Notifications.post(this, FINISHED_NOTIFICATION_ID, done)
         }
     }
 

@@ -2,6 +2,7 @@ package com.tag.routine.notifications
 
 import android.Manifest
 import android.app.AlarmManager
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -19,6 +20,20 @@ import com.tag.routine.data.Dates
 import com.tag.routine.data.RoutineEntity
 import java.time.LocalDate
 import java.time.ZonedDateTime
+
+/**
+ * Pure notification-permission decision, kept free of Android calls so it is unit-testable.
+ *
+ * POST_NOTIFICATIONS is only a runtime permission from Android 13 (API 33); before that
+ * the system-wide notifications switch alone decides whether posting is allowed.
+ */
+internal object NotificationPolicy {
+    fun shouldPost(
+        sdkInt: Int,
+        permissionGranted: Boolean,
+        notificationsEnabled: Boolean,
+    ): Boolean = (sdkInt < Build.VERSION_CODES.TIRAMISU || permissionGranted) && notificationsEnabled
+}
 
 object Notifications {
     const val CHANNEL_ROUTINES = "tag_routines"
@@ -105,7 +120,7 @@ object Notifications {
                 snoozeIntent,
             )
             .build()
-        NotificationManagerCompat.from(context).notify(routineId.hashCode(), notification)
+        post(context, routineId.hashCode(), notification)
     }
 
     fun notifyDigest(context: Context, text: String) {
@@ -128,15 +143,37 @@ object Notifications {
             .setAutoCancel(true)
             .setContentIntent(contentIntent)
             .build()
-        NotificationManagerCompat.from(context).notify(9001, notification)
+        post(context, 9001, notification)
+    }
+
+    /**
+     * Posts a notification only when the user still allows it.
+     *
+     * [canPost] is checked here so every caller is safe, and the explicit
+     * [SecurityException] catch covers POST_NOTIFICATIONS being revoked between that
+     * check and the platform call. Dropping the notification is intentional: the focus
+     * timer and reminder alarms keep working without it.
+     */
+    fun post(context: Context, id: Int, notification: Notification) {
+        if (!canPost(context)) return
+        try {
+            NotificationManagerCompat.from(context).notify(id, notification)
+        } catch (_: SecurityException) {
+            // Permission revoked after the check; nothing to show, nothing to crash.
+        }
     }
 
     fun canPost(context: Context): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-            if (granted != PackageManager.PERMISSION_GRANTED) return false
-        }
-        return NotificationManagerCompat.from(context).areNotificationsEnabled()
+        val permissionGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) == PackageManager.PERMISSION_GRANTED
+        return NotificationPolicy.shouldPost(
+            sdkInt = Build.VERSION.SDK_INT,
+            permissionGranted = permissionGranted,
+            notificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled(),
+        )
     }
 
     fun hasExactAlarmPermission(context: Context): Boolean {
