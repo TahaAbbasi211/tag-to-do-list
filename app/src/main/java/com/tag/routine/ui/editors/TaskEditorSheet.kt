@@ -48,6 +48,7 @@ import com.tag.routine.data.TagEntity
 import com.tag.routine.data.TaskEntity
 import com.tag.routine.ui.components.FilterPill
 import com.tag.routine.ui.i18n.ProvideAppLocale
+import com.tag.routine.ui.motion.AnimatedSheetContent
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.Locale
@@ -89,6 +90,7 @@ fun TaskEditorSheet(
         // The sheet lives in its own window, which resets LocalContext to the Activity's
         // (system-locale) context. Re-provide the app's language so the editor is not
         // rendered in English while the rest of the app is in the chosen language.
+        AnimatedSheetContent {
         ProvideAppLocale(localizedContext) {
             val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
             Column(
@@ -276,6 +278,7 @@ fun TaskEditorSheet(
 
                 Spacer(Modifier.height(16.dp))
             }
+        }
         }
     }
 

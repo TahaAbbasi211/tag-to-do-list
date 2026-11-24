@@ -40,6 +40,7 @@ class SettingsStore(private val context: Context) {
         val activeFocusRun = stringPreferencesKey("active_focus_run")
         val firstLaunchDate = stringPreferencesKey("first_launch_date")
         val templatesCardDismissed = booleanPreferencesKey("templates_card_dismissed")
+        val animationSetting = stringPreferencesKey("animation_setting")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -64,6 +65,7 @@ class SettingsStore(private val context: Context) {
             ),
             firstLaunchDate = prefs[Keys.firstLaunchDate] ?: "",
             templatesCardDismissed = prefs[Keys.templatesCardDismissed] ?: false,
+            animationSetting = AnimationSetting.fromKey(prefs[Keys.animationSetting]),
         )
     }
 
@@ -146,6 +148,10 @@ class SettingsStore(private val context: Context) {
         it[Keys.templatesCardDismissed] = dismissed
     }
 
+    suspend fun setAnimationSetting(setting: AnimationSetting) = context.settingsStore.edit {
+        it[Keys.animationSetting] = setting.key
+    }
+
     suspend fun currentSettings(): AppSettings = settings.first()
 
     /** Atomically applies preferences from a validated backup without touching active timer state. */
@@ -163,6 +169,7 @@ class SettingsStore(private val context: Context) {
             prefs[Keys.haptics] = backup.hapticsEnabled
             prefs[Keys.focusMinutes] = AppConstants.clampFocusMinutes(backup.focusMinutes)
             prefs[Keys.templatesCardDismissed] = backup.templatesCardDismissed
+            prefs[Keys.animationSetting] = backup.animationSetting.key
             prefs[Keys.onboarded] = true
             prefs[Keys.seeded] = true
         }

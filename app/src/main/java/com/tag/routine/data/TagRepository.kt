@@ -278,6 +278,9 @@ class TagRepository(
     suspend fun setTemplatesCardDismissed(dismissed: Boolean) =
         settingsStore.setTemplatesCardDismissed(dismissed)
 
+    suspend fun setAnimationSetting(setting: AnimationSetting) =
+        settingsStore.setAnimationSetting(setting)
+
     suspend fun setNotificationsEnabled(enabled: Boolean) = settingsStore.setNotifications(enabled)
 
     suspend fun setDigestEnabled(enabled: Boolean) = settingsStore.setDigestEnabled(enabled)

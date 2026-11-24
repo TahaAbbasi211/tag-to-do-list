@@ -62,6 +62,7 @@ data class BackupSettings(
     val hapticsEnabled: Boolean = true,
     val focusMinutes: Int = AppConstants.DEFAULT_FOCUS_MINUTES,
     val templatesCardDismissed: Boolean = false,
+    val animationSetting: AnimationSetting = AnimationSetting.AUTO,
 ) {
     fun appliedTo(base: AppSettings): AppSettings = base.copy(
         themeMode = themeMode.coerceIn(0, 2),
@@ -76,6 +77,7 @@ data class BackupSettings(
         hapticsEnabled = hapticsEnabled,
         focusMinutes = AppConstants.clampFocusMinutes(focusMinutes),
         templatesCardDismissed = templatesCardDismissed,
+        animationSetting = animationSetting,
         onboarded = true,
     )
 
@@ -109,6 +111,7 @@ data class BackupSettings(
             hapticsEnabled = settings.hapticsEnabled,
             focusMinutes = settings.focusMinutes,
             templatesCardDismissed = settings.templatesCardDismissed,
+            animationSetting = settings.animationSetting,
         )
     }
 }
@@ -317,6 +320,7 @@ object BackupCodec {
         json.name("hapticsEnabled").value(s.hapticsEnabled)
         json.name("focusMinutes").value(s.focusMinutes)
         json.name("templatesCardDismissed").value(s.templatesCardDismissed)
+        json.name("animationSetting").value(s.animationSetting.key)
         json.endObject()
 
         json.endObject()
@@ -1087,6 +1091,7 @@ object BackupCodec {
         var hapticsEnabled = true
         var focusMinutes = AppConstants.DEFAULT_FOCUS_MINUTES
         var templatesCardDismissed = false
+        var animationSetting = AnimationSetting.AUTO
 
         json.readObject { key ->
             when (key) {
@@ -1135,6 +1140,7 @@ object BackupCodec {
                     focusMinutes = v
                 }
                 "templatesCardDismissed" -> templatesCardDismissed = json.readBoolean()
+                "animationSetting" -> animationSetting = AnimationSetting.fromKey(json.readStringOrNull())
                 else -> json.skipValue()
             }
         }
@@ -1152,6 +1158,7 @@ object BackupCodec {
             hapticsEnabled = hapticsEnabled,
             focusMinutes = focusMinutes,
             templatesCardDismissed = templatesCardDismissed,
+            animationSetting = animationSetting,
         )
     }
 

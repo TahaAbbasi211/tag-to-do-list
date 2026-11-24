@@ -440,4 +440,23 @@
     <string name="a11y_chart_summary">Tägliche Abschlussquote der letzten sieben Tage: %1$s</string>
     <string name="a11y_no_data">Keine Daten</string>
     <string name="a11y_focus_remaining">Verbleibende Zeit</string>
+
+    <!-- Living UI & Motion (v2.0) -->
+    <string name="settings_animation_level">Animationsstufe</string>
+    <string name="settings_animation_level_sub">Bewegung, Partikel und Hintergrundeffekte steuern</string>
+    <string name="animation_level_auto">Automatisch</string>
+    <string name="animation_level_full">Voll</string>
+    <string name="animation_level_reduced">Reduziert</string>
+    <string name="animation_level_off">Aus</string>
+    <string name="today_all_done_celebration">Alles für heute erledigt!</string>
+    <string name="streak_milestone_banner">%1$d-Tage-Meilenstein erreicht! Weiter so!</string>
+    <string name="focus_calm_mode_enter">Ring antippen für Ruhemodus</string>
+    <string name="focus_calm_mode_exit">Ring antippen für Steuerung</string>
+    <string name="focus_session_completed">Fokussitzung abgeschlossen!</string>
+    <string name="settings_animation_demo_label">Live-Vorschau</string>
+    <string name="settings_animation_demo_hint">Antippen, um die Bewegungsstufe zu testen</string>
+    <string name="routine_editor_preview">Zeitachsen-Vorschau</string>
+    <string name="routine_editor_preview_placeholder">Dein Routinen-Titel</string>
+    <string name="backup_working_export">Backup wird exportiert…</string>
+    <string name="backup_working_import">Backup wird wiederhergestellt…</string>
 </resources>

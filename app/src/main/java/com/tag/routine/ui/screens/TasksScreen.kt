@@ -1,5 +1,6 @@
 package com.tag.routine.ui.screens
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +40,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,6 +76,14 @@ import com.tag.routine.ui.components.MetaPill
 import com.tag.routine.ui.components.ScreenHeader
 import com.tag.routine.ui.components.SectionHeader
 import com.tag.routine.ui.components.SwipeToDelete
+import com.tag.routine.ui.components.TasksEmptyState
+import com.tag.routine.ui.motion.AnimationLevel
+import com.tag.routine.ui.motion.HapticKind
+import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.TagMotion
+import com.tag.routine.ui.motion.glowPulse
+import com.tag.routine.ui.motion.pressScale
+import com.tag.routine.ui.motion.staggeredEnter
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
 import java.time.LocalDate
@@ -176,7 +187,7 @@ fun TasksScreen(
                 contentPadding = PaddingValues(horizontal = spacing.lg),
                 horizontalArrangement = Arrangement.spacedBy(spacing.sm),
             ) {
-                item {
+                item(key = "filter-all") {
                     AppChip(
                         text = stringResource(R.string.tasks_filter_all),
                         selected = filter == TaskFilter.ALL,
@@ -184,28 +195,28 @@ fun TasksScreen(
                         trailingCount = state.totalTasks,
                     )
                 }
-                item {
+                item(key = "filter-today") {
                     AppChip(
                         text = stringResource(R.string.tasks_filter_today),
                         selected = filter == TaskFilter.TODAY,
                         onClick = { onFilter(TaskFilter.TODAY) },
                     )
                 }
-                item {
+                item(key = "filter-upcoming") {
                     AppChip(
                         text = stringResource(R.string.tasks_filter_upcoming),
                         selected = filter == TaskFilter.UPCOMING,
                         onClick = { onFilter(TaskFilter.UPCOMING) },
                     )
                 }
-                item {
+                item(key = "filter-overdue") {
                     AppChip(
                         text = stringResource(R.string.tasks_filter_overdue),
                         selected = filter == TaskFilter.OVERDUE,
                         onClick = { onFilter(TaskFilter.OVERDUE) },
                     )
                 }
-                item {
+                item(key = "filter-done") {
                     AppChip(
                         text = stringResource(R.string.tasks_filter_done),
                         selected = filter == TaskFilter.DONE,
@@ -223,7 +234,7 @@ fun TasksScreen(
                     contentPadding = PaddingValues(horizontal = spacing.lg),
                     horizontalArrangement = Arrangement.spacedBy(spacing.sm),
                 ) {
-                    item {
+                    item(key = "tag-all") {
                         AppChip(
                             text = stringResource(R.string.tasks_filter_all),
                             selected = tagFilter == null,
@@ -251,27 +262,19 @@ fun TasksScreen(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    EmptyState(
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Rounded.CheckCircle,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(36.dp),
-                            )
-                        },
-                        title = if (hasActiveFilters) {
-                            stringResource(R.string.tasks_no_matches)
-                        } else {
-                            stringResource(R.string.tasks_empty_title)
-                        },
-                        message = if (hasActiveFilters) {
-                            stringResource(R.string.tasks_try_different_search)
-                        } else {
-                            stringResource(R.string.tasks_empty_message)
-                        },
-                        action = {
-                            if (hasActiveFilters) {
+                    if (hasActiveFilters) {
+                        EmptyState(
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.CheckCircle,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(36.dp),
+                                )
+                            },
+                            title = stringResource(R.string.tasks_no_matches),
+                            message = stringResource(R.string.tasks_try_different_search),
+                            action = {
                                 AppButton(
                                     text = stringResource(R.string.action_clear),
                                     onClick = {
@@ -281,25 +284,16 @@ fun TasksScreen(
                                     },
                                     variant = AppButtonVariant.Tonal,
                                 )
-                            } else {
-                                AppButton(
-                                    text = stringResource(R.string.tasks_add_task),
-                                    onClick = onAddTask,
-                                    variant = AppButtonVariant.Tonal,
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Add,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(18.dp),
-                                        )
-                                    },
-                                )
-                            }
-                        },
-                    )
+                            },
+                        )
+                    } else {
+                        TasksEmptyState(onAddTask = onAddTask)
+                    }
                     Spacer(Modifier.height(88.dp))
                 }
             } else {
+                val level = LocalAnimationLevel.current
+                val listAnimationKey = Triple(filter, tagFilter, query.isBlank())
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
@@ -322,20 +316,36 @@ fun TasksScreen(
                             },
                         )
                     }
-                    items(state.tasks, key = { it.task.id }) { row ->
-                        SwipeToDelete(
-                            onDelete = { onDeleteTask(row.task.id) },
-                            shape = MaterialTheme.shapes.medium,
-                        ) {
-                            TaskRowCard(
-                                row = row,
-                                today = state.today,
-                                calendarType = state.settings.calendarType,
-                                appLocale = appLocale,
-                                onToggleTask = onToggleTask,
-                                onDeleteTask = onDeleteTask,
-                                onEditTask = onEditTask,
+                    itemsIndexed(state.tasks, key = { _, row -> row.task.id }) { index, row ->
+                        val itemAnimModifier = if (level.isOff) {
+                            Modifier
+                        } else {
+                            Modifier.animateItem(
+                                fadeInSpec = TagMotion.quickTween(),
+                                placementSpec = TagMotion.snappySpring(),
+                                fadeOutSpec = TagMotion.quickTween(),
                             )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .then(itemAnimModifier)
+                                .staggeredEnter(index = index, key = listAnimationKey),
+                        ) {
+                            SwipeToDelete(
+                                onDelete = { onDeleteTask(row.task.id) },
+                                shape = MaterialTheme.shapes.medium,
+                            ) {
+                                TaskRowCard(
+                                    row = row,
+                                    today = state.today,
+                                    calendarType = state.settings.calendarType,
+                                    appLocale = appLocale,
+                                    onToggleTask = onToggleTask,
+                                    onDeleteTask = onDeleteTask,
+                                    onEditTask = onEditTask,
+                                )
+                            }
                         }
                     }
                 }
@@ -347,7 +357,8 @@ fun TasksScreen(
             onClick = onAddTask,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(spacing.lg),
+                .padding(spacing.lg)
+                .pressScale(pressedScale = 0.92f, haptic = HapticKind.TICK),
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
             shape = RoundedCornerShape(20.dp),
@@ -383,11 +394,26 @@ private fun TaskRowCard(
         else -> brand.success
     }
 
-    val titleColor = if (done) {
-        MaterialTheme.colorScheme.onSurface.copy(alpha = if (brand.isDark) 0.78f else 0.72f)
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
+    val level = LocalAnimationLevel.current
+    val colorSpec = if (level.isOff) TagMotion.instantTween<Color>(0) else TagMotion.quickTween()
+    val cardBg by animateColorAsState(
+        targetValue = if (done) {
+            MaterialTheme.colorScheme.surfaceContainerLowest
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerLow
+        },
+        animationSpec = colorSpec,
+        label = "task-card-bg",
+    )
+    val titleColor by animateColorAsState(
+        targetValue = if (done) {
+            MaterialTheme.colorScheme.onSurface.copy(alpha = if (brand.isDark) 0.78f else 0.72f)
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        },
+        animationSpec = colorSpec,
+        label = "task-title-color",
+    )
     val noteColor = if (done) {
         MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f)
     } else {
@@ -401,11 +427,7 @@ private fun TaskRowCard(
     AppCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
-        containerColor = if (done) {
-            MaterialTheme.colorScheme.surfaceContainerLowest
-        } else {
-            MaterialTheme.colorScheme.surfaceContainerLow
-        },
+        containerColor = cardBg,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)),
     ) {
         Row(
@@ -497,6 +519,7 @@ private fun TaskRowCard(
                             )
                         }
                         if (formattedDueLabel != null) {
+                            val isOverdue = row.dueState == DueState.OVERDUE && !done
                             val dueColor = when (row.dueState) {
                                 DueState.OVERDUE -> MaterialTheme.colorScheme.error
                                 DueState.TODAY -> MaterialTheme.colorScheme.tertiary
@@ -504,8 +527,27 @@ private fun TaskRowCard(
                             }
                             MetaPill(
                                 text = formattedDueLabel,
-                                container = dueColor.copy(alpha = 0.12f),
+                                container = dueColor.copy(alpha = if (isOverdue) 0.16f else 0.12f),
                                 contentColor = dueColor,
+                                leading = if (isOverdue) {
+                                    {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(7.dp)
+                                                .clip(CircleShape)
+                                                .background(dueColor),
+                                        )
+                                    }
+                                } else {
+                                    null
+                                },
+                                modifier = Modifier.glowPulse(
+                                    glowColor = dueColor,
+                                    cornerRadius = 12.dp,
+                                    maxAlpha = 0.26f,
+                                    durationMillis = 2200,
+                                    enabled = isOverdue && level == AnimationLevel.FULL,
+                                ),
                             )
                         }
                     }

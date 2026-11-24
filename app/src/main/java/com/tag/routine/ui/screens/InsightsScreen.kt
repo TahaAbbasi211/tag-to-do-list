@@ -40,6 +40,11 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -56,18 +61,21 @@ import com.tag.routine.data.WeekComparison
 import com.tag.routine.data.WeeklyReport
 import com.tag.routine.data.WeeklyReportEngine
 import com.tag.routine.ui.UiState
+import com.tag.routine.ui.components.AnimatedStatTile
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.EmptyState
 import com.tag.routine.ui.components.HeatmapGrid
 import com.tag.routine.ui.components.LargeScreenFrame
 import com.tag.routine.ui.components.MiniRing
-import com.tag.routine.ui.components.RingWithLabel
 import com.tag.routine.ui.components.ScreenHeader
 import com.tag.routine.ui.components.SectionHeader
 import com.tag.routine.ui.components.StatTile
 import com.tag.routine.ui.components.StatTilePair
 import com.tag.routine.ui.components.ThinProgressBar
 import com.tag.routine.ui.components.WeeklyBarChart
+import com.tag.routine.ui.motion.AnimatedRing
+import com.tag.routine.ui.motion.AuroraBackground
+import com.tag.routine.ui.motion.CountUpText
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
 import java.time.DayOfWeek
@@ -162,95 +170,118 @@ private fun InsightsContent(state: UiState) {
         ),
         verticalArrangement = Arrangement.spacedBy(spacing.lg),
     ) {
-        item {
+        item(key = "insights-header") {
             ScreenHeader(
                 title = stringResource(R.string.nav_insights),
                 subtitle = stringResource(R.string.insights_subtitle),
             )
         }
 
-        // Consistency score hero
-        item {
+        // Consistency score hero (living aurora backdrop + fill-up ring + count-up number)
+        item(key = "insights-consistency-hero") {
+            val ringSize = if (fontScale > 1.4f) 200.dp else 136.dp
+            val consistencyTarget = (insights.weeklyConsistency / 100f).coerceIn(0f, 1f)
+            val heroA11y = Dates.formatDigits(
+                stringResource(R.string.a11y_progress, insights.weeklyConsistency),
+                appLocale,
+            )
             AppCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)),
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(spacing.xl),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                AuroraBackground(
+                    colors = brand.auroraColors,
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Box(
+                    Column(
                         modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(brand.streak.copy(alpha = 0.16f)),
-                        contentAlignment = Alignment.Center,
+                            .fillMaxWidth()
+                            .padding(spacing.xl),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.EmojiEvents,
-                            contentDescription = null,
-                            tint = brand.streak,
-                            modifier = Modifier.size(26.dp),
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(brand.streak.copy(alpha = 0.16f)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.EmojiEvents,
+                                contentDescription = null,
+                                tint = brand.streak,
+                                modifier = Modifier.size(26.dp),
+                            )
+                        }
+                        Spacer(Modifier.height(spacing.md))
+                        Text(
+                            text = stringResource(R.string.insights_consistency),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
                         )
-                    }
-                    Spacer(Modifier.height(spacing.md))
-                    Text(
-                        text = stringResource(R.string.insights_consistency),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                    )
-                    Spacer(Modifier.height(spacing.lg))
-                    RingWithLabel(
-                        progress = (insights.weeklyConsistency / 100f).coerceIn(0f, 1f),
-                        ringSize = if (fontScale > 1.4f) 200.dp else 136.dp,
-                        strokeWidth = 12.dp,
-                        trackColor = brand.chartTrack,
-                        startColor = MaterialTheme.colorScheme.primary,
-                        endColor = brand.success,
-                        contentDescription = Dates.formatDigits(
-                            stringResource(R.string.a11y_progress, insights.weeklyConsistency),
-                            appLocale,
-                        ),
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = Dates.formatDigits("${insights.weeklyConsistency}", appLocale),
-                                style = MaterialTheme.typography.displayMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                                maxLines = 1,
-                                softWrap = false,
+                        Spacer(Modifier.height(spacing.lg))
+                        Box(
+                            modifier = Modifier
+                                .size(ringSize)
+                                .semantics(mergeDescendants = true) {
+                                    contentDescription = heroA11y
+                                    progressBarRangeInfo = ProgressBarRangeInfo(consistencyTarget, 0f..1f)
+                                },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            AnimatedRing(
+                                progress = consistencyTarget,
+                                modifier = Modifier
+                                    .size(ringSize)
+                                    .clearAndSetSemantics {},
+                                strokeWidth = 12.dp,
+                                trackColor = brand.chartTrack,
+                                startColor = MaterialTheme.colorScheme.primary,
+                                endColor = brand.success,
+                                animateFromZero = true,
                             )
-                            Text(
-                                text = Dates.formatDigits(stringResource(R.string.insights_out_of_100), appLocale),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                            )
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                CountUpText(
+                                    value = insights.weeklyConsistency,
+                                    format = { Dates.formatDigits("$it", appLocale) },
+                                    style = MaterialTheme.typography.displayMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    animateFromZero = true,
+                                    modifier = Modifier.clearAndSetSemantics {},
+                                )
+                                Text(
+                                    text = Dates.formatDigits(stringResource(R.string.insights_out_of_100), appLocale),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    modifier = Modifier.clearAndSetSemantics {},
+                                )
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Key metrics grid (2 balanced columns so large fonts never cramp)
-        item {
+        // Key metrics grid (2 balanced columns with count-up numerals)
+        item(key = "insights-key-metrics") {
             Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
                 StatTilePair { tileModifier ->
-                    StatTile(
-                        value = Dates.formatDigits("${insights.currentStreak}", appLocale),
+                    AnimatedStatTile(
+                        count = insights.currentStreak,
+                        format = { Dates.formatDigits("$it", appLocale) },
                         label = stringResource(R.string.insights_current_streak),
                         modifier = tileModifier,
                         accent = brand.streak,
                         suffix = daySuffix,
                     )
-                    StatTile(
-                        value = Dates.formatDigits("${insights.bestStreak}", appLocale),
+                    AnimatedStatTile(
+                        count = insights.bestStreak,
+                        format = { Dates.formatDigits("$it", appLocale) },
                         label = stringResource(R.string.insights_best_streak),
                         modifier = tileModifier,
                         accent = MaterialTheme.colorScheme.primary,
@@ -258,14 +289,16 @@ private fun InsightsContent(state: UiState) {
                     )
                 }
                 StatTilePair { tileModifier ->
-                    StatTile(
-                        value = Dates.formatDigits("${insights.totalCompletions}", appLocale),
+                    AnimatedStatTile(
+                        count = insights.totalCompletions,
+                        format = { Dates.formatDigits("$it", appLocale) },
                         label = stringResource(R.string.insights_completions),
                         modifier = tileModifier,
                         accent = brand.success,
                     )
-                    StatTile(
-                        value = Dates.formatDuration(focusSummary.totalMinutes, resources, appLocale),
+                    AnimatedStatTile(
+                        count = focusSummary.totalMinutes,
+                        format = { Dates.formatDuration(it, resources, appLocale) },
                         label = stringResource(R.string.insights_focus_time),
                         modifier = tileModifier,
                         accent = MaterialTheme.colorScheme.secondary,
@@ -275,7 +308,7 @@ private fun InsightsContent(state: UiState) {
         }
 
         // Weekly report
-        item {
+        item(key = "insights-weekly-report") {
             WeeklyReportCard(
                 report = weeklyReport,
                 daySuffix = daySuffix,
@@ -285,7 +318,7 @@ private fun InsightsContent(state: UiState) {
         }
 
         // Total focus & top focused items breakdown
-        item {
+        item(key = "insights-focus-breakdown") {
             AppCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
@@ -370,7 +403,7 @@ private fun InsightsContent(state: UiState) {
 
         // Weekday strengths & streak forecast
         if (insights.bestWeekday != null || insights.worstWeekday != null) {
-            item {
+            item(key = "insights-weekday-forecast") {
                 AppCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.large,
@@ -413,7 +446,7 @@ private fun InsightsContent(state: UiState) {
         }
 
         // Weekly bar chart
-        item {
+        item(key = "insights-weekly-bar-chart") {
             AppCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
@@ -435,7 +468,7 @@ private fun InsightsContent(state: UiState) {
         }
 
         // 12-week heatmap
-        item {
+        item(key = "insights-heatmap") {
             AppCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
@@ -459,7 +492,7 @@ private fun InsightsContent(state: UiState) {
 
         // Top routines leaderboard
         if (state.routineRates.isNotEmpty()) {
-            item {
+            item(key = "insights-top-routines") {
                 AppCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.large,
@@ -492,7 +525,7 @@ private fun InsightsContent(state: UiState) {
         }
 
         // Task stats
-        item {
+        item(key = "insights-task-stats") {
             AppCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
@@ -505,22 +538,25 @@ private fun InsightsContent(state: UiState) {
                 ) {
                     SectionHeader(title = stringResource(R.string.insights_tasks))
                     StatTilePair { tileModifier ->
-                        StatTile(
-                            value = Dates.formatDigits("${state.totalTasks}", appLocale),
+                        AnimatedStatTile(
+                            count = state.totalTasks,
+                            format = { Dates.formatDigits("$it", appLocale) },
                             label = stringResource(R.string.insights_total_tasks),
                             modifier = tileModifier,
                             accent = MaterialTheme.colorScheme.primary,
                         )
-                        StatTile(
-                            value = Dates.formatDigits("${state.doneTasks}", appLocale),
+                        AnimatedStatTile(
+                            count = state.doneTasks,
+                            format = { Dates.formatDigits("$it", appLocale) },
                             label = stringResource(R.string.insights_completed),
                             modifier = tileModifier,
                             accent = brand.success,
                         )
                     }
                     val rate = if (state.totalTasks == 0) 0f else state.doneTasks.toFloat() / state.totalTasks
-                    StatTile(
-                        value = Dates.formatDigits("${(rate * 100).toInt()}", appLocale),
+                    AnimatedStatTile(
+                        count = (rate * 100).toInt(),
+                        format = { Dates.formatDigits("$it", appLocale) },
                         label = stringResource(R.string.insights_completion_rate),
                         modifier = Modifier.fillMaxWidth(),
                         accent = MaterialTheme.colorScheme.secondary,
@@ -597,6 +633,7 @@ private fun FocusedItemRow(
             progress = fraction,
             modifier = Modifier.fillMaxWidth(),
             color = accent,
+            animateFromZero = true,
         )
     }
 }
@@ -698,30 +735,108 @@ private fun WeeklyReportCard(
             )
 
             StatTilePair { tileModifier ->
-                StatTile(
-                    value = report.currentWeekPercent?.let { Dates.formatPercent(it, appLocale) } ?: "–",
-                    label = stringResource(R.string.insights_this_week),
-                    modifier = tileModifier,
-                    accent = MaterialTheme.colorScheme.primary,
-                )
-                StatTile(
-                    value = report.previousWeekPercent?.let { Dates.formatPercent(it, appLocale) } ?: "–",
-                    label = stringResource(R.string.insights_last_week),
-                    modifier = tileModifier,
-                    accent = MaterialTheme.colorScheme.secondary,
-                )
+                if (report.currentWeekPercent != null) {
+                    AnimatedStatTile(
+                        count = report.currentWeekPercent,
+                        format = { Dates.formatPercent(it, appLocale) },
+                        label = stringResource(R.string.insights_this_week),
+                        modifier = tileModifier,
+                        accent = MaterialTheme.colorScheme.primary,
+                    )
+                } else {
+                    StatTile(
+                        value = "–",
+                        label = stringResource(R.string.insights_this_week),
+                        modifier = tileModifier,
+                        accent = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                if (report.previousWeekPercent != null) {
+                    AnimatedStatTile(
+                        count = report.previousWeekPercent,
+                        format = { Dates.formatPercent(it, appLocale) },
+                        label = stringResource(R.string.insights_last_week),
+                        modifier = tileModifier,
+                        accent = MaterialTheme.colorScheme.secondary,
+                    )
+                } else {
+                    StatTile(
+                        value = "–",
+                        label = stringResource(R.string.insights_last_week),
+                        modifier = tileModifier,
+                        accent = MaterialTheme.colorScheme.secondary,
+                    )
+                }
+            }
+
+            // Animated comparison bars for this week vs last week
+            if (report.currentWeekPercent != null || report.previousWeekPercent != null) {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                    report.currentWeekPercent?.let { pct ->
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.insights_this_week),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Text(
+                                    text = Dates.formatPercent(pct, appLocale),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                            ThinProgressBar(
+                                progress = (pct / 100f).coerceIn(0f, 1f),
+                                color = MaterialTheme.colorScheme.primary,
+                                animateFromZero = true,
+                            )
+                        }
+                    }
+                    report.previousWeekPercent?.let { pct ->
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.insights_last_week),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Text(
+                                    text = Dates.formatPercent(pct, appLocale),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                )
+                            }
+                            ThinProgressBar(
+                                progress = (pct / 100f).coerceIn(0f, 1f),
+                                color = MaterialTheme.colorScheme.secondary,
+                                animateFromZero = true,
+                            )
+                        }
+                    }
+                }
             }
 
             StatTilePair { tileModifier ->
-                StatTile(
-                    value = Dates.formatDigits("${report.perfectDaysCurrentWeek}", appLocale),
+                AnimatedStatTile(
+                    count = report.perfectDaysCurrentWeek,
+                    format = { Dates.formatDigits("$it", appLocale) },
                     label = stringResource(R.string.insights_perfect_days),
                     modifier = tileModifier,
                     accent = brand.success,
                     suffix = daySuffix,
                 )
-                StatTile(
-                    value = Dates.formatDigits("${report.currentStreak}", appLocale),
+                AnimatedStatTile(
+                    count = report.currentStreak,
+                    format = { Dates.formatDigits("$it", appLocale) },
                     label = stringResource(R.string.insights_streak),
                     modifier = tileModifier,
                     accent = brand.streak,
@@ -841,46 +956,58 @@ private fun WeeklyHighlightRow(
     val itemAccent = Color(RoutineColors.hexFor(item.routine.colorId, isDark))
     val emoji = RoutineEmojis.resolve(item.routine.icon)
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = spacing.xs),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.spacedBy(spacing.xs),
     ) {
-        Box(
-            modifier = Modifier
-                .size(34.dp)
-                .clip(CircleShape)
-                .background(itemAccent.copy(alpha = 0.2f)),
-            contentAlignment = Alignment.Center,
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(text = emoji, fontSize = 16.sp)
-        }
-        Spacer(Modifier.width(spacing.md))
-        Column(modifier = Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier
+                    .size(34.dp)
+                    .clip(CircleShape)
+                    .background(itemAccent.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(text = emoji, fontSize = 16.sp)
+            }
+            Spacer(Modifier.width(spacing.md))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = accentColor,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = item.routine.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Spacer(Modifier.width(spacing.sm))
             Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
+                text = Dates.formatPercent(item.percent, appLocale),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
                 color = accentColor,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                text = item.routine.title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+                softWrap = false,
             )
         }
-        Spacer(Modifier.width(spacing.sm))
-        Text(
-            text = Dates.formatPercent(item.percent, appLocale),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
+        ThinProgressBar(
+            progress = (item.percent / 100f).coerceIn(0f, 1f),
             color = accentColor,
-            maxLines = 1,
-            softWrap = false,
+            height = 6.dp,
+            animateFromZero = true,
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

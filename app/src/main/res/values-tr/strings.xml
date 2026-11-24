@@ -440,4 +440,23 @@
     <string name="a11y_chart_summary">Son yedi günün günlük tamamlanma oranı: %1$s</string>
     <string name="a11y_no_data">Veri yok</string>
     <string name="a11y_focus_remaining">Kalan süre</string>
+
+    <!-- Living UI & Motion (v2.0) -->
+    <string name="settings_animation_level">Animasyon düzeyi</string>
+    <string name="settings_animation_level_sub">Hareket, parçacık ve ortam efektlerini yönetin</string>
+    <string name="animation_level_auto">Otomatik</string>
+    <string name="animation_level_full">Tam</string>
+    <string name="animation_level_reduced">Azaltılmış</string>
+    <string name="animation_level_off">Kapalı</string>
+    <string name="today_all_done_celebration">Bugün için her şey tamam!</string>
+    <string name="streak_milestone_banner">%1$d günlük seri dönüm noktası! Devam et!</string>
+    <string name="focus_calm_mode_enter">Sakin mod için halkaya dokunun</string>
+    <string name="focus_calm_mode_exit">Kontrolleri göstermek için halkaya dokunun</string>
+    <string name="focus_session_completed">Odak oturumu tamamlandı!</string>
+    <string name="settings_animation_demo_label">Canlı önizleme</string>
+    <string name="settings_animation_demo_hint">Aktif hareket düzeyini denemek için dokunun</string>
+    <string name="routine_editor_preview">Zaman çizelgesi önizlemesi</string>
+    <string name="routine_editor_preview_placeholder">Rutininizin başlığı</string>
+    <string name="backup_working_export">Yedek dışa aktarılıyor…</string>
+    <string name="backup_working_import">Yedek geri yükleniyor…</string>
 </resources>

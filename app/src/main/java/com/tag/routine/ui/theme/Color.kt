@@ -82,6 +82,7 @@ data class TagBrand(
     val onHeroMuted: Color,
     val cardBorder: Color,
     val isDark: Boolean,
+    val auroraColors: List<Color> = listOf(Violet, Mint, Amber),
 )
 
 val DarkBrand = TagBrand(

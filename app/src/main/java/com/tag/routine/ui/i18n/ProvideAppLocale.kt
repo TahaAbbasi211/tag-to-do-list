@@ -1,13 +1,34 @@
 package com.tag.routine.ui.i18n
 
 import android.content.Context
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import com.tag.routine.ui.motion.AnimatedDialogSurface
 
 /**
  * Re-applies the in-app language override inside a dialog window.
@@ -49,11 +70,10 @@ fun ProvideAppLocale(
 }
 
 /**
- * [AlertDialog] whose title, body and buttons render in the app's chosen language.
- *
- * Each slot is composed inside the dialog window, so each one has to be re-wrapped; doing
- * it here keeps the call sites readable.
+ * Material 3 dialog whose title, body and buttons render in the app's chosen language
+ * and enter with [AnimatedDialogSurface] (spring scale + fade).
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LocalizedAlertDialog(
     localizedContext: Context,
@@ -63,13 +83,65 @@ fun LocalizedAlertDialog(
     title: (@Composable () -> Unit)? = null,
     text: (@Composable () -> Unit)? = null,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = title?.let { slot -> { ProvideAppLocale(localizedContext) { slot() } } },
-        text = text?.let { slot -> { ProvideAppLocale(localizedContext) { slot() } } },
-        confirmButton = { ProvideAppLocale(localizedContext) { confirmButton() } },
-        dismissButton = dismissButton?.let { slot ->
-            { ProvideAppLocale(localizedContext) { slot() } }
-        },
-    )
+    Dialog(onDismissRequest = onDismissRequest) {
+        AnimatedDialogSurface {
+            ProvideAppLocale(localizedContext) {
+                Surface(
+                    modifier = Modifier
+                        .widthIn(min = 280.dp, max = 560.dp)
+                        .fillMaxWidth(),
+                    shape = AlertDialogDefaults.shape,
+                    color = AlertDialogDefaults.containerColor,
+                    tonalElevation = AlertDialogDefaults.TonalElevation,
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                    ) {
+                        if (title != null) {
+                            CompositionLocalProvider(LocalContentColor provides AlertDialogDefaults.titleContentColor) {
+                                ProvideTextStyle(MaterialTheme.typography.headlineSmall) {
+                                    Box(modifier = Modifier.fillMaxWidth()) {
+                                        title()
+                                    }
+                                }
+                            }
+                            Spacer(Modifier.height(16.dp))
+                        }
+                        if (text != null) {
+                            CompositionLocalProvider(LocalContentColor provides AlertDialogDefaults.textContentColor) {
+                                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f, fill = false)
+                                            .verticalScroll(rememberScrollState()),
+                                    ) {
+                                        text()
+                                    }
+                                }
+                            }
+                            Spacer(Modifier.height(24.dp))
+                        }
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.CenterEnd,
+                        ) {
+                            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
+                                ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    ) {
+                                        dismissButton?.invoke()
+                                        confirmButton()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

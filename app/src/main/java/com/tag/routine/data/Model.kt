@@ -120,6 +120,19 @@ enum class CalendarType(val key: String) {
     }
 }
 
+/** User preference for UI animation intensity. */
+enum class AnimationSetting(val key: String) {
+    AUTO("auto"),
+    FULL("full"),
+    REDUCED("reduced"),
+    OFF("off");
+
+    companion object {
+        fun fromKey(value: String?): AnimationSetting =
+            entries.firstOrNull { it.key == value } ?: AUTO
+    }
+}
+
 data class AppSettings(
     val themeMode: Int = ThemeMode.SYSTEM,
     val themePalette: String = Palettes.VIOLET,
@@ -139,6 +152,8 @@ data class AppSettings(
     val firstLaunchDate: String = "",
     /** True once the user explicitly dismissed the first-day templates card on Today. */
     val templatesCardDismissed: Boolean = false,
+    /** User-selected animation level preference (Auto / Full / Reduced / Off). */
+    val animationSetting: AnimationSetting = AnimationSetting.AUTO,
 ) {
     object ThemeMode {
         const val SYSTEM = 0

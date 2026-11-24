@@ -43,6 +43,7 @@ import com.tag.routine.ui.components.AppButton
 import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.i18n.ProvideAppLocale
+import com.tag.routine.ui.motion.AnimatedSheetContent
 import com.tag.routine.ui.theme.spacing
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -61,6 +62,7 @@ fun TemplatePickerSheet(
         containerColor = MaterialTheme.colorScheme.surface,
         sheetMaxWidth = 640.dp,
     ) {
+        AnimatedSheetContent {
         ProvideAppLocale(localizedContext) {
             Column(
                 modifier = Modifier
@@ -170,6 +172,7 @@ fun TemplatePickerSheet(
 
                 Spacer(Modifier.height(16.dp))
             }
+        }
         }
     }
 }

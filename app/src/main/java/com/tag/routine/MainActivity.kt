@@ -1,15 +1,33 @@
 package com.tag.routine
 
 import android.Manifest
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
+import android.view.animation.PathInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,10 +38,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -42,13 +58,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -65,8 +85,12 @@ import com.tag.routine.ui.components.PillNavBar
 import com.tag.routine.ui.editors.RoutineEditorSheet
 import com.tag.routine.ui.editors.TaskEditorSheet
 import com.tag.routine.ui.editors.TemplatePickerSheet
+import com.tag.routine.ui.i18n.LocalizedAlertDialog
 import com.tag.routine.ui.i18n.LocalizedApp
-import com.tag.routine.ui.i18n.ProvideAppLocale
+import com.tag.routine.ui.motion.AnimationLevel
+import com.tag.routine.ui.motion.FocusMotionLogic
+import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.TagMotion
 import com.tag.routine.ui.screens.FocusScreen
 import com.tag.routine.ui.screens.InsightsScreen
 import com.tag.routine.ui.screens.LanguageScreen
@@ -96,7 +120,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Must run before super.onCreate so the splash theme is consumed correctly.
-        installSplashScreen()
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition { !viewModel.state.value.loaded }
+        installLivingSplashExit(splashScreen)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -111,6 +137,8 @@ class MainActivity : ComponentActivity() {
                     themeMode = state.settings.themeMode,
                     paletteKey = state.settings.themePalette,
                     dynamicColor = state.settings.dynamicColor,
+                    animationSetting = state.settings.animationSetting,
+                    hapticsEnabled = state.settings.hapticsEnabled,
                 ) {
                     // First launch: ask for a name before showing the app itself.
                     // The flag lives in the settings store, so this only ever shows once.
@@ -138,7 +166,72 @@ class MainActivity : ComponentActivity() {
         // Ensures widgets catch up on day boundaries or after any skipped background refresh.
         WidgetRefresh.request(applicationContext)
     }
+
+    /**
+     * Smoothly fades the splash backdrop and scales/lifts the launcher icon upward toward
+     * the Today hero while honoring system reduced-motion settings and API guards.
+     */
+    private fun installLivingSplashExit(splashScreen: SplashScreen) {
+        splashScreen.setOnExitAnimationListener { splashProvider ->
+            val animatorsEnabled = runCatching { ValueAnimator.areAnimatorsEnabled() }.getOrDefault(true)
+            val durationScale = runCatching {
+                Settings.Global.getFloat(
+                    contentResolver,
+                    Settings.Global.ANIMATOR_DURATION_SCALE,
+                    1f,
+                )
+            }.getOrDefault(1f)
+            if (!animatorsEnabled || durationScale <= 0f) {
+                runCatching { splashProvider.remove() }
+                return@setOnExitAnimationListener
+            }
+
+            runCatching {
+                val rootView = splashProvider.view
+                val iconView = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    runCatching { splashProvider.iconView }.getOrNull()
+                } else {
+                    null
+                }
+                val interpolator = PathInterpolator(0.05f, 0.7f, 0.1f, 1f)
+                val heroLiftPx = -resources.displayMetrics.density * 36f
+                val animators = mutableListOf<Animator>(
+                    ObjectAnimator.ofFloat(rootView, View.ALPHA, 1f, 0f),
+                )
+                if (iconView != null) {
+                    animators += ObjectAnimator.ofFloat(iconView, View.SCALE_X, 1f, 1.18f)
+                    animators += ObjectAnimator.ofFloat(iconView, View.SCALE_Y, 1f, 1.18f)
+                    animators += ObjectAnimator.ofFloat(iconView, View.TRANSLATION_Y, 0f, heroLiftPx)
+                    animators += ObjectAnimator.ofFloat(iconView, View.ALPHA, 1f, 0f)
+                }
+                AnimatorSet().apply {
+                    playTogether(animators)
+                    duration = TagMotion.DURATION_STANDARD.toLong()
+                    setInterpolator(interpolator)
+                    addListener(
+                        object : AnimatorListenerAdapter() {
+                            override fun onAnimationEnd(animation: Animator) {
+                                runCatching { splashProvider.remove() }
+                            }
+
+                            override fun onAnimationCancel(animation: Animator) {
+                                runCatching { splashProvider.remove() }
+                            }
+                        },
+                    )
+                    start()
+                }
+            }.onFailure {
+                runCatching { splashProvider.remove() }
+            }
+        }
+    }
 }
+
+private data class RootDestination(
+    val tab: Tab,
+    val languageSubPage: Boolean,
+)
 
 @Composable
 private fun TagRoot(state: UiState, viewModel: AppViewModel) {
@@ -151,9 +244,20 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
     var showTemplatesSheet by remember { mutableStateOf(false) }
     // Settings owns a small sub-page stack: null means the settings list.
     var showLanguagePage by remember { mutableStateOf(false) }
+    var focusCalmMode by remember { mutableStateOf(false) }
 
     val focus by viewModel.focus.collectAsState()
     val backupState by viewModel.backupUiState.collectAsState()
+
+    LaunchedEffect(tab, focus.routineId) {
+        if (tab != Tab.FOCUS || focus.routineId == null) {
+            focusCalmMode = false
+        }
+    }
+
+    BackHandler(enabled = focusCalmMode && tab == Tab.FOCUS) {
+        focusCalmMode = false
+    }
 
     val query by viewModel.query.collectAsState()
     val filter by viewModel.activeFilter.collectAsState()
@@ -205,11 +309,40 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
         }
     }
 
+    val entryLevel = LocalAnimationLevel.current
+    val rootEnter = remember { Animatable(if (entryLevel.isOff) 1f else 0f) }
+    LaunchedEffect(Unit) {
+        if (entryLevel.isOff) {
+            rootEnter.snapTo(1f)
+        } else {
+            rootEnter.animateTo(
+                targetValue = 1f,
+                animationSpec = if (entryLevel == AnimationLevel.FULL) {
+                    TagMotion.emphasizedTween()
+                } else {
+                    TagMotion.quickTween()
+                },
+            )
+        }
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    val p = rootEnter.value.coerceIn(0f, 1f)
+                    alpha = p
+                    if (entryLevel == AnimationLevel.FULL) {
+                        val s = 0.975f + 0.025f * p
+                        scaleX = s
+                        scaleY = s
+                    }
+                },
+        ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Box(
                     modifier = Modifier
@@ -218,130 +351,195 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                 ) {
                     // The language page is a sub-page of Settings and takes over the
                     // content area, so switching tabs clears it.
-                    if (showLanguagePage && tab == Tab.SETTINGS) {
-                        LanguageScreen(
-                            current = state.settings.language,
-                            onSelect = viewModel::setLanguage,
-                            onBack = { showLanguagePage = false },
-                        )
-                    } else {
-                        when (tab) {
-                            Tab.TODAY -> TodayScreen(
-                                state = state,
-                                onToggleRoutine = viewModel::toggleRoutine,
-                                onSelectDate = viewModel::selectDate,
-                                onAddRoutine = { creatingRoutine = true },
-                                onEditRoutine = { editingRoutine = it },
-                                onDeleteRoutine = { routine ->
-                                    if (routine.repeatDaily) {
-                                        pendingDeleteRecurring = routine
-                                    } else {
-                                        viewModel.deleteRoutine(routine.id)
-                                        offerUndo(undoRoutineLabel) { viewModel.restoreRoutine(routine) }
-                                    }
-                                },
-                                // The Today hero pill jumps to the dedicated Focus
-                                // section, which owns duration selection and history.
-                                onStartFocus = { tab = Tab.FOCUS },
-                                onStartFocusForRoutine = { routine ->
-                                    if (focus.routineId != routine.id) {
-                                        viewModel.startFocus(routine, state.settings.focusMinutes)
-                                    }
-                                    tab = Tab.FOCUS
-                                },
-                                onMoveRoutine = viewModel::moveRoutine,
-                                onOpenTemplates = { showTemplatesSheet = true },
-                                onDismissTemplatesCard = viewModel::dismissTemplatesCard,
-                                onCopyPreviousDay = viewModel::copyYesterdayToSelected,
-                                onCopyRoutineToDays = viewModel::copyRoutineToDays,
+                    val level = LocalAnimationLevel.current
+                    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+                    val destination = RootDestination(
+                        tab = tab,
+                        languageSubPage = showLanguagePage && tab == Tab.SETTINGS,
+                    )
+                    AnimatedContent(
+                        targetState = destination,
+                        transitionSpec = {
+                            if (level.isOff) {
+                                ContentTransform(
+                                    targetContentEnter = fadeIn(TagMotion.instantTween(0)),
+                                    initialContentExit = fadeOut(TagMotion.instantTween(0)),
+                                )
+                            } else if (level == AnimationLevel.REDUCED) {
+                                ContentTransform(
+                                    targetContentEnter = fadeIn(TagMotion.quickTween()),
+                                    initialContentExit = fadeOut(TagMotion.instantTween()),
+                                )
+                            } else {
+                                val rawDir = when {
+                                    initialState.languageSubPage != targetState.languageSubPage ->
+                                        if (targetState.languageSubPage) 1 else -1
+                                    else -> targetState.tab.ordinal.compareTo(initialState.tab.ordinal).coerceIn(-1, 1)
+                                }
+                                val dir = if (isRtl) -rawDir else rawDir
+                                ContentTransform(
+                                    targetContentEnter = fadeIn(TagMotion.standardTween()) +
+                                        slideInHorizontally(TagMotion.standardTween()) { width ->
+                                            (width * 0.08f * dir).toInt()
+                                        } +
+                                        scaleIn(initialScale = 0.985f, animationSpec = TagMotion.standardTween()),
+                                    initialContentExit = fadeOut(TagMotion.quickTween()) +
+                                        slideOutHorizontally(TagMotion.quickTween()) { width ->
+                                            (-width * 0.06f * dir).toInt()
+                                        },
+                                )
+                            }
+                        },
+                        label = "root-screen-transition",
+                    ) { dest ->
+                        if (dest.languageSubPage) {
+                            LanguageScreen(
+                                current = state.settings.language,
+                                onSelect = viewModel::setLanguage,
+                                onBack = { showLanguagePage = false },
                             )
+                        } else {
+                            when (dest.tab) {
+                                Tab.TODAY -> TodayScreen(
+                                    state = state,
+                                    onToggleRoutine = viewModel::toggleRoutine,
+                                    onSelectDate = viewModel::selectDate,
+                                    onAddRoutine = { creatingRoutine = true },
+                                    onEditRoutine = { editingRoutine = it },
+                                    onDeleteRoutine = { routine ->
+                                        if (routine.repeatDaily) {
+                                            pendingDeleteRecurring = routine
+                                        } else {
+                                            viewModel.deleteRoutine(routine.id)
+                                            offerUndo(undoRoutineLabel) { viewModel.restoreRoutine(routine) }
+                                        }
+                                    },
+                                    // The Today hero pill jumps to the dedicated Focus
+                                    // section, which owns duration selection and history.
+                                    onStartFocus = { tab = Tab.FOCUS },
+                                    onStartFocusForRoutine = { routine ->
+                                        if (focus.routineId != routine.id) {
+                                            viewModel.startFocus(routine, state.settings.focusMinutes)
+                                        }
+                                        tab = Tab.FOCUS
+                                    },
+                                    onMoveRoutine = viewModel::moveRoutine,
+                                    onOpenTemplates = { showTemplatesSheet = true },
+                                    onDismissTemplatesCard = viewModel::dismissTemplatesCard,
+                                    onCopyPreviousDay = viewModel::copyYesterdayToSelected,
+                                    onCopyRoutineToDays = viewModel::copyRoutineToDays,
+                                )
 
-                            Tab.TASKS -> TasksScreen(
-                                state = state,
-                                query = query,
-                                filter = filter,
-                                tagFilter = tagFilter,
-                                onSearch = viewModel::setSearch,
-                                onFilter = viewModel::setFilter,
-                                onTagFilter = viewModel::setTagFilter,
-                                onToggleTask = viewModel::toggleTask,
-                                onDeleteTask = { id ->
-                                    val removed = state.tasks.firstOrNull { it.task.id == id }?.task
-                                    viewModel.deleteTask(id)
-                                    if (removed != null) {
-                                        offerUndo(undoTaskLabel) { viewModel.restoreTask(removed) }
-                                    }
-                                },
-                                onEditTask = { editingTask = it },
-                                onAddTask = { creatingTask = true },
-                            )
+                                Tab.TASKS -> TasksScreen(
+                                    state = state,
+                                    query = query,
+                                    filter = filter,
+                                    tagFilter = tagFilter,
+                                    onSearch = viewModel::setSearch,
+                                    onFilter = viewModel::setFilter,
+                                    onTagFilter = viewModel::setTagFilter,
+                                    onToggleTask = viewModel::toggleTask,
+                                    onDeleteTask = { id ->
+                                        val removed = state.tasks.firstOrNull { it.task.id == id }?.task
+                                        viewModel.deleteTask(id)
+                                        if (removed != null) {
+                                            offerUndo(undoTaskLabel) { viewModel.restoreTask(removed) }
+                                        }
+                                    },
+                                    onEditTask = { editingTask = it },
+                                    onAddTask = { creatingTask = true },
+                                )
 
-                            Tab.FOCUS -> FocusScreen(
-                                routines = state.allRoutines,
-                                focus = focus,
-                                stats = state.focusStats,
-                                defaultMinutes = state.settings.focusMinutes,
-                                calendarType = state.settings.calendarType,
-                                onStart = viewModel::startFocus,
-                                onPause = viewModel::pauseFocus,
-                                onResume = viewModel::resumeFocus,
-                                onFinish = viewModel::finishFocus,
-                            )
+                                Tab.FOCUS -> FocusScreen(
+                                    routines = state.allRoutines,
+                                    focus = focus,
+                                    stats = state.focusStats,
+                                    defaultMinutes = state.settings.focusMinutes,
+                                    calendarType = state.settings.calendarType,
+                                    calmMode = focusCalmMode,
+                                    onToggleCalmMode = {
+                                        focusCalmMode = FocusMotionLogic.resolveCalmMode(
+                                            requestedCalm = !focusCalmMode,
+                                            hasActiveSession = focus.routineId != null,
+                                        )
+                                    },
+                                    onStart = viewModel::startFocus,
+                                    onPause = viewModel::pauseFocus,
+                                    onResume = viewModel::resumeFocus,
+                                    onFinish = viewModel::finishFocus,
+                                )
 
-                            Tab.INSIGHTS -> InsightsScreen(state = state)
+                                Tab.INSIGHTS -> InsightsScreen(state = state)
 
-                            Tab.SETTINGS -> SettingsScreen(
-                                state = state,
-                                backupState = backupState,
-                                onThemeMode = viewModel::setThemeMode,
-                                onThemePalette = viewModel::setTheme,
-                                onDynamicColor = viewModel::setDynamicColor,
-                                onCalendarType = viewModel::setCalendarType,
-                                onNotifications = viewModel::setNotificationsEnabled,
-                                onDigest = viewModel::setDigestEnabled,
-                                onDigestMinutes = viewModel::setDigestMinutes,
-                                onExportUri = viewModel::exportBackupToUri,
-                                onImportUri = viewModel::inspectBackupUri,
-                                onDismissBackupDialog = viewModel::dismissBackupDialog,
-                                onConfirmMergeRestore = { viewModel.confirmRestore(BackupMode.MERGE) },
-                                onRequestReplaceRestore = viewModel::requestReplaceConfirmation,
-                                onBackToBackupPreview = viewModel::backToPreview,
-                                onConfirmReplaceRestore = { viewModel.confirmRestore(BackupMode.REPLACE) },
-                                onReset = viewModel::resetProgress,
-                                onAddTag = { name -> viewModel.addTag(name) },
-                                onDeleteTag = { id ->
-                                    val removed = state.tags.firstOrNull { it.id == id }
-                                    viewModel.deleteTag(id)
-                                    if (removed != null) {
-                                        offerUndo(undoTagLabel) { viewModel.restoreTag(removed) }
-                                    }
-                                },
-                                onSetName = viewModel::setUserName,
-                                onFocusMinutes = viewModel::setFocusMinutes,
-                                onOpenLanguages = { showLanguagePage = true },
-                            )
+                                Tab.SETTINGS -> SettingsScreen(
+                                    state = state,
+                                    backupState = backupState,
+                                    onThemeMode = viewModel::setThemeMode,
+                                    onThemePalette = viewModel::setTheme,
+                                    onDynamicColor = viewModel::setDynamicColor,
+                                    onAnimationSetting = viewModel::setAnimationSetting,
+                                    onCalendarType = viewModel::setCalendarType,
+                                    onNotifications = viewModel::setNotificationsEnabled,
+                                    onDigest = viewModel::setDigestEnabled,
+                                    onDigestMinutes = viewModel::setDigestMinutes,
+                                    onExportUri = viewModel::exportBackupToUri,
+                                    onImportUri = viewModel::inspectBackupUri,
+                                    onDismissBackupDialog = viewModel::dismissBackupDialog,
+                                    onConfirmMergeRestore = { viewModel.confirmRestore(BackupMode.MERGE) },
+                                    onRequestReplaceRestore = viewModel::requestReplaceConfirmation,
+                                    onBackToBackupPreview = viewModel::backToPreview,
+                                    onConfirmReplaceRestore = { viewModel.confirmRestore(BackupMode.REPLACE) },
+                                    onReset = viewModel::resetProgress,
+                                    onAddTag = { name -> viewModel.addTag(name) },
+                                    onDeleteTag = { id ->
+                                        val removed = state.tags.firstOrNull { it.id == id }
+                                        viewModel.deleteTag(id)
+                                        if (removed != null) {
+                                            offerUndo(undoTagLabel) { viewModel.restoreTag(removed) }
+                                        }
+                                    },
+                                    onSetName = viewModel::setUserName,
+                                    onFocusMinutes = viewModel::setFocusMinutes,
+                                    onOpenLanguages = { showLanguagePage = true },
+                                )
+                            }
                         }
                     }
                 }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.navigationBars)
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                    contentAlignment = Alignment.Center,
+                val navLevel = LocalAnimationLevel.current
+                AnimatedVisibility(
+                    visible = !(focusCalmMode && tab == Tab.FOCUS && focus.routineId != null),
+                    enter = when {
+                        navLevel.isOff -> fadeIn(TagMotion.instantTween(0))
+                        navLevel == AnimationLevel.REDUCED -> fadeIn(TagMotion.quickTween())
+                        else -> fadeIn(TagMotion.standardTween()) + slideInVertically(TagMotion.standardTween()) { it }
+                    },
+                    exit = when {
+                        navLevel.isOff -> fadeOut(TagMotion.instantTween(0))
+                        navLevel == AnimationLevel.REDUCED -> fadeOut(TagMotion.quickTween())
+                        else -> fadeOut(TagMotion.quickTween()) + slideOutVertically(TagMotion.quickTween()) { it }
+                    },
                 ) {
-                    PillNavBar(
-                        current = tab,
-                        onSelect = {
-                            // Leaving Settings always drops its sub-page, so returning to
-                            // Settings later starts on the list rather than a stale page.
-                            if (it != Tab.SETTINGS) showLanguagePage = false
-                            tab = it
-                        },
+                    Box(
                         modifier = Modifier
-                            .widthIn(max = 640.dp)
-                            .fillMaxWidth(),
-                    )
+                            .fillMaxWidth()
+                            .windowInsetsPadding(WindowInsets.navigationBars)
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        PillNavBar(
+                            current = tab,
+                            onSelect = {
+                                // Leaving Settings always drops its sub-page, so returning to
+                                // Settings later starts on the list rather than a stale page.
+                                if (it != Tab.SETTINGS) showLanguagePage = false
+                                tab = it
+                            },
+                            modifier = Modifier
+                                .widthIn(max = 640.dp)
+                                .fillMaxWidth(),
+                        )
+                    }
                 }
             }
 
@@ -417,43 +615,38 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
 
     pendingDeleteRecurring?.let { recurring ->
         val localizedContext = LocalContext.current
-        AlertDialog(
+        LocalizedAlertDialog(
+            localizedContext = localizedContext,
             onDismissRequest = { pendingDeleteRecurring = null },
             title = {
-                ProvideAppLocale(localizedContext) {
-                    Text(stringResource(R.string.delete_recurring_title))
-                }
+                Text(stringResource(R.string.delete_recurring_title))
             },
             text = {
-                ProvideAppLocale(localizedContext) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.delete_recurring_message, recurring.title))
-                        AppButton(
-                            text = stringResource(R.string.delete_recurring_only_this_day),
-                            onClick = {
-                                viewModel.excludeRoutineForDate(recurring.id, state.selectedDate)
-                                pendingDeleteRecurring = null
-                            },
-                            variant = AppButtonVariant.Secondary,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                        AppButton(
-                            text = stringResource(R.string.delete_recurring_from_this_day),
-                            onClick = {
-                                viewModel.endRoutineFromDate(recurring.id, state.selectedDate)
-                                pendingDeleteRecurring = null
-                            },
-                            variant = AppButtonVariant.Tonal,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.delete_recurring_message, recurring.title))
+                    AppButton(
+                        text = stringResource(R.string.delete_recurring_only_this_day),
+                        onClick = {
+                            viewModel.excludeRoutineForDate(recurring.id, state.selectedDate)
+                            pendingDeleteRecurring = null
+                        },
+                        variant = AppButtonVariant.Secondary,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    AppButton(
+                        text = stringResource(R.string.delete_recurring_from_this_day),
+                        onClick = {
+                            viewModel.endRoutineFromDate(recurring.id, state.selectedDate)
+                            pendingDeleteRecurring = null
+                        },
+                        variant = AppButtonVariant.Tonal,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             },
             confirmButton = {
-                ProvideAppLocale(localizedContext) {
-                    TextButton(onClick = { pendingDeleteRecurring = null }) {
-                        Text(stringResource(R.string.action_cancel))
-                    }
+                TextButton(onClick = { pendingDeleteRecurring = null }) {
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
         )
