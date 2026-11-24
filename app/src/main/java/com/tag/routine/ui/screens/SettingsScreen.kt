@@ -85,6 +85,7 @@ import com.tag.routine.ui.components.AppButton
 import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.BackupDialogs
+import com.tag.routine.ui.components.LargeScreenFrame
 import com.tag.routine.ui.components.ScreenHeader
 import com.tag.routine.ui.components.SectionHeader
 import com.tag.routine.ui.components.rememberBackupExportLauncher
@@ -146,6 +147,7 @@ fun SettingsScreen(
         focusInput = settings.focusMinutes.toString()
     }
 
+    LargeScreenFrame {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -440,7 +442,6 @@ fun SettingsScreen(
                             )
                             IconButton(
                                 onClick = { onDeleteTag(tag.id) },
-                                modifier = Modifier.size(36.dp),
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.DeleteForever,
@@ -595,6 +596,7 @@ fun SettingsScreen(
                 )
             }
         }
+    }
     }
 
     // Reset confirmation dialog
