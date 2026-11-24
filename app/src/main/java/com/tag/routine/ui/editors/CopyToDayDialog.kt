@@ -1,5 +1,7 @@
 package com.tag.routine.ui.editors
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,16 +23,21 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -43,6 +50,11 @@ import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.i18n.ProvideAppLocale
 import com.tag.routine.ui.motion.AnimatedDialogSurface
+import com.tag.routine.ui.motion.HapticKind
+import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.TagMotion
+import com.tag.routine.ui.motion.pressScale
+import com.tag.routine.ui.motion.rememberTagHaptics
 import java.time.LocalDate
 import java.util.Locale
 
@@ -169,38 +181,77 @@ private fun DayChip(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    val container = if (selected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.surfaceContainerHigh
+    val level = LocalAnimationLevel.current
+    val haptics = rememberTagHaptics()
+    val colorSpec = if (level.isOff) TagMotion.instantTween<Color>(0) else TagMotion.quickTween()
+    val container by animateColorAsState(
+        targetValue = if (selected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerHigh
+        },
+        animationSpec = colorSpec,
+        label = "copy-day-bg",
+    )
+    val content by animateColorAsState(
+        targetValue = when {
+            selected -> MaterialTheme.colorScheme.onPrimary
+            isToday -> MaterialTheme.colorScheme.primary
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        animationSpec = colorSpec,
+        label = "copy-day-fg",
+    )
+    val borderColor by animateColorAsState(
+        targetValue = when {
+            selected -> MaterialTheme.colorScheme.primary
+            isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+            else -> MaterialTheme.colorScheme.outlineVariant
+        },
+        animationSpec = colorSpec,
+        label = "copy-day-border",
+    )
+
+    var tapCount by remember { mutableIntStateOf(0) }
+    val ripple = remember { Animatable(0f) }
+    LaunchedEffect(tapCount, level) {
+        if (tapCount > 0 && level.allowsMotion) {
+            ripple.snapTo(0.01f)
+            ripple.animateTo(1f, TagMotion.emphasizedTween())
+            ripple.snapTo(0f)
+        } else {
+            ripple.snapTo(0f)
+        }
     }
-    val content = if (selected) {
-        MaterialTheme.colorScheme.onPrimary
-    } else if (isToday) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val rippleTint = MaterialTheme.colorScheme.primary
 
     Box(
         modifier = Modifier
             .sizeIn(minWidth = 46.dp, minHeight = 56.dp)
+            .pressScale(pressedScale = 0.92f)
+            .drawWithContent {
+                drawContent()
+                val r = ripple.value
+                if (r > 0.01f && r < 1f) {
+                    drawCircle(
+                        color = rippleTint.copy(alpha = (1f - r) * 0.28f),
+                        radius = size.maxDimension * (0.35f + r * 0.55f),
+                    )
+                }
+            }
             .clip(RoundedCornerShape(14.dp))
             .background(container)
             .border(
-                width = when {
-                    selected -> 0.dp
-                    isToday -> 1.5.dp
-                    else -> 1.dp
-                },
-                color = when {
-                    selected -> Color.Transparent
-                    isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                    else -> MaterialTheme.colorScheme.outlineVariant
-                },
+                width = if (!selected && isToday) 1.5.dp else 1.dp,
+                color = borderColor,
                 shape = RoundedCornerShape(14.dp),
             )
-            .clickable(onClick = onClick)
+            .semantics { this.selected = selected }
+            .clickable {
+                tapCount++
+                haptics(HapticKind.TICK)
+                onClick()
+            }
             .padding(horizontal = 8.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {

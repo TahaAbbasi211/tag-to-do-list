@@ -589,6 +589,155 @@ fun TodayEmptyState(
     }
 }
 
+/**
+ * Animated floating checklist illustration for empty Tasks state using pure Canvas + [CheckDraw].
+ * Completely hidden from TalkBack ([clearAndSetSemantics]) on decorative artwork.
+ */
+@Composable
+fun TasksEmptyState(
+    modifier: Modifier = Modifier,
+    onAddTask: (() -> Unit)? = null,
+) {
+    val level = LocalAnimationLevel.current
+    val ambientActive = LocalAmbientAnimationsActive.current
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryColor = MaterialTheme.colorScheme.secondary
+    val brand = tagBrand()
+
+    val tickReveal = remember { Animatable(if (level.isOff) 1f else 0f) }
+    LaunchedEffect(level) {
+        if (level.isOff) {
+            tickReveal.snapTo(1f)
+        } else {
+            tickReveal.snapTo(0f)
+            tickReveal.animateTo(1f, TagMotion.emphasizedTween(delayMillis = 120))
+        }
+    }
+
+    val pulsePhase = if (level.allowsAmbient && ambientActive) {
+        val transition = rememberInfiniteTransition(label = "tasks-empty")
+        transition.animateFloat(
+            initialValue = 0f,
+            targetValue = (2.0 * PI).toFloat(),
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = TagMotion.DURATION_AMBIENT, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart,
+            ),
+            label = "tasks-empty-phase",
+        )
+    } else {
+        null
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(128.dp)
+                .floatY(amplitudeDp = 3.dp)
+                .clearAndSetSemantics {},
+            contentAlignment = Alignment.Center,
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val p = pulsePhase?.value ?: 0f
+                val drift = sin(p) * 2.5.dp.toPx()
+                val cardW = size.width * 0.64f
+                val cardH = size.height * 0.70f
+                val cardLeft = (size.width - cardW) / 2f
+                val cardTop = (size.height - cardH) / 2f
+
+                drawCircle(
+                    color = primaryColor.copy(alpha = 0.11f),
+                    radius = size.minDimension * 0.44f,
+                    center = Offset(size.width * 0.5f, size.height * 0.5f + drift * 0.4f),
+                )
+                drawRoundRect(
+                    color = primaryColor.copy(alpha = 0.14f),
+                    topLeft = Offset(cardLeft, cardTop),
+                    size = Size(cardW, cardH),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(16.dp.toPx()),
+                )
+                // Checklist lines
+                for (row in 0..2) {
+                    val y = cardTop + cardH * (0.28f + row * 0.22f)
+                    val doneRow = row == 0
+                    val dotColor = if (doneRow) brand.success else secondaryColor.copy(alpha = 0.65f)
+                    drawCircle(
+                        color = dotColor,
+                        radius = 4.dp.toPx(),
+                        center = Offset(cardLeft + 16.dp.toPx(), y),
+                    )
+                    drawLine(
+                        color = primaryColor.copy(alpha = if (doneRow) 0.55f else 0.30f),
+                        start = Offset(cardLeft + 26.dp.toPx(), y),
+                        end = Offset(cardLeft + cardW - 14.dp.toPx(), y),
+                        strokeWidth = 3.dp.toPx(),
+                        cap = StrokeCap.Round,
+                    )
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 12.dp, end = 12.dp)
+                    .size(34.dp)
+                    .clip(RoundedCornerShape(percent = 50))
+                    .background(brand.success),
+                contentAlignment = Alignment.Center,
+            ) {
+                CheckDraw(
+                    progressProvider = { tickReveal.value },
+                    modifier = Modifier.fillMaxSize(),
+                    color = Color.White,
+                    strokeWidth = 2.4.dp,
+                )
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        Text(
+            text = stringResource(R.string.tasks_empty_title),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.tasks_empty_message),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 20.dp),
+            lineHeight = 22.sp,
+        )
+        if (onAddTask != null) {
+            Spacer(Modifier.height(20.dp))
+            AppButton(
+                text = stringResource(R.string.tasks_add_task),
+                onClick = onAddTask,
+                variant = AppButtonVariant.Tonal,
+                modifier = Modifier.glowPulse(
+                    glowColor = MaterialTheme.colorScheme.primary,
+                    cornerRadius = 16.dp,
+                    maxAlpha = 0.28f,
+                ),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Rounded.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                },
+                shape = RoundedCornerShape(16.dp),
+            )
+        }
+    }
+}
+
 /** Small pill used for tags, filters and metadata. */
 @Composable
 fun MetaPill(

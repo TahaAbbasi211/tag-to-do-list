@@ -2,7 +2,10 @@ package com.tag.routine.ui.screens
 
 import android.os.Build
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,7 +34,6 @@ import androidx.compose.material.icons.automirrored.rounded.Label
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.CalendarMonth
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Language
@@ -51,6 +53,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,12 +63,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -86,19 +96,27 @@ import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.BackupDialogs
 import com.tag.routine.ui.components.LargeScreenFrame
+import com.tag.routine.ui.components.MetaPill
 import com.tag.routine.ui.components.ScreenHeader
 import com.tag.routine.ui.components.SectionHeader
 import com.tag.routine.ui.components.rememberBackupExportLauncher
 import com.tag.routine.ui.components.rememberBackupImportLauncher
 import com.tag.routine.ui.i18n.AppLanguage
 import com.tag.routine.ui.i18n.LocalizedAlertDialog
+import com.tag.routine.ui.motion.AnimationLevel
+import com.tag.routine.ui.motion.AuroraBackground
+import com.tag.routine.ui.motion.CheckDraw
 import com.tag.routine.ui.motion.HapticKind
 import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.SparkleBurst
 import com.tag.routine.ui.motion.TagMotion
+import com.tag.routine.ui.motion.floatY
 import com.tag.routine.ui.motion.pressScale
 import com.tag.routine.ui.motion.rememberTagHaptics
+import com.tag.routine.ui.motion.staggeredEnter
 import com.tag.routine.ui.theme.PaletteDef
 import com.tag.routine.ui.theme.spacing
+import com.tag.routine.ui.theme.tagBrand
 import java.util.Locale
 
 @Composable
@@ -175,6 +193,7 @@ fun SettingsScreen(
         SettingsSection(
             title = stringResource(R.string.settings_profile),
             icon = Icons.Rounded.Person,
+            index = 0,
         ) {
             OutlinedTextField(
                 value = nameInput,
@@ -204,6 +223,7 @@ fun SettingsScreen(
         SettingsSection(
             title = stringResource(R.string.settings_appearance),
             icon = Icons.Rounded.Palette,
+            index = 1,
         ) {
             Text(
                 text = stringResource(R.string.settings_theme_mode),
@@ -265,12 +285,15 @@ fun SettingsScreen(
                 stackVertically = stackInputRow,
                 onSelect = onAnimationSetting,
             )
+            Spacer(Modifier.height(spacing.md))
+            AnimationLevelDemoTile(setting = settings.animationSetting)
         }
 
         // 3. Languages
         SettingsSection(
             title = stringResource(R.string.settings_languages),
             icon = Icons.Rounded.Language,
+            index = 2,
             onCardClick = onOpenLanguages,
         ) {
             Row(
@@ -315,6 +338,7 @@ fun SettingsScreen(
         SettingsSection(
             title = stringResource(R.string.settings_calendar_type),
             icon = Icons.Rounded.CalendarMonth,
+            index = 3,
         ) {
             Text(
                 text = stringResource(R.string.settings_calendar_type_sub),
@@ -333,6 +357,7 @@ fun SettingsScreen(
         SettingsSection(
             title = stringResource(R.string.settings_focus),
             icon = Icons.Rounded.Timer,
+            index = 4,
         ) {
             Text(
                 text = stringResource(R.string.settings_focus_default),
@@ -398,6 +423,7 @@ fun SettingsScreen(
         SettingsSection(
             title = stringResource(R.string.settings_notifications),
             icon = Icons.Rounded.Notifications,
+            index = 5,
         ) {
             SettingsToggle(
                 icon = Icons.Rounded.Notifications,
@@ -435,6 +461,7 @@ fun SettingsScreen(
         SettingsSection(
             title = stringResource(R.string.settings_tags),
             icon = Icons.AutoMirrored.Rounded.Label,
+            index = 6,
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
                 if (state.tags.isEmpty()) {
@@ -544,6 +571,7 @@ fun SettingsScreen(
         SettingsSection(
             title = stringResource(R.string.settings_data),
             icon = Icons.Rounded.Backup,
+            index = 7,
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
                 AppButton(
@@ -592,6 +620,7 @@ fun SettingsScreen(
         SettingsSection(
             title = stringResource(R.string.settings_about),
             icon = Icons.Rounded.Info,
+            index = 8,
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
                 Text(
@@ -666,16 +695,19 @@ fun SettingsScreen(
     )
 }
 
-/** Titled Settings group with consistent [SectionHeader] icon badge and [AppCard] container. */
+/** Titled Settings group with staggered entrance, consistent [SectionHeader] badge and [AppCard]. */
 @Composable
 private fun SettingsSection(
     title: String,
     icon: ImageVector,
+    index: Int = 0,
     onCardClick: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     val spacing = MaterialTheme.spacing
-    Column {
+    Column(
+        modifier = Modifier.staggeredEnter(index = index, key = "settings"),
+    ) {
         SectionHeader(
             title = title,
             leading = {
@@ -874,6 +906,23 @@ private fun SettingsToggle(
     onCheckedChange: (Boolean) -> Unit,
 ) {
     val spacing = MaterialTheme.spacing
+    val level = LocalAnimationLevel.current
+    val haptics = rememberTagHaptics()
+    val iconScale = remember { Animatable(1f) }
+    LaunchedEffect(checked, level) {
+        if (level.allowsMotion) {
+            iconScale.animateTo(1.16f, TagMotion.instantTween())
+            iconScale.animateTo(1f, TagMotion.bouncySpring())
+        } else {
+            iconScale.snapTo(1f)
+        }
+    }
+    val iconTint by animateColorAsState(
+        targetValue = if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = if (level.isOff) TagMotion.instantTween(0) else TagMotion.quickTween(),
+        label = "toggle-icon-tint",
+    )
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -883,8 +932,14 @@ private fun SettingsToggle(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(24.dp),
+            tint = iconTint,
+            modifier = Modifier
+                .size(24.dp)
+                .graphicsLayer {
+                    val s = iconScale.value
+                    scaleX = s
+                    scaleY = s
+                },
         )
         Spacer(Modifier.width(spacing.md))
         Column(modifier = Modifier.weight(1f)) {
@@ -906,7 +961,10 @@ private fun SettingsToggle(
         Spacer(Modifier.width(spacing.sm))
         Switch(
             checked = checked,
-            onCheckedChange = onCheckedChange,
+            onCheckedChange = { next ->
+                haptics(HapticKind.TICK)
+                onCheckedChange(next)
+            },
         )
     }
 }
@@ -942,6 +1000,8 @@ private fun PaletteSelector(
     onSelect: (String) -> Unit,
 ) {
     val spacing = MaterialTheme.spacing
+    val level = LocalAnimationLevel.current
+    val haptics = rememberTagHaptics()
     val palettes = listOf(
         PaletteOption(AppSettings.Palettes.VIOLET, stringResource(R.string.palette_violet), PaletteDef.VIOLET.primary),
         PaletteOption(AppSettings.Palettes.SKY, stringResource(R.string.palette_sky), PaletteDef.SKY.primary),
@@ -958,48 +1018,199 @@ private fun PaletteSelector(
     ) {
         palettes.forEach { option ->
             val selected = currentPalette == option.key
+            val ringProgress by animateFloatAsState(
+                targetValue = if (selected) 1f else 0f,
+                animationSpec = if (level.isOff) TagMotion.instantTween(0) else TagMotion.bouncySpring(),
+                label = "palette-ring",
+            )
+            val checkProgress = remember(option.key) { Animatable(if (selected) 1f else 0f) }
+            LaunchedEffect(selected, level) {
+                val target = if (selected) 1f else 0f
+                if (level.isOff) {
+                    checkProgress.snapTo(target)
+                } else {
+                    checkProgress.animateTo(target, TagMotion.bouncySpring())
+                }
+            }
+            val labelColor by animateColorAsState(
+                targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                animationSpec = if (level.isOff) TagMotion.instantTween(0) else TagMotion.quickTween(),
+                label = "palette-label",
+            )
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .pressScale(pressedScale = 0.92f)
                     .clip(MaterialTheme.shapes.small)
-                    .clickable { onSelect(option.key) }
+                    .semantics {
+                        this.selected = selected
+                        contentDescription = option.label
+                    }
+                    .clickable {
+                        haptics(HapticKind.TICK)
+                        onSelect(option.key)
+                    }
                     .padding(spacing.xs),
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(46.dp)
-                        .clip(MaterialTheme.shapes.small)
-                        .background(option.color)
-                        .border(
-                            width = if (selected) 3.dp else 0.dp,
-                            color = if (selected) {
-                                MaterialTheme.colorScheme.onSurface
-                            } else {
-                                Color.Transparent
-                            },
-                            shape = MaterialTheme.shapes.small,
-                        ),
+                    modifier = Modifier.size(54.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    if (selected) {
-                        Icon(
-                            imageVector = Icons.Rounded.Check,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp),
-                        )
+                    Canvas(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clearAndSetSemantics {},
+                    ) {
+                        val rp = ringProgress.coerceIn(0f, 1.15f)
+                        if (rp > 0.01f) {
+                            val strokePx = (2.5.dp.toPx() * rp.coerceAtLeast(0f))
+                            val inset = strokePx / 2f
+                            val span = size.minDimension - strokePx
+                            val radius = (14.dp.toPx()) * rp.coerceIn(0.6f, 1f)
+                            drawRoundRect(
+                                color = option.color.copy(alpha = rp.coerceIn(0f, 1f)),
+                                topLeft = androidx.compose.ui.geometry.Offset(inset, inset),
+                                size = androidx.compose.ui.geometry.Size(span, span),
+                                cornerRadius = CornerRadius(radius, radius),
+                                style = Stroke(width = strokePx),
+                            )
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .graphicsLayer {
+                                val s = 1f + 0.06f * ringProgress.coerceIn(0f, 1f)
+                                scaleX = s
+                                scaleY = s
+                            }
+                            .clip(MaterialTheme.shapes.small)
+                            .background(option.color),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (checkProgress.value > 0.01f) {
+                            CheckDraw(
+                                progressProvider = { checkProgress.value },
+                                modifier = Modifier.size(26.dp),
+                                color = Color.White,
+                                strokeWidth = 2.6.dp,
+                            )
+                        }
                     }
                 }
                 Spacer(Modifier.height(spacing.xs))
                 Text(
                     text = option.label,
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (selected) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
+                    color = labelColor,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                )
+            }
+        }
+    }
+}
+
+/** Interactive preview card demonstrating how the active [AnimationLevel] feels right now. */
+@Composable
+private fun AnimationLevelDemoTile(setting: AnimationSetting) {
+    val level = LocalAnimationLevel.current
+    val brand = tagBrand()
+    val spacing = MaterialTheme.spacing
+    val haptics = rememberTagHaptics()
+    var checked by remember { mutableStateOf(true) }
+    var burstSeed by remember { mutableStateOf(0L) }
+    var burstTrigger by remember { mutableStateOf(false) }
+
+    val checkAnim = remember { Animatable(1f) }
+    LaunchedEffect(checked, level) {
+        val target = if (checked) 1f else 0f
+        if (level.isOff) {
+            checkAnim.snapTo(target)
+        } else {
+            checkAnim.animateTo(target, TagMotion.bouncySpring())
+        }
+    }
+
+    val badgeLabel = stringResource(
+        when (level) {
+            AnimationLevel.FULL -> R.string.animation_level_full
+            AnimationLevel.REDUCED -> R.string.animation_level_reduced
+            AnimationLevel.OFF -> R.string.animation_level_off
+        },
+    )
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .pressScale(pressedScale = 0.97f),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
+        onClick = {
+            haptics(HapticKind.TICK)
+            checked = !checked
+            burstSeed++
+            burstTrigger = true
+        },
+    ) {
+        AuroraBackground(
+            colors = brand.auroraColors,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = spacing.md, vertical = spacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(spacing.md),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .floatY(amplitudeDp = 2.5.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .clearAndSetSemantics {},
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CheckDraw(
+                        progressProvider = { checkAnim.value },
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.4.dp,
+                    )
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.settings_animation_demo_label),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_animation_demo_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                MetaPill(
+                    text = if (setting == AnimationSetting.AUTO) {
+                        "${stringResource(R.string.animation_level_auto)} · $badgeLabel"
+                    } else {
+                        badgeLabel
+                    },
+                    container = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+            if (burstTrigger) {
+                SparkleBurst(
+                    trigger = burstTrigger,
+                    seed = burstSeed,
+                    requestedCount = 12,
+                    modifier = Modifier.matchParentSize(),
                 )
             }
         }

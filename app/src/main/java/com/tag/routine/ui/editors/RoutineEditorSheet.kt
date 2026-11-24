@@ -1,5 +1,13 @@
 package com.tag.routine.ui.editors
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,6 +35,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -43,7 +52,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,8 +76,15 @@ import com.tag.routine.ui.components.AppButton
 import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.FilterPill
+import com.tag.routine.ui.components.TimelineRoutineItem
 import com.tag.routine.ui.i18n.ProvideAppLocale
 import com.tag.routine.ui.motion.AnimatedSheetContent
+import com.tag.routine.ui.motion.HapticKind
+import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.TagMotion
+import com.tag.routine.ui.motion.pressScale
+import com.tag.routine.ui.motion.rememberTagHaptics
+import com.tag.routine.ui.motion.staggeredEnter
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -115,6 +134,7 @@ fun RoutineEditorSheet(
         mutableStateOf(existing?.timeMinutes?.let { "%02d".format(Locale.ROOT, it % 60) } ?: "00")
     }
     var hideSuggestions by remember { mutableStateOf(false) }
+    var previewDone by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -129,6 +149,8 @@ fun RoutineEditorSheet(
         AnimatedSheetContent {
         ProvideAppLocale(localizedContext) {
         val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+        val level = LocalAnimationLevel.current
+        val haptics = rememberTagHaptics()
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -143,6 +165,36 @@ fun RoutineEditorSheet(
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
             )
+
+            // Live timeline item preview updating as title, emoji, color, or time changes.
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = stringResource(R.string.routine_editor_preview),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)),
+                ) {
+                    TimelineRoutineItem(
+                        title = title.ifBlank { stringResource(R.string.routine_editor_preview_placeholder) },
+                        emoji = icon,
+                        accentColor = Color(colorHex),
+                        done = previewDone,
+                        timeLabel = timeMinutes?.let { Dates.timeLabel(it, appLocale) },
+                        isFirst = true,
+                        isLast = true,
+                        dayKey = "editor-preview",
+                        onToggle = { previewDone = !previewDone },
+                        onClick = { previewDone = !previewDone },
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    )
+                }
+            }
 
             if (existing == null && onOpenTemplates != null) {
                 AppButton(
@@ -187,7 +239,19 @@ fun RoutineEditorSheet(
                     emptyList()
                 }
             }
-            if (suggestions.isNotEmpty()) {
+            AnimatedVisibility(
+                visible = suggestions.isNotEmpty(),
+                enter = if (level.isOff) {
+                    fadeIn(TagMotion.instantTween(0))
+                } else {
+                    expandVertically(TagMotion.snappySpring()) + fadeIn(TagMotion.quickTween())
+                },
+                exit = if (level.isOff) {
+                    fadeOut(TagMotion.instantTween(0))
+                } else {
+                    shrinkVertically(TagMotion.quickTween()) + fadeOut(TagMotion.quickTween())
+                },
+            ) {
                 Column {
                     Text(
                         text = stringResource(R.string.quick_add_suggestions),
@@ -196,11 +260,12 @@ fun RoutineEditorSheet(
                     )
                     Spacer(Modifier.height(6.dp))
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        suggestions.forEach { suggestion ->
+                        suggestions.forEachIndexed { idx, suggestion ->
                             SuggestionRow(
                                 suggestion = suggestion,
                                 isDark = isDark,
                                 appLocale = appLocale,
+                                modifier = Modifier.staggeredEnter(index = idx, key = suggestions.size),
                                 onPick = {
                                     title = suggestion.title
                                     val picked = suggestion.routine
@@ -269,21 +334,44 @@ fun RoutineEditorSheet(
                 ) {
                     RoutineEmojis.all.forEach { emoji ->
                         val isSelected = icon == emoji
+                        val colorSpec = if (level.isOff) TagMotion.instantTween<Color>(0) else TagMotion.quickTween()
+                        val emojiScale by animateFloatAsState(
+                            targetValue = if (isSelected && level.allowsMotion) 1.10f else 1f,
+                            animationSpec = if (level.isOff) TagMotion.instantTween(0) else TagMotion.bouncySpring(),
+                            label = "emoji-select-scale",
+                        )
+                        val emojiBg by animateColorAsState(
+                            targetValue = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
+                            else MaterialTheme.colorScheme.surfaceContainerHigh,
+                            animationSpec = colorSpec,
+                            label = "emoji-bg",
+                        )
+                        val emojiBorder by animateColorAsState(
+                            targetValue = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                            animationSpec = colorSpec,
+                            label = "emoji-border",
+                        )
                         Box(
                             modifier = Modifier
                                 .minimumInteractiveComponentSize()
                                 .size(46.dp)
+                                .pressScale(pressedScale = 0.90f)
+                                .graphicsLayer {
+                                    scaleX = emojiScale
+                                    scaleY = emojiScale
+                                }
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                    else MaterialTheme.colorScheme.surfaceContainerHigh
-                                )
+                                .background(emojiBg)
                                 .border(
                                     width = if (isSelected) 2.dp else 0.dp,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                    color = emojiBorder,
                                     shape = RoundedCornerShape(12.dp),
                                 )
-                                .clickable { icon = emoji },
+                                .semantics { selected = isSelected }
+                                .clickable {
+                                    haptics(HapticKind.TICK)
+                                    icon = emoji
+                                },
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(text = emoji, fontSize = 22.sp)
@@ -307,18 +395,35 @@ fun RoutineEditorSheet(
                     RoutineColors.all.forEach { spec ->
                         val isSelected = colorId == spec.id
                         val resolvedHex = RoutineColors.hexFor(spec.id, isDark)
+                        val colorScale by animateFloatAsState(
+                            targetValue = if (isSelected && level.allowsMotion) 1.14f else 1f,
+                            animationSpec = if (level.isOff) TagMotion.instantTween(0) else TagMotion.bouncySpring(),
+                            label = "color-select-scale",
+                        )
+                        val colorBorder by animateColorAsState(
+                            targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface else Color.Transparent,
+                            animationSpec = if (level.isOff) TagMotion.instantTween(0) else TagMotion.quickTween(),
+                            label = "color-border",
+                        )
                         Box(
                             modifier = Modifier
                                 .minimumInteractiveComponentSize()
                                 .size(38.dp)
+                                .pressScale(pressedScale = 0.88f)
+                                .graphicsLayer {
+                                    scaleX = colorScale
+                                    scaleY = colorScale
+                                }
                                 .clip(CircleShape)
                                 .background(Color(resolvedHex))
                                 .border(
                                     width = if (isSelected) 3.dp else 0.dp,
-                                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else Color.Transparent,
+                                    color = colorBorder,
                                     shape = CircleShape,
                                 )
+                                .semantics { selected = isSelected }
                                 .clickable {
+                                    haptics(HapticKind.TICK)
                                     colorId = spec.id
                                     colorHex = resolvedHex
                                 },
@@ -536,6 +641,7 @@ private fun SuggestionRow(
     isDark: Boolean,
     appLocale: Locale,
     onPick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val accent = Color(RoutineColors.hexFor(suggestion.routine.colorId, isDark))
     val meta = buildList {
@@ -545,7 +651,7 @@ private fun SuggestionRow(
 
     AppCard(
         onClick = onPick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         elevation = 0.dp,

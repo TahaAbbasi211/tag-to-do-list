@@ -453,4 +453,10 @@
     <string name="focus_calm_mode_enter">Sakin mod için halkaya dokunun</string>
     <string name="focus_calm_mode_exit">Kontrolleri göstermek için halkaya dokunun</string>
     <string name="focus_session_completed">Odak oturumu tamamlandı!</string>
+    <string name="settings_animation_demo_label">Canlı önizleme</string>
+    <string name="settings_animation_demo_hint">Aktif hareket düzeyini denemek için dokunun</string>
+    <string name="routine_editor_preview">Zaman çizelgesi önizlemesi</string>
+    <string name="routine_editor_preview_placeholder">Rutininizin başlığı</string>
+    <string name="backup_working_export">Yedek dışa aktarılıyor…</string>
+    <string name="backup_working_import">Yedek geri yükleniyor…</string>
 </resources>

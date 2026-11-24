@@ -453,4 +453,10 @@
     <string name="focus_calm_mode_enter">Ring antippen für Ruhemodus</string>
     <string name="focus_calm_mode_exit">Ring antippen für Steuerung</string>
     <string name="focus_session_completed">Fokussitzung abgeschlossen!</string>
+    <string name="settings_animation_demo_label">Live-Vorschau</string>
+    <string name="settings_animation_demo_hint">Antippen, um die Bewegungsstufe zu testen</string>
+    <string name="routine_editor_preview">Zeitachsen-Vorschau</string>
+    <string name="routine_editor_preview_placeholder">Dein Routinen-Titel</string>
+    <string name="backup_working_export">Backup wird exportiert…</string>
+    <string name="backup_working_import">Backup wird wiederhergestellt…</string>
 </resources>

@@ -453,4 +453,10 @@
     <string name="focus_calm_mode_enter">برای حالت آرامش حلقه را لمس کنید</string>
     <string name="focus_calm_mode_exit">برای نمایش کنترل‌ها حلقه را لمس کنید</string>
     <string name="focus_session_completed">جلسه تمرکز کامل شد!</string>
+    <string name="settings_animation_demo_label">پیش‌نمایش زنده</string>
+    <string name="settings_animation_demo_hint">برای تست سطح انیمیشن لمس کنید</string>
+    <string name="routine_editor_preview">پیش‌نمایش در تایملاین</string>
+    <string name="routine_editor_preview_placeholder">عنوان برنامه شما</string>
+    <string name="backup_working_export">در حال خروجی گرفتن از بکاپ…</string>
+    <string name="backup_working_import">در حال بازیابی بکاپ…</string>
 </resources>
