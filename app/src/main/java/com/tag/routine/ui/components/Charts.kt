@@ -1,9 +1,17 @@
 package com.tag.routine.ui.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -18,6 +26,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -38,11 +47,16 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
@@ -52,8 +66,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +81,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
+import androidx.compose.ui.zIndex
 import com.tag.routine.R
 import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
@@ -73,7 +90,9 @@ import com.tag.routine.data.HeatmapCalendar
 import com.tag.routine.data.HeatmapIntensity
 import com.tag.routine.data.WeeklyReportEngine
 import com.tag.routine.ui.accessibility.AccessibilityLabels
+import com.tag.routine.ui.motion.AnimationLevel
 import com.tag.routine.ui.motion.HapticKind
+import com.tag.routine.ui.motion.InsightsMotionLogic
 import com.tag.routine.ui.motion.LocalAnimationLevel
 import com.tag.routine.ui.motion.TagMotion
 import com.tag.routine.ui.motion.glowPulse
@@ -81,6 +100,7 @@ import com.tag.routine.ui.motion.pressScale
 import com.tag.routine.ui.motion.rememberTagHaptics
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -320,13 +340,13 @@ fun WeekStrip(
     }
 }
 
-/** Animated seven-day bar chart of completion ratios. */
+/** Animated seven-day bar chart with staggered spring growth and a drawn trend sparkline. */
 @Composable
 fun WeeklyBarChart(
     stats: List<DayStat>,
     today: LocalDate,
     modifier: Modifier = Modifier,
-    barHeight: androidx.compose.ui.unit.Dp = 132.dp,
+    barHeight: Dp = 132.dp,
 ) {
     val brand = tagBrand()
     val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
@@ -335,22 +355,6 @@ fun WeeklyBarChart(
     val trackHeight = (barHeight - 34.dp).coerceAtLeast(64.dp)
     val data = stats.takeLast(7)
     val level = LocalAnimationLevel.current
-    val reveal = remember { Animatable(0f) }
-    LaunchedEffect(data.map { it.ratio to it.date }, level) {
-        if (level.isOff) {
-            reveal.snapTo(1f)
-        } else {
-            reveal.snapTo(0f)
-            reveal.animateTo(
-                1f,
-                if (level == com.tag.routine.ui.motion.AnimationLevel.FULL) {
-                    TagMotion.emphasizedTween()
-                } else {
-                    TagMotion.quickTween()
-                },
-            )
-        }
-    }
 
     // Charts carry a spoken summary so TalkBack users get the same information.
     val chartDescription = stringResource(
@@ -378,15 +382,45 @@ fun WeeklyBarChart(
             .semantics(mergeDescendants = true) {
                 contentDescription = chartDescription
             },
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        if (data.count { it.hasData } >= 2) {
+            TrendSparkline(
+                stats = data,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(34.dp),
+            )
+        }
+
         Row(
             modifier = rowModifier,
             horizontalArrangement = Arrangement.spacedBy(9.dp),
             verticalAlignment = Alignment.Bottom,
         ) {
-            data.forEach { stat ->
+            data.forEachIndexed { index, stat ->
                 val isToday = stat.date == today
-                val heightFraction = (stat.ratio * reveal.value).coerceIn(0f, 1f)
+                val barReveal = remember(stat.date) { Animatable(if (level.isOff) 1f else 0f) }
+                LaunchedEffect(stat.ratio, stat.date, level) {
+                    if (level.isOff) {
+                        barReveal.snapTo(1f)
+                    } else {
+                        barReveal.snapTo(0f)
+                        val delayMs = InsightsMotionLogic.barStaggerDelayMs(index, level)
+                        if (delayMs > 0) delay(delayMs.toLong())
+                        barReveal.animateTo(
+                            targetValue = 1f,
+                            animationSpec = if (level == AnimationLevel.FULL) {
+                                spring(
+                                    dampingRatio = 0.72f,
+                                    stiffness = Spring.StiffnessMediumLow,
+                                )
+                            } else {
+                                TagMotion.quickTween()
+                            },
+                        )
+                    }
+                }
                 val columnModifier = if (useHorizontalScroll) {
                     Modifier.width((42.dp * fontScale.coerceAtMost(2.2f)))
                 } else {
@@ -417,7 +451,11 @@ fun WeeklyBarChart(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(trackHeight * heightFraction)
+                                .fillMaxHeight(stat.ratio.coerceIn(0f, 1f))
+                                .graphicsLayer {
+                                    scaleY = barReveal.value.coerceAtLeast(0f)
+                                    transformOrigin = TransformOrigin(0.5f, 1f)
+                                }
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(
                                     if (isToday) {
@@ -449,6 +487,110 @@ fun WeeklyBarChart(
                     )
                 }
             }
+        }
+    }
+}
+
+/** Smooth path-drawn trend line aligned with weekly columns and hidden from TalkBack. */
+@Composable
+fun TrendSparkline(
+    stats: List<DayStat>,
+    modifier: Modifier = Modifier,
+) {
+    val level = LocalAnimationLevel.current
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val lineColor = MaterialTheme.colorScheme.primary
+    val accentColor = MaterialTheme.colorScheme.secondary
+    val trackColor = tagBrand().chartTrack
+
+    val ratios = remember(stats) {
+        InsightsMotionLogic.sparklineNormalizedPoints(stats.map { it.ratio })
+    }
+    val hasDataMask = remember(stats) { stats.map { it.hasData } }
+
+    val drawProgress = remember { Animatable(if (level.isOff) 1f else 0f) }
+    LaunchedEffect(ratios, level) {
+        if (level.isOff) {
+            drawProgress.snapTo(1f)
+        } else {
+            drawProgress.snapTo(0f)
+            drawProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(
+                    durationMillis = TagMotion.levelAdjustedDuration(TagMotion.DURATION_EMPHASIZED, level),
+                    easing = TagMotion.EmphasizedDecelerate,
+                ),
+            )
+        }
+    }
+
+    val fullPath = remember { Path() }
+    val segmentPath = remember { Path() }
+    val pathMeasure = remember { PathMeasure() }
+
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .clearAndSetSemantics {},
+    ) {
+        val count = ratios.size
+        if (count < 2) return@Canvas
+        val activeIndices = hasDataMask.withIndex().filter { it.value }.map { it.index }
+        if (activeIndices.size < 2) return@Canvas
+
+        val padY = 6.dp.toPx()
+        val usableH = (size.height - padY * 2f).coerceAtLeast(1f)
+        val colStep = size.width / count.toFloat()
+
+        // Subtle mid baseline guide
+        drawLine(
+            color = trackColor.copy(alpha = 0.7f),
+            start = Offset(0f, size.height - padY),
+            end = Offset(size.width, size.height - padY),
+            strokeWidth = 1.dp.toPx(),
+        )
+
+        fun pointFor(index: Int): Offset {
+            val rawX = colStep * (index + 0.5f)
+            val x = if (isRtl) size.width - rawX else rawX
+            val y = padY + (1f - ratios[index]) * usableH
+            return Offset(x, y)
+        }
+
+        fullPath.reset()
+        val firstPt = pointFor(activeIndices.first())
+        fullPath.moveTo(firstPt.x, firstPt.y)
+        for (i in 1 until activeIndices.size) {
+            val prev = pointFor(activeIndices[i - 1])
+            val curr = pointFor(activeIndices[i])
+            val midX = (prev.x + curr.x) / 2f
+            fullPath.cubicTo(midX, prev.y, midX, curr.y, curr.x, curr.y)
+        }
+
+        pathMeasure.setPath(fullPath, forceClosed = false)
+        val totalLen = pathMeasure.length
+        val progress = drawProgress.value.coerceIn(0f, 1f)
+        if (totalLen > 0f && progress > 0.01f) {
+            segmentPath.reset()
+            pathMeasure.getSegment(0f, totalLen * progress, segmentPath, startWithMoveTo = true)
+            drawPath(
+                path = segmentPath,
+                color = lineColor,
+                style = Stroke(
+                    width = 2.5.dp.toPx(),
+                    cap = StrokeCap.Round,
+                    join = StrokeJoin.Round,
+                ),
+            )
+        }
+
+        if (progress >= 0.92f) {
+            val lastPt = pointFor(activeIndices.last())
+            drawCircle(
+                color = accentColor,
+                radius = 4.dp.toPx(),
+                center = lastPt,
+            )
         }
     }
 }
@@ -540,6 +682,23 @@ fun HeatmapGrid(
     }
 
     val neutralLabel = stringResource(R.string.insights_heatmap_legend_neutral)
+    val level = LocalAnimationLevel.current
+    val haptics = rememberTagHaptics()
+    val wave = remember { Animatable(if (level.isOff) 1f else 0f) }
+    LaunchedEffect(weekColumns.size, level) {
+        if (level.isOff) {
+            wave.snapTo(1f)
+        } else {
+            wave.snapTo(0f)
+            wave.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(
+                    durationMillis = if (level == AnimationLevel.FULL) 680 else 260,
+                    easing = TagMotion.EmphasizedDecelerate,
+                ),
+            )
+        }
+    }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -662,12 +821,12 @@ fun HeatmapGrid(
                         modifier = Modifier.width(gridWidth),
                         horizontalArrangement = Arrangement.spacedBy(cellGap),
                     ) {
-                        weekColumns.forEach { weekColumn ->
+                        weekColumns.forEachIndexed { weekIndex, weekColumn ->
                             Column(
                                 modifier = Modifier.width(cellWidth),
                                 verticalArrangement = Arrangement.spacedBy(cellGap),
                             ) {
-                                weekColumn.cells.forEach { cell ->
+                                weekColumn.cells.forEachIndexed { dayIndex, cell ->
                                     if (cell.isFuture) {
                                         Spacer(
                                             modifier = Modifier
@@ -713,16 +872,64 @@ fun HeatmapGrid(
                                             noItemsLabel = neutralLabel,
                                             cellPattern = stringResource(R.string.a11y_heatmap_cell),
                                         )
+                                        val selectedScaleState = animateFloatAsState(
+                                            targetValue = if (isSelected && level.allowsMotion) 1.24f else 1f,
+                                            animationSpec = if (level == AnimationLevel.FULL) {
+                                                TagMotion.bouncySpring()
+                                            } else {
+                                                TagMotion.quickTween()
+                                            },
+                                            label = "heat-select-scale",
+                                        )
+                                        val tapRipple = remember { Animatable(0f) }
+                                        LaunchedEffect(isSelected, level) {
+                                            if (isSelected && level.allowsMotion) {
+                                                tapRipple.snapTo(0.01f)
+                                                tapRipple.animateTo(1f, TagMotion.emphasizedTween())
+                                                tapRipple.snapTo(0f)
+                                            } else {
+                                                tapRipple.snapTo(0f)
+                                            }
+                                        }
 
                                         Box(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(rowHeight)
+                                                .zIndex(if (isSelected) 2f else 0f)
+                                                .graphicsLayer {
+                                                    val p = InsightsMotionLogic.diagonalCellProgress(
+                                                        weekIndex = weekIndex,
+                                                        dayIndex = dayIndex,
+                                                        totalWeeks = weekColumns.size,
+                                                        waveProgress = wave.value,
+                                                        level = level,
+                                                    )
+                                                    alpha = p
+                                                    val s = (0.72f + 0.28f * p) * selectedScaleState.value
+                                                    scaleX = s
+                                                    scaleY = s
+                                                }
+                                                .drawWithContent {
+                                                    drawContent()
+                                                    val r = tapRipple.value
+                                                    if (r > 0.01f && r < 1f) {
+                                                        drawCircle(
+                                                            color = todayBorderColor.copy(alpha = (1f - r) * 0.55f),
+                                                            radius = size.maxDimension * (0.55f + r * 0.9f),
+                                                            style = Stroke(width = 2.dp.toPx()),
+                                                        )
+                                                    }
+                                                }
                                                 .clip(cellShape)
                                                 .background(bgColor)
                                                 .then(borderModifier)
-                                                .semantics { contentDescription = a11ySummary }
+                                                .semantics {
+                                                    contentDescription = a11ySummary
+                                                    this.selected = isSelected
+                                                }
                                                 .clickable {
+                                                    haptics(HapticKind.TICK)
                                                     selectedDate = if (isSelected) null else cell.date
                                                 },
                                         )
@@ -814,107 +1021,137 @@ fun HeatmapGrid(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        // Selected day summary panel (updates on tap).
+        // Selected day summary panel (rises from below on tap with polite live announcement).
         Surface(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { liveRegion = LiveRegionMode.Polite },
             shape = MaterialTheme.shapes.medium,
             color = MaterialTheme.colorScheme.surfaceContainer,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)),
         ) {
-            if (selectedCell != null) {
-                val stat = selectedCell.stat
-                val daysDiff = ChronoUnit.DAYS.between(today, selectedCell.date)
-                val formattedDay = Dates.dayMonth(selectedCell.date, appLocale, calendarType)
-                val dateLabel = if (daysDiff in -1L..0L) {
-                    "${Dates.relativeDayLabel(selectedCell.date, today, resources, appLocale, calendarType)} · $formattedDay"
-                } else {
-                    formattedDay
-                }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = spacing.md, vertical = spacing.sm),
-                    verticalArrangement = Arrangement.spacedBy(spacing.xs),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
-                    ) {
-                        Text(
-                            text = Dates.formatDigits(dateLabel, appLocale),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.weight(1f),
+            AnimatedContent(
+                targetState = selectedCell,
+                transitionSpec = {
+                    when {
+                        level.isOff -> ContentTransform(
+                            fadeIn(TagMotion.instantTween(0)),
+                            fadeOut(TagMotion.instantTween(0)),
                         )
-                        if (stat != null && stat.hasData) {
-                            val pct = (stat.ratio * 100f).roundToInt().coerceIn(0, 100)
-                            Surface(
-                                shape = RoundedCornerShape(percent = 50),
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f),
-                            ) {
-                                Text(
-                                    text = Dates.formatPercent(pct, appLocale),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                                    maxLines = 1,
-                                    softWrap = false,
-                                )
+                        level == AnimationLevel.REDUCED -> ContentTransform(
+                            fadeIn(TagMotion.quickTween()),
+                            fadeOut(TagMotion.quickTween()),
+                        )
+                        else -> ContentTransform(
+                            fadeIn(TagMotion.standardTween()) + slideInVertically(TagMotion.standardTween()) { it / 2 },
+                            fadeOut(TagMotion.quickTween()) + slideOutVertically(TagMotion.quickTween()) { it / 3 },
+                        )
+                    }
+                },
+                label = "heatmap-summary-card",
+            ) { cell ->
+                if (cell != null) {
+                    val stat = cell.stat
+                    val daysDiff = ChronoUnit.DAYS.between(today, cell.date)
+                    val formattedDay = Dates.dayMonth(cell.date, appLocale, calendarType)
+                    val dateLabel = if (daysDiff in -1L..0L) {
+                        "${Dates.relativeDayLabel(cell.date, today, resources, appLocale, calendarType)} · $formattedDay"
+                    } else {
+                        formattedDay
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = spacing.md, vertical = spacing.sm),
+                        verticalArrangement = Arrangement.spacedBy(spacing.xs),
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                        ) {
+                            Text(
+                                text = Dates.formatDigits(dateLabel, appLocale),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f),
+                            )
+                            if (stat != null && stat.hasData) {
+                                val pct = (stat.ratio * 100f).roundToInt().coerceIn(0, 100)
+                                Surface(
+                                    shape = RoundedCornerShape(percent = 50),
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f),
+                                ) {
+                                    Text(
+                                        text = Dates.formatPercent(pct, appLocale),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                        maxLines = 1,
+                                        softWrap = false,
+                                    )
+                                }
                             }
                         }
+                        Text(
+                            text = if (stat != null && stat.hasData) {
+                                Dates.formatDigits(
+                                    stringResource(
+                                        R.string.insights_heatmap_day_summary,
+                                        stat.scheduled,
+                                        stat.completed,
+                                    ),
+                                    appLocale,
+                                )
+                            } else {
+                                stringResource(R.string.insights_heatmap_day_neutral)
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Start,
+                        )
                     }
+                } else {
                     Text(
-                        text = if (stat != null && stat.hasData) {
-                            Dates.formatDigits(
-                                stringResource(
-                                    R.string.insights_heatmap_day_summary,
-                                    stat.scheduled,
-                                    stat.completed,
-                                ),
-                                appLocale,
-                            )
-                        } else {
-                            stringResource(R.string.insights_heatmap_day_neutral)
-                        },
+                        text = stringResource(R.string.insights_heatmap_tap_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Start,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = spacing.md, vertical = spacing.sm),
                     )
                 }
-            } else {
-                Text(
-                    text = stringResource(R.string.insights_heatmap_tap_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = spacing.md, vertical = spacing.sm),
-                )
             }
         }
     }
 }
 
-/** Compact ring plus label used in the routine leaderboard. */
+/** Compact ring plus fill-in animation used in the routine leaderboard. */
 @Composable
 fun MiniRing(
     progress: Float,
     modifier: Modifier = Modifier,
-    size: androidx.compose.ui.unit.Dp = 40.dp,
-    stroke: androidx.compose.ui.unit.Dp = 4.dp,
+    size: Dp = 40.dp,
+    stroke: Dp = 4.dp,
     color: Color = MaterialTheme.colorScheme.primary,
 ) {
     val level = LocalAnimationLevel.current
-    val animated by animateFloatAsState(
-        targetValue = progress.coerceIn(0f, 1f),
-        animationSpec = if (level.allowsMotion) TagMotion.emphasizedTween() else TagMotion.instantTween(0),
-        label = "mini-ring",
-    )
-    val shown = if (level.isOff) progress.coerceIn(0f, 1f) else animated
+    val target = progress.coerceIn(0f, 1f)
+    val sweepAnim = remember { Animatable(if (level.isOff) target else 0f) }
+    LaunchedEffect(target, level) {
+        if (level.isOff) {
+            sweepAnim.snapTo(target)
+        } else {
+            sweepAnim.animateTo(
+                targetValue = target,
+                animationSpec = if (level == AnimationLevel.FULL) TagMotion.emphasizedTween() else TagMotion.quickTween(),
+            )
+        }
+    }
+    val shown = if (level.isOff) target else sweepAnim.value.coerceIn(0f, 1f)
     Canvas(modifier = modifier.size(size)) {
         val strokePx = stroke.toPx()
         val inset = strokePx / 2f

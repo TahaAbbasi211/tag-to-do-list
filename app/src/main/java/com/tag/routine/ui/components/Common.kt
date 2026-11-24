@@ -50,10 +50,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -65,6 +67,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tag.routine.R
@@ -640,7 +643,7 @@ fun FilterPill(
 
 
 
-/** Thin progress bar used for per-tag breakdowns. */
+/** Thin animated progress bar running smoothly on the GPU transform layer (LTR/RTL aware). */
 @Composable
 fun ThinProgressBar(
     progress: Float,
@@ -648,14 +651,29 @@ fun ThinProgressBar(
     color: Color = MaterialTheme.colorScheme.primary,
     track: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
     height: Dp = 8.dp,
+    animateFromZero: Boolean = false,
 ) {
     val level = LocalAnimationLevel.current
-    val animated by animateFloatAsState(
-        targetValue = progress.coerceIn(0f, 1f),
-        animationSpec = if (level.allowsMotion) TagMotion.emphasizedTween() else TagMotion.instantTween(),
-        label = "thin-bar",
-    )
-    val barProgress = if (level.isOff) progress.coerceIn(0f, 1f) else animated
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val target = progress.coerceIn(0f, 1f)
+    val fillAnim = remember { Animatable(if (animateFromZero && level.allowsMotion) 0f else target) }
+
+    LaunchedEffect(target, level) {
+        if (level.isOff) {
+            fillAnim.snapTo(target)
+        } else {
+            fillAnim.animateTo(
+                targetValue = target,
+                animationSpec = if (level == com.tag.routine.ui.motion.AnimationLevel.FULL) {
+                    TagMotion.emphasizedTween()
+                } else {
+                    TagMotion.quickTween()
+                },
+            )
+        }
+    }
+
+    val barProgress = if (level.isOff) target else fillAnim.value.coerceIn(0f, 1f)
     Box(
         modifier = modifier
             .height(height)
@@ -664,8 +682,12 @@ fun ThinProgressBar(
     ) {
         Box(
             Modifier
-                .fillMaxWidth(barProgress)
+                .fillMaxWidth()
                 .height(height)
+                .graphicsLayer {
+                    scaleX = barProgress
+                    transformOrigin = TransformOrigin(if (isRtl) 1f else 0f, 0.5f)
+                }
                 .clip(RoundedCornerShape(percent = 50))
                 .background(color),
         )
