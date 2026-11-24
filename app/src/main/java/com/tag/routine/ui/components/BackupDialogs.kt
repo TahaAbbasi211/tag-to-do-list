@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,6 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -184,7 +188,9 @@ private fun BackupPreviewDialog(
     Dialog(onDismissRequest = onDismiss) {
         ProvideAppLocale(localizedContext) {
             AppCard(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .widthIn(max = 560.dp)
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 containerColor = MaterialTheme.colorScheme.surface,
                 elevation = 3.dp,
@@ -314,7 +320,9 @@ private fun BackupReplaceConfirmDialog(
     Dialog(onDismissRequest = onDismiss) {
         ProvideAppLocale(localizedContext) {
             AppCard(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .widthIn(max = 560.dp)
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 containerColor = MaterialTheme.colorScheme.surface,
                 elevation = 3.dp,
@@ -454,7 +462,10 @@ private fun RestoreSuccessBody(
     appLocale: Locale,
 ) {
     val spacing = MaterialTheme.spacing
-    Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+    Column(
+        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+        verticalArrangement = Arrangement.spacedBy(spacing.sm),
+    ) {
         val summaryRes = if (report.mode == BackupMode.MERGE) {
             R.string.backup_restore_merge_body
         } else {
