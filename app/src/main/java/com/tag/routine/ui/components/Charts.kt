@@ -3,6 +3,7 @@ package com.tag.routine.ui.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -43,11 +44,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -56,6 +61,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import com.tag.routine.R
@@ -66,8 +73,12 @@ import com.tag.routine.data.HeatmapCalendar
 import com.tag.routine.data.HeatmapIntensity
 import com.tag.routine.data.WeeklyReportEngine
 import com.tag.routine.ui.accessibility.AccessibilityLabels
+import com.tag.routine.ui.motion.HapticKind
 import com.tag.routine.ui.motion.LocalAnimationLevel
 import com.tag.routine.ui.motion.TagMotion
+import com.tag.routine.ui.motion.glowPulse
+import com.tag.routine.ui.motion.pressScale
+import com.tag.routine.ui.motion.rememberTagHaptics
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
 import kotlinx.coroutines.flow.first
@@ -90,13 +101,28 @@ fun WeekStrip(
     hasItemsFor: (LocalDate) -> Boolean = { dotFor(it) > 0f },
 ) {
     val brand = tagBrand()
+    val level = LocalAnimationLevel.current
+    val haptics = rememberTagHaptics()
     val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
-    val fontScale = LocalDensity.current.fontScale
+    val density = LocalDensity.current
+    val fontScale = density.fontScale
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     // Large system fonts get a horizontally scrollable strip instead of squeezing
     // seven fixed cells until their numbers clip.
     val scrollable = fontScale > 1.3f
     val todayLabel = stringResource(R.string.day_today)
     val start = today.minusDays(3)
+    val selectedIndex = ChronoUnit.DAYS.between(start, selected).toInt()
+    val hasPillSelection = selectedIndex in 0 until days
+    val animatedIndexState = animateFloatAsState(
+        targetValue = if (hasPillSelection) selectedIndex.toFloat() else 0f,
+        animationSpec = if (level.allowsMotion) TagMotion.snappySpring() else TagMotion.instantTween(0),
+        label = "week-pill-index",
+    )
+    var stripSize by remember { mutableStateOf(IntSize.Zero) }
+    val gapDp = 8.dp
+    val gapPx = remember(density) { with(density) { gapDp.toPx() } }
+
     Column(modifier = modifier.fillMaxWidth()) {
         if (showMonthHeader) {
             Text(
@@ -109,7 +135,7 @@ fun WeekStrip(
                 modifier = Modifier.padding(bottom = 6.dp),
             )
         }
-        Row(
+        Box(
             modifier = if (scrollable) {
                 Modifier
                     .fillMaxWidth()
@@ -117,95 +143,177 @@ fun WeekStrip(
             } else {
                 Modifier.fillMaxWidth()
             },
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            repeat(days) { index ->
-                val date = start.plusDays(index.toLong())
-                val isSelected = date == selected
-                val isToday = date == today
-                val isFuture = date.isAfter(today)
-                val ratio = dotFor(date)
-                val hasItems = hasItemsFor(date)
-                val level = LocalAnimationLevel.current
-                val colorSpec = if (level.isOff) TagMotion.instantTween<Color>(0) else TagMotion.quickTween()
-                val container by animateColorAsState(
-                    targetValue = when {
-                        isSelected -> MaterialTheme.colorScheme.primary
-                        isToday -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
-                        else -> MaterialTheme.colorScheme.surfaceContainer
-                    },
-                    animationSpec = colorSpec,
-                    label = "week-bg",
-                )
-                val contentColor by animateColorAsState(
-                    targetValue = when {
-                        isSelected -> MaterialTheme.colorScheme.onPrimary
-                        isFuture -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
-                        isToday -> MaterialTheme.colorScheme.primary
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    animationSpec = colorSpec,
-                    label = "week-fg",
-                )
-                Column(
-                    modifier = (if (scrollable) Modifier.width(64.dp) else Modifier.weight(1f))
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(container)
-                        .then(
-                            if (!isSelected) {
-                                Modifier.border(
+            Box(
+                modifier = (if (scrollable) Modifier.width(64.dp * days + gapDp * (days - 1)) else Modifier.fillMaxWidth())
+                    .onSizeChanged { stripSize = it },
+            ) {
+                // Layer 1: unselected cell backgrounds + subtle breathing halo for Today.
+                Row(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clearAndSetSemantics {},
+                    horizontalArrangement = Arrangement.spacedBy(gapDp),
+                ) {
+                    repeat(days) { index ->
+                        val date = start.plusDays(index.toLong())
+                        val isToday = date == today
+                        val isSelected = date == selected
+                        Box(
+                            modifier = (if (scrollable) Modifier.width(64.dp) else Modifier.weight(1f))
+                                .height(with(density) { stripSize.height.toDp() })
+                                .then(
+                                    if (isToday && !isSelected) {
+                                        Modifier.glowPulse(
+                                            glowColor = MaterialTheme.colorScheme.primary,
+                                            cornerRadius = 20.dp,
+                                            maxAlpha = 0.28f,
+                                        )
+                                    } else {
+                                        Modifier
+                                    },
+                                )
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(
+                                    if (isToday) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+                                    else MaterialTheme.colorScheme.surfaceContainer,
+                                )
+                                .border(
                                     1.dp,
                                     if (isToday) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
                                     else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                                     RoundedCornerShape(20.dp),
-                                )
-                            } else Modifier
+                                ),
                         )
-                        .clickable { onSelect(date) }
-                        .semantics {
-                            contentDescription = buildString {
-                                append(Dates.full(date, appLocale, calendarType))
-                                if (isToday) append(", $todayLabel")
-                                if (hasItems) {
-                                    append(", ${Dates.formatPercent((ratio * 100).roundToInt(), appLocale)}")
-                                }
-                            }
-                            this.selected = isSelected
-                        }
-                        .padding(vertical = 10.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        text = Dates.shortDayName(date, appLocale),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = contentColor.copy(alpha = 0.85f),
-                        fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Medium,
-                        maxLines = 1,
-                        softWrap = false,
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = Dates.formatDigits(Dates.dayOfMonth(date, calendarType).toString(), appLocale),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = contentColor,
-                        fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                        maxLines = 1,
-                        softWrap = false,
-                    )
-                    Spacer(Modifier.height(6.dp))
+                    }
+                }
+
+                // Layer 2: spring-sliding selection pill indicator (RTL-aware).
+                if (stripSize.width > 0 && stripSize.height > 0 && hasPillSelection) {
+                    val cellWidthPx = ((stripSize.width - gapPx * (days - 1)) / days.toFloat()).coerceAtLeast(1f)
+                    val stepPx = cellWidthPx + gapPx
+                    val cellWidthDp = with(density) { cellWidthPx.toDp() }
+                    val pillHeightDp = with(density) { stripSize.height.toDp() }
                     Box(
-                        Modifier
-                            .size(6.dp)
-                            .clip(RoundedCornerShape(percent = 50))
-                            .background(
-                                when {
-                                    !hasItems -> Color.Transparent
-                                    ratio >= 0.999f -> if (isSelected) contentColor else brand.success
-                                    ratio > 0f -> if (isSelected) contentColor.copy(alpha = 0.7f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
-                                    else -> if (isSelected) contentColor.copy(alpha = 0.55f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
-                                },
-                            ),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .width(cellWidthDp)
+                            .height(pillHeightDp)
+                            .graphicsLayer {
+                                val offset = animatedIndexState.value * stepPx
+                                translationX = if (isRtl) -offset else offset
+                            }
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(MaterialTheme.colorScheme.primary)
+                            .clearAndSetSemantics {},
                     )
+                }
+
+                // Layer 3: interactive foreground labels & staggered completion dots.
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(gapDp),
+                ) {
+                    repeat(days) { index ->
+                        val date = start.plusDays(index.toLong())
+                        val isSelected = date == selected
+                        val isToday = date == today
+                        val isFuture = date.isAfter(today)
+                        val ratio = dotFor(date)
+                        val hasItems = hasItemsFor(date)
+                        val colorSpec = if (level.isOff) TagMotion.instantTween<Color>(0) else TagMotion.quickTween()
+                        val contentColor by animateColorAsState(
+                            targetValue = when {
+                                isSelected -> MaterialTheme.colorScheme.onPrimary
+                                isFuture -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
+                                isToday -> MaterialTheme.colorScheme.primary
+                                else -> MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            animationSpec = colorSpec,
+                            label = "week-fg",
+                        )
+                        val dotAnim = remember { Animatable(if (level.isOff) 1f else 0f) }
+                        LaunchedEffect(hasItems, level) {
+                            if (level.isOff) {
+                                dotAnim.snapTo(1f)
+                            } else if (hasItems) {
+                                dotAnim.snapTo(0f)
+                                kotlinx.coroutines.delay(
+                                    TagMotion.staggerDelayMillis(index, stepMs = 35, maxDelayMs = 240).toLong(),
+                                )
+                                dotAnim.animateTo(1f, TagMotion.bouncySpring())
+                            } else {
+                                dotAnim.snapTo(1f)
+                            }
+                        }
+
+                        Column(
+                            modifier = (if (scrollable) Modifier.width(64.dp) else Modifier.weight(1f))
+                                .pressScale(pressedScale = 0.94f)
+                                .clip(RoundedCornerShape(20.dp))
+                                .then(
+                                    if (isSelected && stripSize.width == 0) {
+                                        Modifier.background(MaterialTheme.colorScheme.primary)
+                                    } else {
+                                        Modifier
+                                    },
+                                )
+                                .clickable {
+                                    haptics(HapticKind.TICK)
+                                    onSelect(date)
+                                }
+                                .semantics {
+                                    contentDescription = buildString {
+                                        append(Dates.full(date, appLocale, calendarType))
+                                        if (isToday) append(", $todayLabel")
+                                        if (hasItems) {
+                                            append(", ${Dates.formatPercent((ratio * 100).roundToInt(), appLocale)}")
+                                        }
+                                    }
+                                    this.selected = isSelected
+                                }
+                                .padding(vertical = 10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                text = Dates.shortDayName(date, appLocale),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = contentColor.copy(alpha = 0.85f),
+                                fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Medium,
+                                maxLines = 1,
+                                softWrap = false,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = Dates.formatDigits(Dates.dayOfMonth(date, calendarType).toString(), appLocale),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = contentColor,
+                                fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                maxLines = 1,
+                                softWrap = false,
+                            )
+                            Spacer(Modifier.height(6.dp))
+                            Box(
+                                Modifier
+                                    .size(6.dp)
+                                    .graphicsLayer {
+                                        val s = dotAnim.value.coerceIn(0f, 1.3f)
+                                        scaleX = s
+                                        scaleY = s
+                                        alpha = s.coerceIn(0f, 1f)
+                                    }
+                                    .clip(RoundedCornerShape(percent = 50))
+                                    .background(
+                                        when {
+                                            !hasItems -> Color.Transparent
+                                            ratio >= 0.999f -> if (isSelected) contentColor else brand.success
+                                            ratio > 0f -> if (isSelected) contentColor.copy(alpha = 0.7f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
+                                            else -> if (isSelected) contentColor.copy(alpha = 0.55f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
+                                        },
+                                    ),
+                            )
+                        }
+                    }
                 }
             }
         }

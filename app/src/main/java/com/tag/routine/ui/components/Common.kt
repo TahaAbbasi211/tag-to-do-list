@@ -2,7 +2,13 @@ package com.tag.routine.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,7 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -66,14 +71,18 @@ import com.tag.routine.R
 import com.tag.routine.ui.motion.CheckDraw
 import com.tag.routine.ui.motion.ConfettiBurst
 import com.tag.routine.ui.motion.HapticKind
+import com.tag.routine.ui.motion.LocalAmbientAnimationsActive
 import com.tag.routine.ui.motion.LocalAnimationLevel
 import com.tag.routine.ui.motion.TagMotion
-import com.tag.routine.ui.motion.breathing
 import com.tag.routine.ui.motion.floatY
+import com.tag.routine.ui.motion.glowPulse
 import com.tag.routine.ui.motion.rememberTagHaptics
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
+import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * Wraps [content] so the user can swipe it away to delete. Works in both directions and
@@ -117,6 +126,8 @@ fun SwipeToDelete(
     )
 
     val density = LocalDensity.current
+    val level = LocalAnimationLevel.current
+    val haptics = rememberTagHaptics()
     val revealThresholdPx = remember(density) { with(density) { 84.dp.toPx() } }
     val direction = state.dismissDirection
     val offset = try {
@@ -128,7 +139,24 @@ fun SwipeToDelete(
         state.targetValue == SwipeToDismissBoxValue.Settled &&
         abs(offset) <= 2f
     val isSwiping = !isAtRest && direction != SwipeToDismissBoxValue.Settled
-    val reveal = if (isSwiping) (abs(offset) / revealThresholdPx).coerceIn(0f, 1f) else 0f
+    val rawFraction = if (isSwiping) abs(offset) / revealThresholdPx else 0f
+    // Elastic rubber-band curve so background intensity ramps smoothly without overshooting.
+    val reveal = if (isSwiping) (1f - 1f / (1f + rawFraction * 1.45f)).coerceIn(0f, 1f) else 0f
+    val crossedThreshold = isSwiping && rawFraction >= 1f
+    LaunchedEffect(crossedThreshold) {
+        if (crossedThreshold) {
+            haptics(HapticKind.TICK)
+        }
+    }
+    val iconScaleState = animateFloatAsState(
+        targetValue = when {
+            !isSwiping -> 0.78f
+            crossedThreshold -> 1.24f
+            else -> 0.80f + 0.30f * rawFraction.coerceIn(0f, 1f)
+        },
+        animationSpec = if (level.allowsMotion) TagMotion.bouncySpring() else TagMotion.instantTween(0),
+        label = "swipe-trash-scale",
+    )
     val deleteColor = MaterialTheme.colorScheme.errorContainer
 
     SwipeToDismissBox(
@@ -154,7 +182,12 @@ fun SwipeToDelete(
                     Icon(
                         imageVector = Icons.Rounded.Delete,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = reveal),
+                        tint = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = reveal.coerceAtLeast(0.25f)),
+                        modifier = Modifier.graphicsLayer {
+                            val s = iconScaleState.value
+                            scaleX = s
+                            scaleY = s
+                        },
                     )
                 }
             }
@@ -402,37 +435,117 @@ fun ConfettiEffect(
 }
 
 /**
- * Warm and friendly empty state for the Today screen with a large floating/breathing icon.
- * Removes the old "+" button in the center so only the FAB remains.
+ * Warm, animated sunrise illustration empty state for the Today screen with a
+ * softly glowing CTA button when [onAddRoutine] is supplied.
  */
 @Composable
 fun TodayEmptyState(
     modifier: Modifier = Modifier,
+    onAddRoutine: (() -> Unit)? = null,
 ) {
+    val level = LocalAnimationLevel.current
+    val ambientActive = LocalAmbientAnimationsActive.current
+    val brand = tagBrand()
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryColor = MaterialTheme.colorScheme.secondary
+    val tertiaryColor = brand.streak
+
+    val driftState = if (level.allowsAmbient && ambientActive) {
+        val transition = rememberInfiniteTransition(label = "sunrise-empty")
+        transition.animateFloat(
+            initialValue = 0f,
+            targetValue = (2.0 * PI).toFloat(),
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = TagMotion.DURATION_AMBIENT, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart,
+            ),
+            label = "sunrise-phase",
+        )
+    } else {
+        null
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 40.dp),
+            .padding(horizontal = 24.dp, vertical = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
             modifier = Modifier
-                .size(96.dp)
-                .breathing(minScale = 0.95f, maxScale = 1.05f, minAlpha = 0.82f, maxAlpha = 1f)
-                .floatY(amplitudeDp = 4.dp)
-                .clip(RoundedCornerShape(30.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.75f))
+                .size(136.dp)
+                .floatY(amplitudeDp = 3.dp)
                 .clearAndSetSemantics {},
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                imageVector = Icons.Rounded.AutoAwesome,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(48.dp),
-            )
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val phase = driftState?.value ?: 0f
+                val bob = sin(phase) * 3.dp.toPx()
+                val horizonY = size.height * 0.72f
+                val centerX = size.width * 0.5f
+
+                // Outer warm sun halo
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            tertiaryColor.copy(alpha = 0.28f),
+                            primaryColor.copy(alpha = 0.10f),
+                            Color.Transparent,
+                        ),
+                        center = Offset(centerX, horizonY - 12.dp.toPx() + bob),
+                        radius = size.minDimension * 0.45f,
+                    ),
+                    radius = size.minDimension * 0.45f,
+                    center = Offset(centerX, horizonY - 12.dp.toPx() + bob),
+                )
+
+                // Rising sun disc
+                val sunRadius = 24.dp.toPx()
+                val sunCenter = Offset(centerX, horizonY - 10.dp.toPx() + bob * 0.7f)
+                drawCircle(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(tertiaryColor, primaryColor.copy(alpha = 0.85f)),
+                    ),
+                    radius = sunRadius,
+                    center = sunCenter,
+                )
+
+                // Floating decorative geometric accents
+                drawCircle(
+                    color = secondaryColor.copy(alpha = 0.65f),
+                    radius = 5.dp.toPx(),
+                    center = Offset(size.width * 0.22f, size.height * 0.34f - bob),
+                )
+                drawCircle(
+                    color = primaryColor.copy(alpha = 0.55f),
+                    radius = 4.dp.toPx(),
+                    center = Offset(size.width * 0.80f, size.height * 0.28f + bob),
+                )
+                drawRoundRect(
+                    color = tertiaryColor.copy(alpha = 0.48f),
+                    topLeft = Offset(size.width * 0.74f, size.height * 0.52f - bob * 0.6f),
+                    size = Size(10.dp.toPx(), 10.dp.toPx()),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(3.dp.toPx()),
+                )
+
+                // Gentle horizon arc
+                drawLine(
+                    color = primaryColor.copy(alpha = 0.35f),
+                    start = Offset(size.width * 0.16f, horizonY),
+                    end = Offset(size.width * 0.84f, horizonY),
+                    strokeWidth = 2.5.dp.toPx(),
+                    cap = StrokeCap.Round,
+                )
+                drawLine(
+                    color = secondaryColor.copy(alpha = 0.28f),
+                    start = Offset(size.width * 0.28f, horizonY + 10.dp.toPx()),
+                    end = Offset(size.width * 0.72f, horizonY + 10.dp.toPx()),
+                    strokeWidth = 2.dp.toPx(),
+                    cap = StrokeCap.Round,
+                )
+            }
         }
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(12.dp))
         Text(
             text = stringResource(R.string.today_empty_title),
             style = MaterialTheme.typography.titleLarge,
@@ -449,6 +562,26 @@ fun TodayEmptyState(
             modifier = Modifier.padding(horizontal = 20.dp),
             lineHeight = 22.sp,
         )
+        if (onAddRoutine != null) {
+            Spacer(Modifier.height(20.dp))
+            AppButton(
+                text = stringResource(R.string.today_add_routine),
+                onClick = onAddRoutine,
+                modifier = Modifier.glowPulse(
+                    glowColor = MaterialTheme.colorScheme.primary,
+                    cornerRadius = 16.dp,
+                    maxAlpha = 0.34f,
+                ),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Rounded.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                },
+                shape = RoundedCornerShape(16.dp),
+            )
+        }
     }
 }
 
