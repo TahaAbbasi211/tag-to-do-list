@@ -50,6 +50,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -65,6 +66,8 @@ import com.tag.routine.data.DayStat
 import com.tag.routine.data.HeatmapCalendar
 import com.tag.routine.data.HeatmapIntensity
 import com.tag.routine.data.WeeklyReportEngine
+import com.tag.routine.ui.accessibility.AccessibilityLabels
+import com.tag.routine.ui.accessibility.rememberReducedMotion
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
 import kotlinx.coroutines.flow.first
@@ -88,6 +91,11 @@ fun WeekStrip(
 ) {
     val brand = tagBrand()
     val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val fontScale = LocalDensity.current.fontScale
+    // Large system fonts get a horizontally scrollable strip instead of squeezing
+    // seven fixed cells until their numbers clip.
+    val scrollable = fontScale > 1.3f
+    val todayLabel = stringResource(R.string.day_today)
     val start = today.minusDays(3)
     Column(modifier = modifier.fillMaxWidth()) {
         if (showMonthHeader) {
@@ -102,7 +110,13 @@ fun WeekStrip(
             )
         }
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = if (scrollable) {
+                Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+            } else {
+                Modifier.fillMaxWidth()
+            },
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             repeat(days) { index ->
@@ -132,8 +146,7 @@ fun WeekStrip(
                     label = "week-fg",
                 )
                 Column(
-                    modifier = Modifier
-                        .weight(1f)
+                    modifier = (if (scrollable) Modifier.width(64.dp) else Modifier.weight(1f))
                         .clip(RoundedCornerShape(20.dp))
                         .background(container)
                         .then(
@@ -147,6 +160,16 @@ fun WeekStrip(
                             } else Modifier
                         )
                         .clickable { onSelect(date) }
+                        .semantics {
+                            contentDescription = buildString {
+                                append(Dates.full(date, appLocale, calendarType))
+                                if (isToday) append(", $todayLabel")
+                                if (hasItems) {
+                                    append(", ${Dates.formatPercent((ratio * 100).roundToInt(), appLocale)}")
+                                }
+                            }
+                            this.selected = isSelected
+                        }
                         .padding(vertical = 10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
@@ -201,11 +224,28 @@ fun WeeklyBarChart(
     val useHorizontalScroll = fontScale > 1.25f
     val trackHeight = (barHeight - 34.dp).coerceAtLeast(64.dp)
     val data = stats.takeLast(7)
+    val reducedMotion = rememberReducedMotion()
     val reveal = remember { Animatable(0f) }
     LaunchedEffect(data.map { it.ratio to it.date }) {
-        reveal.snapTo(0f)
-        reveal.animateTo(1f, tween(650))
+        if (reducedMotion) {
+            reveal.snapTo(1f)
+        } else {
+            reveal.snapTo(0f)
+            reveal.animateTo(1f, tween(650))
+        }
     }
+
+    // Charts carry a spoken summary so TalkBack users get the same information.
+    val chartDescription = stringResource(
+        R.string.a11y_chart_summary,
+        AccessibilityLabels.chartSeries(
+            entries = data.map { stat ->
+                stat.date to if (stat.hasData) (stat.ratio * 100f).roundToInt() else null
+            },
+            locale = appLocale,
+            noDataLabel = stringResource(R.string.a11y_no_data),
+        ),
+    )
 
     val rowModifier = if (useHorizontalScroll) {
         Modifier
@@ -215,7 +255,13 @@ fun WeeklyBarChart(
         Modifier.fillMaxWidth()
     }
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {
+                contentDescription = chartDescription
+            },
+    ) {
         Row(
             modifier = rowModifier,
             horizontalArrangement = Arrangement.spacedBy(9.dp),
@@ -541,14 +587,14 @@ fun HeatmapGrid(
                                             else -> Modifier
                                         }
                                         val cellStat = cell.stat
-                                        val dateSummary = Dates.dayMonth(cell.date, appLocale, calendarType)
-                                        val a11ySummary = Dates.formatDigits(
-                                            if (cellStat != null && cellStat.hasData) {
-                                                "$dateSummary ${cellStat.completed}/${cellStat.scheduled}"
-                                            } else {
-                                                "$dateSummary $neutralLabel"
-                                            },
-                                            appLocale,
+                                        val a11ySummary = AccessibilityLabels.heatmapCell(
+                                            date = cell.date,
+                                            scheduled = cellStat?.scheduled,
+                                            completed = cellStat?.completed,
+                                            locale = appLocale,
+                                            calendarType = calendarType,
+                                            noItemsLabel = neutralLabel,
+                                            cellPattern = stringResource(R.string.a11y_heatmap_cell),
                                         )
 
                                         Box(
@@ -644,6 +690,13 @@ fun HeatmapGrid(
             }
         }
 
+        // Intensity is not colour-only: the guide spells out what darker squares mean.
+        Text(
+            text = stringResource(R.string.a11y_heatmap_guide),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
         // Selected day summary panel (updates on tap).
         Surface(
             modifier = Modifier.fillMaxWidth(),
@@ -738,11 +791,13 @@ fun MiniRing(
     stroke: androidx.compose.ui.unit.Dp = 4.dp,
     color: Color = MaterialTheme.colorScheme.primary,
 ) {
+    val reducedMotion = rememberReducedMotion()
     val animated by animateFloatAsState(
         targetValue = progress.coerceIn(0f, 1f),
         animationSpec = tween(600),
         label = "mini-ring",
     )
+    val shown = if (reducedMotion) progress.coerceIn(0f, 1f) else animated
     Canvas(modifier = modifier.size(size)) {
         val strokePx = stroke.toPx()
         val inset = strokePx / 2f
@@ -756,11 +811,11 @@ fun MiniRing(
             size = arcSize,
             style = Stroke(width = strokePx, cap = StrokeCap.Round),
         )
-        if (animated > 0.01f) {
+        if (shown > 0.01f) {
             drawArc(
                 color = color,
                 startAngle = -90f,
-                sweepAngle = 360f * animated,
+                sweepAngle = 360f * shown,
                 useCenter = false,
                 topLeft = Offset(inset, inset),
                 size = arcSize,
