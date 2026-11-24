@@ -18,16 +18,22 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -40,6 +46,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -52,6 +59,9 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -59,6 +69,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tag.routine.data.Dates
+import com.tag.routine.ui.accessibility.rememberReducedMotion
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
 import java.util.Locale
@@ -145,6 +156,7 @@ fun ScreenHeader(
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.semantics { heading() },
             )
             if (!subtitle.isNullOrBlank()) {
                 Spacer(Modifier.height(MaterialTheme.spacing.xs))
@@ -185,6 +197,7 @@ fun SectionHeader(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.semantics { heading() },
             )
             if (subtitle != null) {
                 Spacer(Modifier.height(2.dp))
@@ -357,7 +370,7 @@ fun AppChip(
     )
 
     Surface(
-        modifier = modifier,
+        modifier = modifier.minimumInteractiveComponentSize(),
         shape = shape,
         color = animatedBg,
         border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f)),
@@ -417,24 +430,34 @@ fun EmptyState(
     action: (@Composable () -> Unit)? = null,
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "empty-pulse")
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 0.96f,
-        targetValue = 1.04f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1800, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "empty-pulse-scale",
-    )
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.75f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1800, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "empty-pulse-alpha",
-    )
+    val reducedMotion = rememberReducedMotion()
+    val pulseScale: Float
+    val pulseAlpha: Float
+    if (reducedMotion) {
+        pulseScale = 1f
+        pulseAlpha = 1f
+    } else {
+        val scaleAnim by infiniteTransition.animateFloat(
+            initialValue = 0.96f,
+            targetValue = 1.04f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1800, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse,
+            ),
+            label = "empty-pulse-scale",
+        )
+        val alphaAnim by infiniteTransition.animateFloat(
+            initialValue = 0.75f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1800, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse,
+            ),
+            label = "empty-pulse-alpha",
+        )
+        pulseScale = scaleAnim
+        pulseAlpha = alphaAnim
+    }
 
     Column(
         modifier = modifier
@@ -479,7 +502,65 @@ fun EmptyState(
 }
 
 // ==================================================================
-// 6. AppBottomNav (Floating Bottom Bar with Smooth Selection Indicator)
+// 6. Large-screen frame & adaptive stat rows
+// ==================================================================
+
+/**
+ * Centres a screen's content and caps its width on tablets, foldables and landscape
+ * phones, without pulling in any window-size-class dependency. Below [maxWidth] the
+ * frame is a no-op, so phone layouts are unchanged.
+ */
+@Composable
+fun LargeScreenFrame(
+    modifier: Modifier = Modifier,
+    maxWidth: Dp = 640.dp,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    BoxWithConstraints(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        Box(
+            modifier = Modifier
+                .widthIn(max = maxWidth)
+                .fillMaxWidth()
+                .fillMaxHeight(),
+            content = content,
+        )
+    }
+}
+
+/**
+ * Lays out two stat tiles side by side, and stacks them once the system font is large
+ * enough (fontScale > 1.4) that a half-width tile would clip its value.
+ */
+@Composable
+fun StatTilePair(
+    modifier: Modifier = Modifier,
+    content: @Composable (Modifier) -> Unit,
+) {
+    val stack = LocalDensity.current.fontScale > 1.4f
+    if (stack) {
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
+        ) {
+            content(Modifier.fillMaxWidth())
+        }
+    } else {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max),
+            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
+        ) {
+            content(Modifier.weight(1f).fillMaxHeight())
+        }
+    }
+}
+
+// ==================================================================
+// 7. AppBottomNav (Floating Bottom Bar with Smooth Selection Indicator)
 // ==================================================================
 
 data class BottomNavTabItem<T>(
