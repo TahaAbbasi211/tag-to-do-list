@@ -59,6 +59,7 @@ fun TemplatePickerSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
+        sheetMaxWidth = 640.dp,
     ) {
         ProvideAppLocale(localizedContext) {
             Column(
