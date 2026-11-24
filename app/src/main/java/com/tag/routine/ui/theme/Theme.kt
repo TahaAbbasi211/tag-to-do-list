@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Build
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -15,19 +16,21 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.tag.routine.data.AnimationSetting
 import com.tag.routine.data.AppSettings
+import com.tag.routine.ui.motion.AnimationLevel
 import com.tag.routine.ui.motion.DayPhase
 import com.tag.routine.ui.motion.DayPhaseColors
 import com.tag.routine.ui.motion.LocalAmbientAnimationsActive
 import com.tag.routine.ui.motion.LocalAnimationLevel
 import com.tag.routine.ui.motion.LocalHapticsEnabled
+import com.tag.routine.ui.motion.TagMotion
 import com.tag.routine.ui.motion.rememberIsLifecycleResumed
 import com.tag.routine.ui.motion.rememberResolvedAnimationLevel
 import java.time.LocalTime
@@ -260,6 +263,9 @@ fun TagTheme(
     val animationLevel = rememberResolvedAnimationLevel(animationSetting)
     val lifecycleResumed = rememberIsLifecycleResumed()
 
+    val animatedScheme = animateTagColorScheme(scheme, animationLevel)
+    val animatedBrand = animateTagBrand(brand, animationLevel)
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
@@ -273,19 +279,88 @@ fun TagTheme(
     }
 
     CompositionLocalProvider(
-        LocalTagBrand provides brand,
+        LocalTagBrand provides animatedBrand,
         LocalAppSpacing provides AppSpacing(),
         LocalAnimationLevel provides animationLevel,
         LocalHapticsEnabled provides hapticsEnabled,
         LocalAmbientAnimationsActive provides (animationLevel.allowsAmbient && lifecycleResumed),
     ) {
         MaterialTheme(
-            colorScheme = scheme,
+            colorScheme = animatedScheme,
             typography = TagTypography,
             shapes = TagShapes,
             content = content,
         )
     }
+}
+
+@Composable
+private fun themeColor(target: Color, level: AnimationLevel, label: String): Color {
+    if (level.isOff) return target
+    val animated by animateColorAsState(
+        targetValue = target,
+        animationSpec = if (level == AnimationLevel.FULL) TagMotion.standardTween() else TagMotion.quickTween(),
+        label = label,
+    )
+    return animated
+}
+
+@Composable
+private fun animateTagColorScheme(target: ColorScheme, level: AnimationLevel): ColorScheme {
+    if (level.isOff) return target
+    return target.copy(
+        primary = themeColor(target.primary, level, "cs-primary"),
+        onPrimary = themeColor(target.onPrimary, level, "cs-onPrimary"),
+        primaryContainer = themeColor(target.primaryContainer, level, "cs-primaryContainer"),
+        onPrimaryContainer = themeColor(target.onPrimaryContainer, level, "cs-onPrimaryContainer"),
+        secondary = themeColor(target.secondary, level, "cs-secondary"),
+        onSecondary = themeColor(target.onSecondary, level, "cs-onSecondary"),
+        secondaryContainer = themeColor(target.secondaryContainer, level, "cs-secondaryContainer"),
+        onSecondaryContainer = themeColor(target.onSecondaryContainer, level, "cs-onSecondaryContainer"),
+        tertiary = themeColor(target.tertiary, level, "cs-tertiary"),
+        onTertiary = themeColor(target.onTertiary, level, "cs-onTertiary"),
+        tertiaryContainer = themeColor(target.tertiaryContainer, level, "cs-tertiaryContainer"),
+        onTertiaryContainer = themeColor(target.onTertiaryContainer, level, "cs-onTertiaryContainer"),
+        background = themeColor(target.background, level, "cs-background"),
+        onBackground = themeColor(target.onBackground, level, "cs-onBackground"),
+        surface = themeColor(target.surface, level, "cs-surface"),
+        onSurface = themeColor(target.onSurface, level, "cs-onSurface"),
+        surfaceVariant = themeColor(target.surfaceVariant, level, "cs-surfaceVariant"),
+        onSurfaceVariant = themeColor(target.onSurfaceVariant, level, "cs-onSurfaceVariant"),
+        surfaceContainerLowest = themeColor(target.surfaceContainerLowest, level, "cs-scl"),
+        surfaceContainerLow = themeColor(target.surfaceContainerLow, level, "cs-sclow"),
+        surfaceContainer = themeColor(target.surfaceContainer, level, "cs-sc"),
+        surfaceContainerHigh = themeColor(target.surfaceContainerHigh, level, "cs-sch"),
+        surfaceContainerHighest = themeColor(target.surfaceContainerHighest, level, "cs-schigh"),
+        outline = themeColor(target.outline, level, "cs-outline"),
+        outlineVariant = themeColor(target.outlineVariant, level, "cs-outlineVariant"),
+        error = themeColor(target.error, level, "cs-error"),
+        onError = themeColor(target.onError, level, "cs-onError"),
+        errorContainer = themeColor(target.errorContainer, level, "cs-errorContainer"),
+        onErrorContainer = themeColor(target.onErrorContainer, level, "cs-onErrorContainer"),
+    )
+}
+
+@Composable
+private fun animateTagBrand(target: TagBrand, level: AnimationLevel): TagBrand {
+    if (level.isOff) return target
+    return target.copy(
+        heroStart = themeColor(target.heroStart, level, "tb-heroStart"),
+        heroMid = themeColor(target.heroMid, level, "tb-heroMid"),
+        heroEnd = themeColor(target.heroEnd, level, "tb-heroEnd"),
+        ringStart = themeColor(target.ringStart, level, "tb-ringStart"),
+        ringEnd = themeColor(target.ringEnd, level, "tb-ringEnd"),
+        streak = themeColor(target.streak, level, "tb-streak"),
+        success = themeColor(target.success, level, "tb-success"),
+        warning = themeColor(target.warning, level, "tb-warning"),
+        priorityNormal = themeColor(target.priorityNormal, level, "tb-pNorm"),
+        chartTrack = themeColor(target.chartTrack, level, "tb-chartTrack"),
+        gridEmpty = themeColor(target.gridEmpty, level, "tb-gridEmpty"),
+        cardBorder = themeColor(target.cardBorder, level, "tb-cardBorder"),
+        auroraColors = target.auroraColors.mapIndexed { idx, color ->
+            themeColor(color, level, "tb-aurora-$idx")
+        },
+    )
 }
 
 internal fun paletteFor(key: String): PaletteDef.Def =

@@ -56,6 +56,7 @@ import com.tag.routine.data.JalaliCalendar
 import com.tag.routine.data.JalaliDate
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.i18n.ProvideAppLocale
+import com.tag.routine.ui.motion.AnimatedDialogSurface
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.Locale
@@ -84,7 +85,8 @@ fun JalaliDatePickerDialog(
     var pickingYear by remember { mutableStateOf(false) }
 
     Dialog(onDismissRequest = onDismiss) {
-        ProvideAppLocale(localizedContext) {
+        AnimatedDialogSurface {
+            ProvideAppLocale(localizedContext) {
             val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
             val weekdayOptions = remember(appLocale) {
                 Dates.weekdayOptions(CalendarType.JALALI, appLocale)
@@ -375,6 +377,7 @@ fun JalaliDatePickerDialog(
                     }
                 }
             }
+        }
         }
     }
 }

@@ -42,6 +42,7 @@ import com.tag.routine.ui.components.AppButton
 import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.i18n.ProvideAppLocale
+import com.tag.routine.ui.motion.AnimatedDialogSurface
 import java.time.LocalDate
 import java.util.Locale
 
@@ -68,7 +69,8 @@ fun CopyToDayDialog(
     val days = remember(today) { (0L..13L).map { today.plusDays(it) } }
 
     Dialog(onDismissRequest = onDismiss) {
-        ProvideAppLocale(localizedContext) {
+        AnimatedDialogSurface {
+            ProvideAppLocale(localizedContext) {
             val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
             val monthSpan = remember(days, appLocale, calendarType) {
                 Dates.monthYearRange(days.first(), days.last(), appLocale, calendarType)
@@ -153,6 +155,7 @@ fun CopyToDayDialog(
                     }
                 }
             }
+        }
         }
     }
 }

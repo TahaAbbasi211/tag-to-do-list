@@ -51,6 +51,7 @@ import com.tag.routine.data.JalaliCalendar
 import com.tag.routine.ui.BackupUiState
 import com.tag.routine.ui.i18n.LocalizedAlertDialog
 import com.tag.routine.ui.i18n.ProvideAppLocale
+import com.tag.routine.ui.motion.AnimatedDialogSurface
 import com.tag.routine.ui.theme.spacing
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -186,7 +187,8 @@ private fun BackupPreviewDialog(
     }
 
     Dialog(onDismissRequest = onDismiss) {
-        ProvideAppLocale(localizedContext) {
+        AnimatedDialogSurface {
+            ProvideAppLocale(localizedContext) {
             AppCard(
                 modifier = Modifier
                     .widthIn(max = 560.dp)
@@ -304,6 +306,7 @@ private fun BackupPreviewDialog(
                 }
             }
         }
+        }
     }
 }
 
@@ -318,7 +321,8 @@ private fun BackupReplaceConfirmDialog(
 ) {
     val spacing = MaterialTheme.spacing
     Dialog(onDismissRequest = onDismiss) {
-        ProvideAppLocale(localizedContext) {
+        AnimatedDialogSurface {
+            ProvideAppLocale(localizedContext) {
             AppCard(
                 modifier = Modifier
                     .widthIn(max = 560.dp)
@@ -425,6 +429,7 @@ private fun BackupReplaceConfirmDialog(
                     }
                 }
             }
+        }
         }
     }
 }

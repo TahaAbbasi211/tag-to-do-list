@@ -65,6 +65,7 @@ import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.AppCard
 import com.tag.routine.ui.components.FilterPill
 import com.tag.routine.ui.i18n.ProvideAppLocale
+import com.tag.routine.ui.motion.AnimatedSheetContent
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -125,6 +126,7 @@ fun RoutineEditorSheet(
         // The sheet is hosted in its own window, which replaces LocalContext with the
         // Activity's system-locale context. Re-provide the app language so the editor
         // matches the rest of the app instead of falling back to English.
+        AnimatedSheetContent {
         ProvideAppLocale(localizedContext) {
         val appLocale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
         Column(
@@ -518,6 +520,7 @@ fun RoutineEditorSheet(
             }
 
             Spacer(Modifier.height(16.dp))
+        }
         }
         }
     }
