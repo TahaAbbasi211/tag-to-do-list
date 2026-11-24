@@ -429,5 +429,15 @@
     <string name="widget_preview_counter">3 von 4 erledigt</string>
     <string name="widget_mark_done_action">Als erledigt markieren</string>
     <string name="widget_mark_done_cd">%1$s als erledigt markieren</string>
+    <!-- Accessibility & large screens (v1.9) -->
+    <string name="cd_clear_search">Suche löschen</string>
+    <string name="a11y_status_done">Erledigt</string>
+    <string name="a11y_status_not_done">Nicht erledigt</string>
+    <string name="a11y_no_time">Keine Uhrzeit</string>
+    <string name="a11y_progress">%1$d%% abgeschlossen</string>
+    <string name="a11y_heatmap_cell">%1$s · %2$s erledigt (%3$d von %4$d)</string>
+    <string name="a11y_heatmap_guide">Intensität: Je dunkler das Feld, desto mehr Einträge wurden erledigt.</string>
+    <string name="a11y_chart_summary">Tägliche Abschlussquote der letzten sieben Tage: %1$s</string>
+    <string name="a11y_no_data">Keine Daten</string>
+    <string name="a11y_focus_remaining">Verbleibende Zeit</string>
 </resources>
-
