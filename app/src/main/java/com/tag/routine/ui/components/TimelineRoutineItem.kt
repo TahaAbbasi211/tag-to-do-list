@@ -34,7 +34,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -45,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tag.routine.data.AppSettings
 import com.tag.routine.data.RoutineColors
+import com.tag.routine.ui.accessibility.AccessibilityLabels
 import com.tag.routine.ui.theme.TagTheme
 
 /**
@@ -70,10 +76,31 @@ fun TimelineRoutineItem(
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
+    doneLabel: String? = null,
+    notDoneLabel: String? = null,
+    noTimeLabel: String? = null,
+    accessibilityLocale: java.util.Locale = java.util.Locale.getDefault(),
+    customAccessibilityActions: List<CustomAccessibilityAction> = emptyList(),
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val fontScale = LocalDensity.current.fontScale
     val lineColor = accentColor.copy(alpha = 0.35f)
     val surfaceColor = MaterialTheme.colorScheme.surface
+
+    // One merged semantics node reads the whole row at once (title, time, status).
+    val rowLabels = if (doneLabel != null && notDoneLabel != null) {
+        AccessibilityLabels.routineRow(
+            title = title,
+            timeLabel = timeLabel,
+            done = done,
+            doneLabel = doneLabel,
+            notDoneLabel = notDoneLabel,
+            noTimeLabel = noTimeLabel ?: "",
+            locale = accessibilityLocale,
+        )
+    } else {
+        null
+    }
 
     val circleFill by animateColorAsState(
         targetValue = if (done) lerp(accentColor, surfaceColor, if (isDark) 0.25f else 0.15f) else accentColor,
@@ -101,13 +128,19 @@ fun TimelineRoutineItem(
                 onClick = { onClick?.invoke() ?: onToggle() },
                 onLongClick = onLongClick,
             )
+            .semantics(mergeDescendants = true) {
+                rowLabels?.let { contentDescription = it }
+                if (customAccessibilityActions.isNotEmpty()) {
+                    customActions = customAccessibilityActions
+                }
+            }
             .padding(horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Fixed-width start time slot keeps the vertical timeline axis aligned across timed and untimed rows.
         Box(
             modifier = Modifier
-                .width(54.dp)
+                .width(if (fontScale > 1.4f) 84.dp else 54.dp)
                 .padding(vertical = 8.dp),
             contentAlignment = Alignment.CenterEnd,
         ) {
@@ -197,7 +230,7 @@ fun TimelineRoutineItem(
                 ),
                 fontWeight = if (done) FontWeight.Normal else FontWeight.SemiBold,
                 color = titleColor,
-                maxLines = 2,
+                maxLines = if (fontScale > 1.5f) 4 else 2,
                 overflow = TextOverflow.Ellipsis,
             )
             if (!subtitle.isNullOrBlank()) {
@@ -222,6 +255,11 @@ fun TimelineRoutineItem(
             onClick = onToggle,
             size = 26.dp,
             accent = accentColor,
+            stateDescription = if (doneLabel != null && notDoneLabel != null) {
+                AccessibilityLabels.checkState(done, doneLabel, notDoneLabel)
+            } else {
+                null
+            },
         )
         Spacer(Modifier.width(4.dp))
     }
