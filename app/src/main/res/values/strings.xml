@@ -429,4 +429,15 @@
     <string name="widget_preview_counter">3 of 4 done</string>
     <string name="widget_mark_done_action">Mark as done</string>
     <string name="widget_mark_done_cd">Mark %1$s as done</string>
+    <!-- Accessibility & large screens (v1.9) -->
+    <string name="cd_clear_search">Clear search</string>
+    <string name="a11y_status_done">Done</string>
+    <string name="a11y_status_not_done">Not done</string>
+    <string name="a11y_no_time">No time set</string>
+    <string name="a11y_progress">%1$d%% complete</string>
+    <string name="a11y_heatmap_cell">%1$s · %2$s done (%3$d of %4$d)</string>
+    <string name="a11y_heatmap_guide">Intensity guide: the darker the square, the more items were completed.</string>
+    <string name="a11y_chart_summary">Daily completion for the last seven days: %1$s</string>
+    <string name="a11y_no_data">No data</string>
+    <string name="a11y_focus_remaining">Time remaining</string>
 </resources>
