@@ -315,7 +315,11 @@ object Dates {
 
     fun persianMonthName(month: Int): String = JalaliCalendar.monthName(month)
 
+    fun persianMonthName(month: Int, locale: Locale): String = JalaliCalendar.monthName(month, locale)
+
     fun persianMonthNames(): List<String> = JalaliCalendar.PERSIAN_MONTH_NAMES
+
+    fun persianMonthNames(locale: Locale): List<String> = JalaliCalendar.monthNames(locale)
 
     /** First day of week: always Saturday in Jalali mode; Saturday for `fa` or Monday otherwise in Gregorian. */
     fun firstDayOfWeek(
@@ -364,7 +368,7 @@ object Dates {
         calendarType: CalendarType = CalendarType.GREGORIAN,
     ): String = when (calendarType) {
         CalendarType.GREGORIAN -> date.format(formatter("MMMM", locale))
-        CalendarType.JALALI -> JalaliCalendar.monthName(JalaliCalendar.fromLocalDate(date).month)
+        CalendarType.JALALI -> JalaliCalendar.monthName(JalaliCalendar.fromLocalDate(date).month, locale)
     }
 
     fun shortMonthName(
@@ -373,7 +377,7 @@ object Dates {
         calendarType: CalendarType = CalendarType.GREGORIAN,
     ): String = when (calendarType) {
         CalendarType.GREGORIAN -> date.format(formatter("MMM", locale))
-        CalendarType.JALALI -> JalaliCalendar.monthName(JalaliCalendar.fromLocalDate(date).month)
+        CalendarType.JALALI -> JalaliCalendar.monthName(JalaliCalendar.fromLocalDate(date).month, locale)
     }
 
     fun monthYearTitle(
@@ -385,7 +389,7 @@ object Dates {
         CalendarType.GREGORIAN ->
             monthYearTitle(LocalDate.of(year, month, 1), locale, CalendarType.GREGORIAN)
         CalendarType.JALALI ->
-            formatDigits("${JalaliCalendar.monthName(month)} $year", locale)
+            formatDigits("${JalaliCalendar.monthName(month, locale)} $year", locale)
     }
 
     fun monthYearTitle(
@@ -396,7 +400,7 @@ object Dates {
         CalendarType.GREGORIAN -> formatDigits(date.format(formatter("MMMM yyyy", locale)), locale)
         CalendarType.JALALI -> {
             val j = JalaliCalendar.fromLocalDate(date)
-            formatDigits("${JalaliCalendar.monthName(j.month)} ${j.year}", locale)
+            formatDigits("${JalaliCalendar.monthName(j.month, locale)} ${j.year}", locale)
         }
     }
 
@@ -436,7 +440,7 @@ object Dates {
             val j = JalaliCalendar.fromLocalDate(date)
             val dow = dayOfWeekLabel(date, locale)
             val sep = if (locale.language.equals("fa", ignoreCase = true)) "، " else ", "
-            formatDigits("$dow$sep${j.day} ${JalaliCalendar.monthName(j.month)}", locale)
+            formatDigits("$dow$sep${j.day} ${JalaliCalendar.monthName(j.month, locale)}", locale)
         }
     }
 
@@ -450,7 +454,7 @@ object Dates {
             val j = JalaliCalendar.fromLocalDate(date)
             val dow = date.format(formatter("EEEE", locale))
             val sep = if (locale.language.equals("fa", ignoreCase = true)) "، " else ", "
-            formatDigits("$dow$sep${j.day} ${JalaliCalendar.monthName(j.month)} ${j.year}", locale)
+            formatDigits("$dow$sep${j.day} ${JalaliCalendar.monthName(j.month, locale)} ${j.year}", locale)
         }
     }
 
@@ -501,7 +505,7 @@ object Dates {
         CalendarType.GREGORIAN -> formatDigits(date.format(formatter("d MMM", locale)), locale)
         CalendarType.JALALI -> {
             val j = JalaliCalendar.fromLocalDate(date)
-            formatDigits("${j.day} ${JalaliCalendar.monthName(j.month)}", locale)
+            formatDigits("${j.day} ${JalaliCalendar.monthName(j.month, locale)}", locale)
         }
     }
 

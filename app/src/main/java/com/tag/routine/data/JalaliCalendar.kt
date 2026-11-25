@@ -4,6 +4,7 @@ import android.icu.util.Calendar
 import android.icu.util.TimeZone
 import android.icu.util.ULocale
 import java.time.LocalDate
+import java.util.Locale
 
 /** Calendar date in the Solar Hijri (Jalali / Persian) calendar. */
 data class JalaliDate(
@@ -45,6 +46,21 @@ object JalaliCalendar {
         "اسفند",
     )
 
+    val LATIN_MONTH_NAMES: List<String> = listOf(
+        "Farvardin",
+        "Ordibehesht",
+        "Khordad",
+        "Tir",
+        "Mordad",
+        "Shahrivar",
+        "Mehr",
+        "Aban",
+        "Azar",
+        "Dey",
+        "Bahman",
+        "Esfand",
+    )
+
     private val PERSIAN_ULOCALE = ULocale("en@calendar=persian")
 
     private val icuCalendar: ThreadLocal<Calendar> = ThreadLocal.withInitial {
@@ -68,10 +84,15 @@ object JalaliCalendar {
         }
     }
 
-    fun monthName(month: Int): String {
+    fun monthNames(locale: Locale = Locale.getDefault()): List<String> =
+        if (locale.language.equals("fa", ignoreCase = true)) PERSIAN_MONTH_NAMES else LATIN_MONTH_NAMES
+
+    fun monthName(month: Int, locale: Locale): String {
         require(month in 1..12) { "Jalali month must be in 1..12, got $month" }
-        return PERSIAN_MONTH_NAMES[month - 1]
+        return monthNames(locale)[month - 1]
     }
+
+    fun monthName(month: Int): String = monthName(month, Locale.forLanguageTag("fa"))
 
     fun fromEpochDay(epochDay: Long): JalaliDate =
         if (icuAvailable) icuFromEpochDay(epochDay) else PureJalaliMath.fromEpochDay(epochDay)

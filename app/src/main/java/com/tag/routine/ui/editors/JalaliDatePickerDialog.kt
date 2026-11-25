@@ -83,9 +83,10 @@ import java.util.Locale
 /**
  * Solar Hijri (Jalali) calendar date picker dialog.
  *
- * Weeks always begin on Saturday, month names are displayed in Persian (`فروردین..اسفند`),
- * digits use [Dates.formatDigits], and the selected date is returned as a standard Gregorian
- * [LocalDate] so Room persistence remains calendar-independent.
+ * Weeks always begin on Saturday, month names render in Persian script (`فروردین..اسفند`)
+ * for Persian (`fa`) and Latin script (`Farvardin..Esfand`) for other locales, digits use
+ * [Dates.formatDigits], and the selected date is returned as a standard Gregorian [LocalDate]
+ * so Room persistence remains calendar-independent.
  */
 @Composable
 fun JalaliDatePickerDialog(

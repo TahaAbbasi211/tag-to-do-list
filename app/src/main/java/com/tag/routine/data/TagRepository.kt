@@ -36,7 +36,7 @@ class TagRepository(
     scope: CoroutineScope,
     /** Application context, used only to refresh the home-screen widget after writes. */
     private val appContext: android.content.Context? = null,
-) {
+) : FocusRunStorage {
     private val routineDao = db.routines()
     private val taskDao = db.tasks()
     private val tagDao = db.tags()
@@ -303,11 +303,11 @@ class TagRepository(
      */
     val activeFocusRun: Flow<ActiveFocusRun?> = settingsStore.activeFocusRun
 
-    suspend fun currentActiveFocusRun(): ActiveFocusRun? = activeFocusRun.first()
+    override suspend fun currentActiveFocusRun(): ActiveFocusRun? = activeFocusRun.first()
 
-    suspend fun setActiveFocusRun(run: ActiveFocusRun) = settingsStore.setActiveFocusRun(run)
+    override suspend fun setActiveFocusRun(run: ActiveFocusRun) = settingsStore.setActiveFocusRun(run)
 
-    suspend fun clearActiveFocusRun() = settingsStore.clearActiveFocusRun()
+    override suspend fun clearActiveFocusRun() = settingsStore.clearActiveFocusRun()
 
     /**
      * Records one focus run so it can show up in the insights screen.
@@ -316,13 +316,13 @@ class TagRepository(
      * write idempotent: the foreground service finishing a run and a later alarm firing
      * for the same run both upsert the same row instead of recording it twice.
      */
-    suspend fun recordFocusSession(
+    override suspend fun recordFocusSession(
         routineId: String?,
         startedAt: Long,
         endedAt: Long,
         plannedMinutes: Int,
         completed: Boolean,
-        id: String = java.util.UUID.randomUUID().toString(),
+        id: String,
     ) {
         focusDao.upsert(
             FocusSessionEntity(

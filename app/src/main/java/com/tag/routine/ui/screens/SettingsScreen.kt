@@ -990,9 +990,10 @@ private fun DigestTimeSlider(
 ) {
     val spacing = MaterialTheme.spacing
     val clampedInitial = AppConstants.clampDigestMinutes(minutes)
-    var sliderValue by remember { mutableFloatStateOf(clampedInitial.toFloat()) }
+    val initialSliderValue = AppConstants.snapDigestMinutes(clampedInitial).toFloat()
+    var sliderValue by remember { mutableFloatStateOf(initialSliderValue) }
     LaunchedEffect(clampedInitial) {
-        sliderValue = clampedInitial.toFloat()
+        sliderValue = AppConstants.snapDigestMinutes(clampedInitial).toFloat()
     }
     Column(modifier = Modifier.padding(top = spacing.sm)) {
         Text(
@@ -1006,18 +1007,19 @@ private fun DigestTimeSlider(
         Slider(
             value = sliderValue,
             onValueChange = { raw ->
-                val clamped = raw.coerceIn(0f, AppConstants.MAX_DIGEST_MINUTES.toFloat())
-                sliderValue = clamped
-                onPreviewMinutes(AppConstants.clampDigestMinutes(clamped.roundToInt()))
+                val snapped = AppConstants.snapDigestMinutes(raw.roundToInt())
+                sliderValue = snapped.toFloat()
+                onPreviewMinutes(snapped)
             },
             onValueChangeFinished = {
-                val committed = AppConstants.clampDigestMinutes(sliderValue.roundToInt())
+                val committed = AppConstants.snapDigestMinutes(sliderValue.roundToInt())
                 onPreviewMinutes(committed)
                 if (committed != clampedInitial) {
                     onMinutesChange(committed)
                 }
             },
-            valueRange = 0f..AppConstants.MAX_DIGEST_MINUTES.toFloat(),
+            valueRange = 0f..AppConstants.MAX_DIGEST_SLIDER_MINUTES.toFloat(),
+            steps = AppConstants.DIGEST_SLIDER_STEPS,
         )
     }
 }

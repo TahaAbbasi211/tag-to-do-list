@@ -62,10 +62,27 @@ object AppConstants {
     /** Minutes in an hour. */
     const val MINUTES_PER_HOUR = 60
 
-    /** Highest valid minute-of-day for the daily digest slider (23:59). */
+    /** Highest valid minute-of-day for the daily digest setting (23:59). */
     const val MAX_DIGEST_MINUTES = HOURS_PER_DAY * MINUTES_PER_HOUR - 1
+
+    /** Step size for the daily digest slider, in minutes. */
+    const val DIGEST_STEP_MINUTES = 15
+
+    /** Highest stop on the 15-minute daily digest slider (23:45 = 1425). */
+    const val MAX_DIGEST_SLIDER_MINUTES =
+        MAX_DIGEST_MINUTES - (MAX_DIGEST_MINUTES % DIGEST_STEP_MINUTES)
+
+    /** Interior Compose Slider ticks for 96 discrete 15-minute stops (`0..1425`). */
+    const val DIGEST_SLIDER_STEPS = (MAX_DIGEST_SLIDER_MINUTES / DIGEST_STEP_MINUTES) - 1
 
     /** Clamps a daily digest offset into `0..1439` (00:00..23:59). */
     fun clampDigestMinutes(minutes: Int): Int =
         minutes.coerceIn(0, MAX_DIGEST_MINUTES)
+
+    /** Snaps a daily digest offset to the nearest 15-minute step in `0..1425`. */
+    fun snapDigestMinutes(minutes: Int): Int {
+        val clamped = clampDigestMinutes(minutes)
+        val snapped = ((clamped + DIGEST_STEP_MINUTES / 2) / DIGEST_STEP_MINUTES) * DIGEST_STEP_MINUTES
+        return snapped.coerceIn(0, MAX_DIGEST_SLIDER_MINUTES)
+    }
 }

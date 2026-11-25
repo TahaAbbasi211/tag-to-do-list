@@ -160,11 +160,9 @@ class MainActivity : ComponentActivity() {
                             onSelectLanguage = viewModel::setLanguage,
                             onDone = { name ->
                                 viewModel.completeOnboarding(name)
-                                requestNotificationPermissionIfNeeded(onboarded = true)
                             },
                             onSkip = {
                                 viewModel.skipOnboarding()
-                                requestNotificationPermissionIfNeeded(onboarded = true)
                             },
                         )
                     } else {
@@ -172,7 +170,7 @@ class MainActivity : ComponentActivity() {
                             state = state,
                             viewModel = viewModel,
                             onRequestNotificationPermission = {
-                                requestNotificationPermissionIfNeeded(onboarded = true)
+                                requestNotificationPermissionIfNeeded(contextualTrigger = true)
                             },
                         )
                     }
@@ -181,13 +179,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun requestNotificationPermissionIfNeeded(onboarded: Boolean) {
+    private fun requestNotificationPermissionIfNeeded(contextualTrigger: Boolean = true) {
         val granted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
             ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.POST_NOTIFICATIONS,
             ) == PackageManager.PERMISSION_GRANTED
-        if (NotificationPolicy.shouldRequestRuntimePermission(Build.VERSION.SDK_INT, granted, onboarded)) {
+        if (NotificationPolicy.shouldRequestRuntimePermission(Build.VERSION.SDK_INT, granted, contextualTrigger)) {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else if (granted) {
             viewModel.rescheduleReminders()
@@ -279,6 +277,7 @@ private fun TagRoot(
     var editingRoutine by remember { mutableStateOf<RoutineEntity?>(null) }
     var creatingRoutine by remember { mutableStateOf(false) }
     var pendingDeleteRecurring by remember { mutableStateOf<RoutineEntity?>(null) }
+    var pendingSwitchFocusRoutine by remember { mutableStateOf<RoutineEntity?>(null) }
     var showTemplatesSheet by remember { mutableStateOf(false) }
     // Settings owns a small sub-page stack: null means the settings list.
     var showLanguagePage by remember { mutableStateOf(false) }
@@ -459,10 +458,18 @@ private fun TagRoot(
                                     // section, which owns duration selection and history.
                                     onStartFocus = { tab = Tab.FOCUS },
                                     onStartFocusForRoutine = { routine ->
-                                        if (!focus.active || focus.routineId != routine.id) {
-                                            viewModel.startFocus(routine, state.settings.focusMinutes)
+                                        when {
+                                            !focus.active -> {
+                                                viewModel.startFocus(routine, state.settings.focusMinutes)
+                                                tab = Tab.FOCUS
+                                            }
+                                            focus.routineId == routine.id -> {
+                                                tab = Tab.FOCUS
+                                            }
+                                            else -> {
+                                                pendingSwitchFocusRoutine = routine
+                                            }
                                         }
-                                        tab = Tab.FOCUS
                                     },
                                     onMoveRoutine = viewModel::moveRoutine,
                                     onOpenTemplates = { showTemplatesSheet = true },
@@ -645,6 +652,7 @@ private fun TagRoot(
                 null
             },
             onSave = { title, group, icon, timeMinutes, daysMask, reminder, colorHex, colorId, repeatDaily ->
+                val hadReminder = editingRoutine?.let { it.reminder && it.timeMinutes != null } == true
                 viewModel.saveRoutine(
                     existing = editingRoutine,
                     title = title,
@@ -657,7 +665,7 @@ private fun TagRoot(
                     colorId = colorId,
                     repeatDaily = repeatDaily,
                 )
-                if (reminder) {
+                if (NotificationPolicy.shouldTriggerOnRoutineSave(hadReminder, reminder, timeMinutes != null)) {
                     onRequestNotificationPermission()
                 }
             },
@@ -698,6 +706,44 @@ private fun TagRoot(
             confirmButton = {
                 TextButton(onClick = { pendingDeleteRecurring = null }) {
                     Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
+    }
+
+    pendingSwitchFocusRoutine?.let { targetRoutine ->
+        val localizedContext = LocalContext.current
+        val currentLabel = focus.routineTitle?.takeIf { it.isNotBlank() }
+            ?: stringResource(R.string.focus_history_untitled)
+        LocalizedAlertDialog(
+            localizedContext = localizedContext,
+            onDismissRequest = { pendingSwitchFocusRoutine = null },
+            title = {
+                Text(stringResource(R.string.focus_switch_title))
+            },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.focus_switch_body,
+                        currentLabel,
+                        targetRoutine.title,
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.switchFocus(targetRoutine, state.settings.focusMinutes)
+                        pendingSwitchFocusRoutine = null
+                        tab = Tab.FOCUS
+                    },
+                ) {
+                    Text(stringResource(R.string.focus_switch_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingSwitchFocusRoutine = null }) {
+                    Text(stringResource(R.string.focus_switch_keep))
                 }
             },
         )

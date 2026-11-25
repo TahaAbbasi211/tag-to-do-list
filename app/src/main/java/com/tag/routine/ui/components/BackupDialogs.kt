@@ -703,7 +703,7 @@ private fun formatDateWithYear(
     }
     CalendarType.JALALI -> {
         val j = JalaliCalendar.fromLocalDate(date)
-        Dates.formatDigits("${j.day} ${JalaliCalendar.monthName(j.month)} ${j.year}", locale)
+        Dates.formatDigits("${j.day} ${JalaliCalendar.monthName(j.month, locale)} ${j.year}", locale)
     }
 }
 

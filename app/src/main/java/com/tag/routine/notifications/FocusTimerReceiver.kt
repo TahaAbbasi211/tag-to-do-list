@@ -5,9 +5,7 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import com.tag.routine.TagApp
-import com.tag.routine.data.AppConstants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,16 +30,7 @@ object FocusTimerAlarms {
         val triggerAt = System.currentTimeMillis() + remaining * 1000L
         val pending = pendingIntent(context)
         runCatching {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-                alarmManager.setWindow(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerAt,
-                    AppConstants.ALARM_WINDOW_MILLIS,
-                    pending,
-                )
-            } else {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pending)
-            }
+            alarmManager.scheduleRtcWakeup(triggerAt, pending)
         }
     }
 

@@ -222,6 +222,10 @@
     <string name="focus_minutes">%1$d Min.</string>
     <string name="focus_session_done">Fokus-Sitzung abgeschlossen</string>
     <string name="focus_total">Fokuszeit insgesamt: %1$s</string>
+    <string name="focus_switch_title">Fokus-Sitzung wechseln?</string>
+    <string name="focus_switch_body">\"%1$s\" läuft gerade. Stoppen und speichern, bevor \"%2$s\" gestartet wird?</string>
+    <string name="focus_switch_confirm">Stoppen &amp; wechseln</string>
+    <string name="focus_switch_keep">Aktuelle behalten</string>
 
     <!-- Fokus-Bildschirm -->
     <string name="focus_subtitle">Tiefe Arbeit, ein Block nach dem anderen</string>

@@ -222,6 +222,10 @@
     <string name="focus_minutes">%1$d min</string>
     <string name="focus_session_done">Session de concentration terminée</string>
     <string name="focus_total">Temps de concentration total : %1$s</string>
+    <string name="focus_switch_title">Changer de session de concentration ?</string>
+    <string name="focus_switch_body">« %1$s » est en cours. L\'arrêter et l\'enregistrer avant de passer à « %2$s » ?</string>
+    <string name="focus_switch_confirm">Arrêter et changer</string>
+    <string name="focus_switch_keep">Garder l\'actuelle</string>
 
     <!-- Écran de concentration -->
     <string name="focus_subtitle">Travail profond, un bloc à la fois</string>

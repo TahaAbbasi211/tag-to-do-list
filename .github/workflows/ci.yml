@@ -15,7 +15,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
-      - name: Test and build debug APK
+      - name: Test, compile androidTest, and build debug APK
         run: |
           chmod +x ./gradlew
-          ./gradlew testDebugUnitTest assembleDebug
+          ./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:assembleDebug --stacktrace

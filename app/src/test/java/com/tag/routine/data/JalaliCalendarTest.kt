@@ -135,7 +135,7 @@ class JalaliCalendarTest {
     }
 
     @Test
-    fun `Jalali month names stay Persian in all app languages while digits follow locale`() {
+    fun `Jalali month names use Persian script for fa and Latin names for non-Persian locales`() {
         val date = LocalDate.of(2026, 3, 21) // 1 Farvardin 1405
         val fa = Locale.forLanguageTag("fa")
         val nonPersianLocales = listOf(
@@ -145,26 +145,43 @@ class JalaliCalendarTest {
             Locale.forLanguageTag("tr"),
         )
 
-        assertEquals("فروردین", Dates.monthName(date, Locale.ENGLISH, CalendarType.JALALI))
-        assertEquals("فروردین", Dates.shortMonthName(date, Locale.GERMAN, CalendarType.JALALI))
+        assertEquals("فروردین", JalaliCalendar.monthName(1, fa))
+        assertEquals("فروردین", Dates.monthName(date, fa, CalendarType.JALALI))
+        assertEquals("فروردین", Dates.shortMonthName(date, fa, CalendarType.JALALI))
         assertEquals("۱ فروردین", Dates.shortDate(date, fa, CalendarType.JALALI))
         assertEquals("فروردین ۱۴۰۵", Dates.monthYearTitle(date, fa, CalendarType.JALALI))
+        assertEquals("فروردین ۱۴۰۵", Dates.monthYearTitle(1405, 1, fa, CalendarType.JALALI))
+        assertTrue(Dates.dayMonth(date, fa, CalendarType.JALALI).contains("فروردین"))
+        assertTrue(Dates.full(date, fa, CalendarType.JALALI).contains("فروردین ۱۴۰۵"))
 
         for (loc in nonPersianLocales) {
-            assertEquals("1 فروردین", Dates.shortDate(date, loc, CalendarType.JALALI))
-            assertEquals("فروردین 1405", Dates.monthYearTitle(date, loc, CalendarType.JALALI))
-            assertTrue(Dates.dayMonth(date, loc, CalendarType.JALALI).contains("فروردین"))
-            assertTrue(Dates.full(date, loc, CalendarType.JALALI).contains("1405"))
+            assertEquals("Farvardin", JalaliCalendar.monthName(1, loc))
+            assertEquals("Farvardin", Dates.monthName(date, loc, CalendarType.JALALI))
+            assertEquals("Farvardin", Dates.shortMonthName(date, loc, CalendarType.JALALI))
+            assertEquals("1 Farvardin", Dates.shortDate(date, loc, CalendarType.JALALI))
+            assertEquals("Farvardin 1405", Dates.monthYearTitle(date, loc, CalendarType.JALALI))
+            assertEquals("Farvardin 1405", Dates.monthYearTitle(1405, 1, loc, CalendarType.JALALI))
+            assertEquals("Farvardin", Dates.persianMonthName(1, loc))
+            assertTrue(Dates.dayMonth(date, loc, CalendarType.JALALI).contains("1 Farvardin"))
+            assertTrue(Dates.full(date, loc, CalendarType.JALALI).contains("1 Farvardin 1405"))
         }
 
-        // All 12 Persian month names in order
+        // All 12 Persian and Latin Jalali month names in order
         assertEquals(
             listOf(
                 "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
                 "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند",
             ),
-            Dates.persianMonthNames(),
+            Dates.persianMonthNames(fa),
         )
+        assertEquals(
+            listOf(
+                "Farvardin", "Ordibehesht", "Khordad", "Tir", "Mordad", "Shahrivar",
+                "Mehr", "Aban", "Azar", "Dey", "Bahman", "Esfand",
+            ),
+            Dates.persianMonthNames(Locale.ENGLISH),
+        )
+        assertEquals(JalaliCalendar.PERSIAN_MONTH_NAMES, Dates.persianMonthNames())
     }
 
     @Test
