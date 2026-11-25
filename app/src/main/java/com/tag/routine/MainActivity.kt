@@ -6,6 +6,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -17,6 +18,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ContentTransform
@@ -76,6 +78,7 @@ import com.tag.routine.data.BackupMode
 import com.tag.routine.data.Dates
 import com.tag.routine.data.RoutineEntity
 import com.tag.routine.data.TaskEntity
+import com.tag.routine.notifications.NotificationPolicy
 import com.tag.routine.ui.AppViewModel
 import com.tag.routine.ui.Tab
 import com.tag.routine.ui.UiState
@@ -116,7 +119,11 @@ class MainActivity : ComponentActivity() {
     }
 
     private val notificationPermission =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                viewModel.rescheduleReminders()
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Must run before super.onCreate so the splash theme is consumed correctly.
@@ -125,10 +132,6 @@ class MainActivity : ComponentActivity() {
         installLivingSplashExit(splashScreen)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
 
         setContent {
             val state by viewModel.state.collectAsState()
@@ -150,14 +153,41 @@ class MainActivity : ComponentActivity() {
                         )
                     } else if (!state.settings.onboarded) {
                         OnboardingScreen(
-                            onDone = viewModel::completeOnboarding,
-                            onSkip = viewModel::skipOnboarding,
+                            currentLanguage = state.settings.language,
+                            onSelectLanguage = viewModel::setLanguage,
+                            onDone = { name ->
+                                viewModel.completeOnboarding(name)
+                                requestNotificationPermissionIfNeeded(onboarded = true)
+                            },
+                            onSkip = {
+                                viewModel.skipOnboarding()
+                                requestNotificationPermissionIfNeeded(onboarded = true)
+                            },
                         )
                     } else {
-                        TagRoot(state = state, viewModel = viewModel)
+                        TagRoot(
+                            state = state,
+                            viewModel = viewModel,
+                            onRequestNotificationPermission = {
+                                requestNotificationPermissionIfNeeded(onboarded = true)
+                            },
+                        )
                     }
                 }
             }
+        }
+    }
+
+    private fun requestNotificationPermissionIfNeeded(onboarded: Boolean) {
+        val granted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) == PackageManager.PERMISSION_GRANTED
+        if (NotificationPolicy.shouldRequestRuntimePermission(Build.VERSION.SDK_INT, granted, onboarded)) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else if (granted) {
+            viewModel.rescheduleReminders()
         }
     }
 
@@ -235,7 +265,11 @@ private data class RootDestination(
 )
 
 @Composable
-private fun TagRoot(state: UiState, viewModel: AppViewModel) {
+private fun TagRoot(
+    state: UiState,
+    viewModel: AppViewModel,
+    onRequestNotificationPermission: () -> Unit,
+) {
     var tab by remember { mutableStateOf(Tab.TODAY) }
     var editingTask by remember { mutableStateOf<TaskEntity?>(null) }
     var creatingTask by remember { mutableStateOf(false) }
@@ -250,8 +284,8 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
     val focus by viewModel.focus.collectAsState()
     val backupState by viewModel.backupUiState.collectAsState()
 
-    LaunchedEffect(tab, focus.routineId) {
-        if (tab != Tab.FOCUS || focus.routineId == null) {
+    LaunchedEffect(tab, focus.active) {
+        if (tab != Tab.FOCUS || !focus.active) {
             focusCalmMode = false
         }
     }
@@ -419,7 +453,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                                     // section, which owns duration selection and history.
                                     onStartFocus = { tab = Tab.FOCUS },
                                     onStartFocusForRoutine = { routine ->
-                                        if (focus.routineId != routine.id) {
+                                        if (!focus.active || focus.routineId != routine.id) {
                                             viewModel.startFocus(routine, state.settings.focusMinutes)
                                         }
                                         tab = Tab.FOCUS
@@ -461,7 +495,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                                     onToggleCalmMode = {
                                         focusCalmMode = FocusMotionLogic.resolveCalmMode(
                                             requestedCalm = !focusCalmMode,
-                                            hasActiveSession = focus.routineId != null,
+                                            hasActiveSession = focus.active,
                                         )
                                     },
                                     onStart = viewModel::startFocus,
@@ -480,8 +514,14 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                                     onDynamicColor = viewModel::setDynamicColor,
                                     onAnimationSetting = viewModel::setAnimationSetting,
                                     onCalendarType = viewModel::setCalendarType,
-                                    onNotifications = viewModel::setNotificationsEnabled,
-                                    onDigest = viewModel::setDigestEnabled,
+                                    onNotifications = { enabled ->
+                                        viewModel.setNotificationsEnabled(enabled)
+                                        if (enabled) onRequestNotificationPermission()
+                                    },
+                                    onDigest = { enabled ->
+                                        viewModel.setDigestEnabled(enabled)
+                                        if (enabled) onRequestNotificationPermission()
+                                    },
                                     onDigestMinutes = viewModel::setDigestMinutes,
                                     onExportUri = viewModel::exportBackupToUri,
                                     onImportUri = viewModel::inspectBackupUri,
@@ -509,7 +549,7 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                 }
                 val navLevel = LocalAnimationLevel.current
                 AnimatedVisibility(
-                    visible = !(focusCalmMode && tab == Tab.FOCUS && focus.routineId != null),
+                    visible = !(focusCalmMode && tab == Tab.FOCUS && focus.active),
                     enter = when {
                         navLevel.isOff -> fadeIn(TagMotion.instantTween(0))
                         navLevel == AnimationLevel.REDUCED -> fadeIn(TagMotion.quickTween())
@@ -610,6 +650,9 @@ private fun TagRoot(state: UiState, viewModel: AppViewModel) {
                     colorId = colorId,
                     repeatDaily = repeatDaily,
                 )
+                if (reminder) {
+                    onRequestNotificationPermission()
+                }
             },
         )
     }

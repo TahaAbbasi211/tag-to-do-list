@@ -102,6 +102,9 @@
     <string name="routine_editor_set_time_first">Définis d\'abord une heure</string>
     <string name="routine_editor_remind_at">Rappelle-moi à %1$s les jours sélectionnés</string>
     <string name="routine_editor_delete">Supprimer la routine</string>
+    <string name="routine_editor_error_hour">Indique une heure entre 0 et 23</string>
+    <string name="routine_editor_error_minute">Indique une minute entre 0 et 59</string>
+    <string name="routine_editor_error_time">Indique une heure valide (00:00–23:59)</string>
 
     <!-- Statistiques -->
     <string name="insights_empty_title">Aucune donnée pour l\'instant</string>
@@ -212,10 +215,10 @@
     <string name="focus_pause">Pause</string>
     <string name="focus_resume">Reprendre</string>
     <string name="focus_stop">Arrêter</string>
-    <string name="focus_give_up">Abandonner</string>
+    <string name="focus_give_up">Terminer plus tôt</string>
     <string name="focus_running">Concentration sur %1$s</string>
     <string name="focus_no_routine">Aucune routine sélectionnée</string>
-    <string name="focus_pick_routine">Choisis une routine sur laquelle te concentrer</string>
+    <string name="focus_pick_routine">Routine (facultatif)</string>
     <string name="focus_minutes">%1$d min</string>
     <string name="focus_session_done">Session de concentration terminée</string>
     <string name="focus_total">Temps de concentration total : %1$s</string>
@@ -237,7 +240,6 @@
     <string name="focus_history_abandoned">Interrompue</string>
     <string name="focus_history_completed">Terminée</string>
     <string name="focus_history_untitled">Session de concentration</string>
-    <string name="focus_needs_routine">Ajoute d\'abord une routine pour commencer.</string>
 
     <!-- Première ouverture -->
     <string name="onboarding_title">Bienvenue dans Tag</string>

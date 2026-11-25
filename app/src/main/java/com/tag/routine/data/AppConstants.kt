@@ -61,4 +61,11 @@ object AppConstants {
 
     /** Minutes in an hour. */
     const val MINUTES_PER_HOUR = 60
+
+    /** Highest valid minute-of-day for the daily digest slider (23:59). */
+    const val MAX_DIGEST_MINUTES = HOURS_PER_DAY * MINUTES_PER_HOUR - 1
+
+    /** Clamps a daily digest offset into `0..1439` (00:00..23:59). */
+    fun clampDigestMinutes(minutes: Int): Int =
+        minutes.coerceIn(0, MAX_DIGEST_MINUTES)
 }

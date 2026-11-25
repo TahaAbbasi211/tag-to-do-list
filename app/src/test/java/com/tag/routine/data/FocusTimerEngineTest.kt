@@ -320,4 +320,27 @@ class FocusTimerEngineTest {
         assertFalse(requireNotNull(decoded).running)
         assertEquals(300, decoded.accumulatedSeconds)
     }
+
+    @Test
+    fun `a general session with null routineId starts, round-trips, and converts to session`() {
+        val started = FocusTimerEngine.start(
+            id = "run-general",
+            routineId = null,
+            routineTitle = null,
+            minutes = 25,
+            now = t0,
+        )
+        assertNull(started.routineId)
+        assertNull(started.routineTitle)
+        assertTrue(started.running)
+
+        val decoded = ActiveFocusRunCodec.decode(ActiveFocusRunCodec.encode(started))
+        assertEquals(started, decoded)
+
+        val session = FocusTimerEngine.toSession(started, id = started.id, now = t0 + 25 * 60_000L)
+        requireNotNull(session)
+        assertNull(session.routineId)
+        assertTrue(session.completed)
+        assertEquals(25, ((session.endedAt - session.startedAt) / 60_000L).toInt())
+    }
 }

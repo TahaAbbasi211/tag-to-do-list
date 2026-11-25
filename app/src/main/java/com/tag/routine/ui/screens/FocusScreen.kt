@@ -136,14 +136,14 @@ fun FocusScreen(
     calendarType: CalendarType = CalendarType.GREGORIAN,
     calmMode: Boolean = false,
     onToggleCalmMode: () -> Unit = {},
-    onStart: (RoutineEntity, Int) -> Unit,
+    onStart: (RoutineEntity?, Int) -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
     onFinish: () -> Unit,
 ) {
     val activeCalmMode = FocusMotionLogic.resolveCalmMode(
         requestedCalm = calmMode,
-        hasActiveSession = focus.routineId != null,
+        hasActiveSession = focus.active,
     )
     val level = LocalAnimationLevel.current
 
@@ -170,7 +170,7 @@ fun FocusScreen(
         },
         label = "focus-calm-transition",
     ) { inCalm ->
-        if (inCalm && focus.routineId != null) {
+        if (inCalm && focus.active) {
             FocusCalmSurface(
                 focus = focus,
                 onExitCalmMode = onToggleCalmMode,
@@ -249,7 +249,7 @@ private fun FocusContent(
     defaultMinutes: Int,
     calendarType: CalendarType = CalendarType.GREGORIAN,
     onEnterCalmMode: () -> Unit,
-    onStart: (RoutineEntity, Int) -> Unit,
+    onStart: (RoutineEntity?, Int) -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
     onFinish: () -> Unit,
@@ -266,7 +266,7 @@ private fun FocusContent(
     // Keep the custom field in step with the persisted default, but never clobber
     // what the user is currently typing.
     LaunchedEffect(defaultMinutes) {
-        if (focus.routineId == null) minutesText = defaultMinutes.toString()
+        if (!focus.active) minutesText = defaultMinutes.toString()
     }
 
     // Keep a valid selection even after the chosen routine is deleted or archived.
@@ -285,8 +285,8 @@ private fun FocusContent(
     var celebrateActive by remember { mutableStateOf(false) }
     var celebrateSeed by remember { mutableLongStateOf(0L) }
 
-    LaunchedEffect(focus.routineId, latestCompletedEndedAt) {
-        if (focus.routineId != null) {
+    LaunchedEffect(focus.active, latestCompletedEndedAt) {
+        if (focus.active) {
             if (!hadActiveSession) {
                 baselineCompletedEndedAt = latestCompletedEndedAt
                 hadActiveSession = true
@@ -390,7 +390,7 @@ private fun FocusContent(
                 }
             }
 
-            if (focus.routineId != null) {
+            if (focus.active) {
                 item(key = "focus-running-session") {
                     RunningSession(
                         focus = focus,
@@ -416,7 +416,7 @@ private fun FocusContent(
                         validMinutes = validMinutes,
                         effectiveMinutes = effectiveMinutes,
                         appLocale = appLocale,
-                        onStart = { selected?.let { onStart(it, effectiveMinutes) } },
+                        onStart = { onStart(selected, effectiveMinutes) },
                     )
                 }
             }
@@ -693,52 +693,56 @@ private fun FocusSetupCard(
                 }
             }
 
-            if (routines.isEmpty()) {
-                Spacer(Modifier.height(spacing.lg))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
-                Spacer(Modifier.height(spacing.md))
-                Text(
-                    text = stringResource(R.string.focus_needs_routine),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                return@Column
-            }
-
             Spacer(Modifier.height(spacing.xl))
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
-            Spacer(Modifier.height(spacing.lg))
 
-            Text(
-                text = stringResource(R.string.focus_pick_routine),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Spacer(Modifier.height(spacing.sm))
+            if (routines.isNotEmpty()) {
+                Spacer(Modifier.height(spacing.lg))
 
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
-            ) {
-                items(routines, key = { it.id }) { routine ->
-                    val isSelected = selectedId == routine.id
-                    val routineAccent = Color(RoutineColors.hexFor(routine.colorId, isDark))
-                    AppChip(
-                        text = routine.title,
-                        selected = isSelected,
-                        onClick = { onSelect(if (isSelected) null else routine.id) },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = RoutineIconMap.icon(routine.icon),
-                                contentDescription = null,
-                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else routineAccent,
-                                modifier = Modifier.size(18.dp),
-                            )
-                        },
-                    )
+                Text(
+                    text = stringResource(R.string.focus_pick_routine),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(spacing.sm))
+
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                ) {
+                    item(key = "focus-general-session") {
+                        AppChip(
+                            text = stringResource(R.string.focus_history_untitled),
+                            selected = selectedId == null,
+                            onClick = { onSelect(null) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.Timer,
+                                    contentDescription = null,
+                                    tint = if (selectedId == null) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            },
+                        )
+                    }
+                    items(routines, key = { it.id }) { routine ->
+                        val isSelected = selectedId == routine.id
+                        val routineAccent = Color(RoutineColors.hexFor(routine.colorId, isDark))
+                        AppChip(
+                            text = routine.title,
+                            selected = isSelected,
+                            onClick = { onSelect(if (isSelected) null else routine.id) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = RoutineIconMap.icon(routine.icon),
+                                    contentDescription = null,
+                                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else routineAccent,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            },
+                        )
+                    }
                 }
             }
 
@@ -791,7 +795,7 @@ private fun FocusSetupCard(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Done,
                 ),
-                keyboardActions = KeyboardActions(onDone = { if (validMinutes && selectedId != null) onStart() }),
+                keyboardActions = KeyboardActions(onDone = { if (validMinutes) onStart() }),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -816,7 +820,7 @@ private fun FocusSetupCard(
                         startWaveTrigger++
                         onStart()
                     },
-                    enabled = selectedId != null && validMinutes,
+                    enabled = validMinutes,
                     leadingIcon = {
                         Icon(Icons.Rounded.PlayArrow, contentDescription = null, modifier = Modifier.size(20.dp))
                     },

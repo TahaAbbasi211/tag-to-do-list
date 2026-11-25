@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
@@ -62,8 +63,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import com.tag.routine.R
-import com.tag.routine.data.AppConstants
 import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
 import com.tag.routine.data.Groups
@@ -71,6 +72,8 @@ import com.tag.routine.data.RoutineColors
 import com.tag.routine.data.RoutineEmojis
 import com.tag.routine.data.RoutineEntity
 import com.tag.routine.data.RoutineSuggestion
+import com.tag.routine.data.RoutineTimeError
+import com.tag.routine.data.RoutineTimeValidator
 import com.tag.routine.data.SuggestionEngine
 import com.tag.routine.ui.components.AppButton
 import com.tag.routine.ui.components.AppButtonVariant
@@ -117,7 +120,6 @@ fun RoutineEditorSheet(
     var title by remember { mutableStateOf(existing?.title ?: "") }
     var group by remember { mutableStateOf(existing?.groupName ?: Groups.MORNING) }
     var icon by remember { mutableStateOf(RoutineEmojis.resolve(existing?.icon ?: RoutineEmojis.DEFAULT)) }
-    var timeMinutes by remember { mutableStateOf(existing?.timeMinutes) }
     var daysMask by remember { mutableStateOf(existing?.daysMask ?: 0b1111111) } // all days
     var repeatDaily by remember { mutableStateOf(existing?.repeatDaily ?: false) }
     var reminder by remember { mutableStateOf(existing?.reminder ?: false) }
@@ -128,11 +130,13 @@ fun RoutineEditorSheet(
 
     val groups = listOf(Groups.MORNING, Groups.AFTERNOON, Groups.EVENING)
     var hourText by remember {
-        mutableStateOf(existing?.timeMinutes?.let { "%02d".format(Locale.ROOT, it / 60) } ?: "07")
+        mutableStateOf(existing?.timeMinutes?.let { "%02d".format(Locale.ROOT, it / 60) } ?: "")
     }
     var minuteText by remember {
-        mutableStateOf(existing?.timeMinutes?.let { "%02d".format(Locale.ROOT, it % 60) } ?: "00")
+        mutableStateOf(existing?.timeMinutes?.let { "%02d".format(Locale.ROOT, it % 60) } ?: "")
     }
+    val timeValidation = RoutineTimeValidator.validate(hourText, minuteText)
+    val timeMinutes = timeValidation.timeMinutes
     var hideSuggestions by remember { mutableStateOf(false) }
     var previewDone by remember { mutableStateOf(false) }
 
@@ -274,13 +278,11 @@ fun RoutineEditorSheet(
                                     colorId = spec.id
                                     colorHex = RoutineColors.hexFor(spec.id, isDark)
                                     if (picked.timeMinutes != null) {
-                                        timeMinutes = picked.timeMinutes
                                         hourText = "%02d".format(Locale.ROOT, picked.timeMinutes / 60)
                                         minuteText = "%02d".format(Locale.ROOT, picked.timeMinutes % 60)
                                     } else {
-                                        timeMinutes = null
-                                        hourText = "07"
-                                        minuteText = "00"
+                                        hourText = ""
+                                        minuteText = ""
                                     }
                                     group = picked.groupName
                                     hideSuggestions = true
@@ -518,14 +520,12 @@ fun RoutineEditorSheet(
                     OutlinedTextField(
                         value = hourText,
                         onValueChange = { value ->
-                            val digits = value.filter { it.isDigit() }.take(2)
-                            hourText = digits
-                            val h = digits.toIntOrNull()
-                            if (h != null && h in 0 until AppConstants.HOURS_PER_DAY) {
-                                timeMinutes = h * 60 + (minuteText.toIntOrNull() ?: 0)
-                            }
+                            hourText = value.filter { it.isDigit() }.take(2)
                         },
                         label = { Text(stringResource(R.string.routine_editor_hour)) },
+                        placeholder = { Text(Dates.formatDigits("07", appLocale)) },
+                        isError = timeValidation.hourError,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(96.dp),
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
@@ -534,24 +534,42 @@ fun RoutineEditorSheet(
                     OutlinedTextField(
                         value = minuteText,
                         onValueChange = { value ->
-                            val digits = value.filter { it.isDigit() }.take(2)
-                            minuteText = digits
-                            val m = digits.toIntOrNull()
-                            if (m != null && m in 0..59) {
-                                timeMinutes = (hourText.toIntOrNull() ?: 0) * 60 + m
-                            }
+                            minuteText = value.filter { it.isDigit() }.take(2)
                         },
                         label = { Text(stringResource(R.string.routine_editor_minute)) },
+                        placeholder = { Text(Dates.formatDigits("00", appLocale)) },
+                        isError = timeValidation.minuteError,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(96.dp),
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
                     )
                     Spacer(Modifier.weight(1f))
-                    if (timeMinutes != null) {
-                        TextButton(onClick = { timeMinutes = null }) {
+                    if (hourText.isNotEmpty() || minuteText.isNotEmpty()) {
+                        TextButton(
+                            onClick = {
+                                hourText = ""
+                                minuteText = ""
+                                reminder = false
+                            },
+                        ) {
                             Text(stringResource(R.string.action_clear))
                         }
                     }
+                }
+                if (!timeValidation.isValid) {
+                    Spacer(Modifier.height(6.dp))
+                    val errorRes = when (timeValidation.error) {
+                        RoutineTimeError.INVALID_HOUR -> R.string.routine_editor_error_hour
+                        RoutineTimeError.INVALID_MINUTE -> R.string.routine_editor_error_minute
+                        RoutineTimeError.INVALID_BOTH -> R.string.routine_editor_error_time
+                        RoutineTimeError.NONE -> R.string.routine_editor_error_time
+                    }
+                    Text(
+                        text = Dates.formatDigits(stringResource(errorRes), appLocale),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
                 }
             }
 
@@ -572,7 +590,7 @@ fun RoutineEditorSheet(
                         } else {
                             stringResource(
                                 R.string.routine_editor_remind_at,
-                                Dates.timeLabel(timeMinutes!!, appLocale),
+                                Dates.timeLabel(timeMinutes, appLocale),
                             )
                         },
                         style = MaterialTheme.typography.bodySmall,
@@ -582,7 +600,7 @@ fun RoutineEditorSheet(
                 Switch(
                     checked = reminder && timeMinutes != null,
                     onCheckedChange = { reminder = it },
-                    enabled = timeMinutes != null,
+                    enabled = timeValidation.isValid && timeMinutes != null,
                 )
             }
 
@@ -602,14 +620,14 @@ fun RoutineEditorSheet(
                 AppButton(
                     text = stringResource(R.string.action_save),
                     onClick = {
-                        if (title.isNotBlank()) {
+                        if (title.isNotBlank() && timeValidation.isValid) {
                             onSave(
                                 title,
                                 group,
                                 icon,
                                 timeMinutes,
                                 daysMask,
-                                reminder,
+                                reminder && timeMinutes != null,
                                 colorHex,
                                 colorId,
                                 repeatDaily,
@@ -619,7 +637,7 @@ fun RoutineEditorSheet(
                     },
                     variant = AppButtonVariant.Primary,
                     modifier = Modifier.weight(1f),
-                    enabled = title.isNotBlank(),
+                    enabled = title.isNotBlank() && timeValidation.isValid,
                     shape = MaterialTheme.shapes.small,
                 )
             }

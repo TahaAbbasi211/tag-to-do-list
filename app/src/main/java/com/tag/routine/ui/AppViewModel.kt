@@ -192,7 +192,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     /** Live focus-timer state, delegated to [FocusController]. */
     val focus: StateFlow<FocusState> = focusController.state
 
-    fun startFocus(routine: RoutineEntity, minutes: Int) {
+    fun startFocus(routine: RoutineEntity?, minutes: Int) {
         val clamped = AppConstants.clampFocusMinutes(minutes)
         viewModelScope.launch { repository.setFocusMinutes(clamped) }
         focusController.start(routine, clamped)
@@ -770,7 +770,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun setDigestMinutes(minutes: Int) = viewModelScope.launch {
-        repository.setDigestMinutes(minutes)
+        repository.setDigestMinutes(AppConstants.clampDigestMinutes(minutes))
         rescheduleReminders()
     }
 

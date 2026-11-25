@@ -12,27 +12,42 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,15 +56,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -59,6 +77,7 @@ import com.tag.routine.R
 import com.tag.routine.ui.components.AppButton
 import com.tag.routine.ui.components.AppButtonVariant
 import com.tag.routine.ui.components.LargeScreenFrame
+import com.tag.routine.ui.i18n.AppLanguage
 import com.tag.routine.ui.motion.AuroraBackground
 import com.tag.routine.ui.motion.CheckDraw
 import com.tag.routine.ui.motion.GlassCard
@@ -67,9 +86,11 @@ import com.tag.routine.ui.motion.LocalAmbientAnimationsActive
 import com.tag.routine.ui.motion.LocalAnimationLevel
 import com.tag.routine.ui.motion.TagMotion
 import com.tag.routine.ui.motion.floatY
+import com.tag.routine.ui.motion.pressScale
 import com.tag.routine.ui.motion.rememberTagHaptics
 import com.tag.routine.ui.motion.staggeredEnter
 import com.tag.routine.ui.theme.tagBrand
+import java.util.Locale
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -78,8 +99,11 @@ import kotlin.math.sin
  * First-launch onboarding experience on a living aurora canvas with scroll parallax,
  * pure-Canvas orbiting emblem, and a high-contrast glass card for optional name entry.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun OnboardingScreen(
+    currentLanguage: String = "",
+    onSelectLanguage: (String) -> Unit = {},
     onDone: (String) -> Unit,
     onSkip: () -> Unit,
 ) {
@@ -107,11 +131,27 @@ fun OnboardingScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .windowInsetsPadding(WindowInsets.navigationBars)
                     .imePadding()
-                    .padding(horizontal = 24.dp, vertical = 40.dp),
+                    .padding(horizontal = 24.dp, vertical = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
+                OnboardingLanguagePicker(
+                    currentLanguage = currentLanguage,
+                    onHeroColor = brand.onHero,
+                    onSelect = { tag ->
+                        haptics(HapticKind.TICK)
+                        onSelectLanguage(tag)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .staggeredEnter(index = 0, key = "onboarding-lang"),
+                )
+
+                Spacer(Modifier.height(20.dp))
+
                 OnboardingCanvasIllustration(
                     onHeroColor = brand.onHero,
                     accentStart = brand.ringStart,
@@ -336,5 +376,73 @@ private fun OnboardingCanvasIllustration(
             color = onHeroColor,
             strokeWidth = 3.2.dp,
         )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun OnboardingLanguagePicker(
+    currentLanguage: String,
+    onHeroColor: Color,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val systemLang = LocalConfiguration.current.locales[0]?.language?.lowercase(Locale.ROOT)
+    val sanitized = AppLanguage.sanitize(currentLanguage)
+    val activeTag = if (sanitized != AppLanguage.SYSTEM) {
+        sanitized
+    } else {
+        AppLanguage.supported.firstOrNull { it.tag == systemLang }?.tag ?: AppLanguage.ENGLISH
+    }
+
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        AppLanguage.supported.forEach { entry ->
+            val isSelected = entry.tag == activeTag
+            val shape = RoundedCornerShape(percent = 50)
+            Surface(
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .pressScale(pressedScale = 0.94f)
+                    .clip(shape)
+                    .semantics { selected = isSelected }
+                    .clickable { onSelect(entry.tag) },
+                shape = shape,
+                color = if (isSelected) {
+                    onHeroColor
+                } else {
+                    Color(0xFF0A0F1E).copy(alpha = 0.42f)
+                },
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = if (isSelected) onHeroColor else onHeroColor.copy(alpha = 0.28f),
+                ),
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    if (isSelected) {
+                        Icon(
+                            imageVector = Icons.Rounded.Language,
+                            contentDescription = null,
+                            tint = Color(0xFF0F172A),
+                            modifier = Modifier.size(15.dp),
+                        )
+                    }
+                    Text(
+                        text = entry.nativeName,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        color = if (isSelected) Color(0xFF0F172A) else onHeroColor,
+                        maxLines = 1,
+                    )
+                }
+            }
+        }
     }
 }

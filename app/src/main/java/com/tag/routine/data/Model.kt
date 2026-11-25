@@ -612,6 +612,21 @@ object Dates {
     fun dayOfWeekLabel(date: LocalDate, locale: Locale = Locale.getDefault()): String =
         date.format(formatter("EEE", locale))
 
+    /**
+     * Returns this weekend's target date for [calendarType]: Friday in Solar Hijri (Jalali),
+     * and Saturday in Gregorian. When [today] is already that day, [today] is returned.
+     */
+    fun nextWeekend(
+        today: LocalDate = today(),
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): LocalDate {
+        val target = when (calendarType) {
+            CalendarType.JALALI -> DayOfWeek.FRIDAY
+            CalendarType.GREGORIAN -> DayOfWeek.SATURDAY
+        }
+        return today.with(TemporalAdjusters.nextOrSame(target))
+    }
+
     fun greeting(
         hour: Int = java.time.LocalTime.now().hour,
         resources: Resources? = null,

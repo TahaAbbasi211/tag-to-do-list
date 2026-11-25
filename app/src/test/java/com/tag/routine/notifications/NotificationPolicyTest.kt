@@ -123,4 +123,39 @@ class NotificationPolicyTest {
             NotificationActionPolicy.notificationIdToCancel(null, routineId),
         )
     }
+
+    @Test
+    fun `runtime notification permission waits until onboarding finishes on API 33+`() {
+        assertFalse(
+            NotificationPolicy.shouldRequestRuntimePermission(
+                sdkInt = 32,
+                permissionGranted = false,
+                onboarded = true,
+            ),
+        )
+        assertFalse(
+            NotificationPolicy.shouldRequestRuntimePermission(
+                sdkInt = 33,
+                permissionGranted = false,
+                onboarded = false,
+            ),
+        )
+        assertFalse(
+            NotificationPolicy.shouldRequestRuntimePermission(
+                sdkInt = 33,
+                permissionGranted = true,
+                onboarded = true,
+            ),
+        )
+        assertTrue(
+            NotificationPolicy.shouldRequestRuntimePermission(
+                sdkInt = 33,
+                permissionGranted = false,
+                onboarded = true,
+            ),
+        )
+        org.junit.Assert.assertEquals(0, com.tag.routine.data.AppConstants.clampDigestMinutes(-5))
+        org.junit.Assert.assertEquals(1439, com.tag.routine.data.AppConstants.clampDigestMinutes(1439))
+        org.junit.Assert.assertEquals(1439, com.tag.routine.data.AppConstants.clampDigestMinutes(1440))
+    }
 }

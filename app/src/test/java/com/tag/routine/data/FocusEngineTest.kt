@@ -238,4 +238,20 @@ class FocusEngineTest {
         assertEquals(6000, state.totalSeconds)
         assertEquals(100, state.plannedMinutes)
     }
+
+    @Test
+    fun `a general active focus state works when routineId is null`() {
+        val state = FocusState(
+            active = true,
+            routineId = null,
+            routineTitle = null,
+            plannedMinutes = 25,
+            elapsedSeconds = 300,
+            running = true,
+        )
+        assertTrue(state.active)
+        assertEquals(1500, state.totalSeconds)
+        assertEquals(1200, state.remainingSeconds)
+        assertEquals(0.2f, state.progress, 0.0001f)
+    }
 }

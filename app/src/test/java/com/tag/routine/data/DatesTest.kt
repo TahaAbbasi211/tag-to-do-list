@@ -6,6 +6,7 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.Locale
 
@@ -95,5 +96,31 @@ class DatesTest {
         val farLabelEn = Dates.relativeDayLabel(farvardin1, aban28, null, en, CalendarType.JALALI)
         assertTrue(farLabelFa.contains("۱ فروردین"))
         assertTrue(farLabelEn.contains("1 فروردین"))
+    }
+
+    @Test
+    fun `nextWeekend returns Friday in Jalali and Saturday in Gregorian across all weekdays`() {
+        // 2026-11-23 is Monday.
+        val monday = LocalDate.of(2026, 11, 23)
+        for (offset in 0L..6L) {
+            val day = monday.plusDays(offset)
+
+            val jalaliWeekend = Dates.nextWeekend(day, CalendarType.JALALI)
+            assertEquals(DayOfWeek.FRIDAY, jalaliWeekend.dayOfWeek)
+            assertFalse(jalaliWeekend.isBefore(day))
+            assertTrue(java.time.temporal.ChronoUnit.DAYS.between(day, jalaliWeekend) in 0L..6L)
+
+            val gregorianWeekend = Dates.nextWeekend(day, CalendarType.GREGORIAN)
+            assertEquals(DayOfWeek.SATURDAY, gregorianWeekend.dayOfWeek)
+            assertFalse(gregorianWeekend.isBefore(day))
+            assertTrue(java.time.temporal.ChronoUnit.DAYS.between(day, gregorianWeekend) in 0L..6L)
+        }
+
+        val friday = LocalDate.of(2026, 11, 27)
+        val saturday = LocalDate.of(2026, 11, 28)
+        assertEquals(friday, Dates.nextWeekend(friday, CalendarType.JALALI))
+        assertEquals(saturday, Dates.nextWeekend(saturday, CalendarType.GREGORIAN))
+        // On Saturday in Jalali mode, next Friday is 6 days ahead.
+        assertEquals(friday.plusWeeks(1), Dates.nextWeekend(saturday, CalendarType.JALALI))
     }
 }

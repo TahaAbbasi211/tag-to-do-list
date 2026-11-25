@@ -34,6 +34,12 @@ internal object NotificationPolicy {
         permissionGranted: Boolean,
         notificationsEnabled: Boolean,
     ): Boolean = (sdkInt < Build.VERSION_CODES.TIRAMISU || permissionGranted) && notificationsEnabled
+
+    fun shouldRequestRuntimePermission(
+        sdkInt: Int,
+        permissionGranted: Boolean,
+        onboarded: Boolean,
+    ): Boolean = sdkInt >= Build.VERSION_CODES.TIRAMISU && !permissionGranted && onboarded
 }
 
 object Notifications {
