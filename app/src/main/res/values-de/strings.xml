@@ -102,6 +102,9 @@
     <string name="routine_editor_set_time_first">Lege zuerst eine Uhrzeit fest</string>
     <string name="routine_editor_remind_at">Erinnere mich um %1$s an den ausgewählten Tagen</string>
     <string name="routine_editor_delete">Routine löschen</string>
+    <string name="routine_editor_error_hour">Gib eine Stunde zwischen 0 und 23 ein</string>
+    <string name="routine_editor_error_minute">Gib eine Minute zwischen 0 und 59 ein</string>
+    <string name="routine_editor_error_time">Gib eine gültige Uhrzeit ein (00:00–23:59)</string>
 
     <!-- Statistiken -->
     <string name="insights_empty_title">Noch keine Daten</string>
@@ -212,10 +215,10 @@
     <string name="focus_pause">Pausieren</string>
     <string name="focus_resume">Fortsetzen</string>
     <string name="focus_stop">Stoppen</string>
-    <string name="focus_give_up">Aufgeben</string>
+    <string name="focus_give_up">Frühzeitig beenden</string>
     <string name="focus_running">Fokus auf %1$s</string>
     <string name="focus_no_routine">Keine Routine ausgewählt</string>
-    <string name="focus_pick_routine">Wähle eine Routine für den Fokus</string>
+    <string name="focus_pick_routine">Routine (optional)</string>
     <string name="focus_minutes">%1$d Min.</string>
     <string name="focus_session_done">Fokus-Sitzung abgeschlossen</string>
     <string name="focus_total">Fokuszeit insgesamt: %1$s</string>
@@ -237,7 +240,6 @@
     <string name="focus_history_abandoned">Abgebrochen</string>
     <string name="focus_history_completed">Abgeschlossen</string>
     <string name="focus_history_untitled">Fokus-Sitzung</string>
-    <string name="focus_needs_routine">Füge zuerst eine Routine hinzu, um zu starten.</string>
 
     <!-- Erster Start -->
     <string name="onboarding_title">Willkommen bei Tag</string>

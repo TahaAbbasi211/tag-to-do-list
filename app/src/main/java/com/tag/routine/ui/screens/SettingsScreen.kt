@@ -57,6 +57,8 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -118,6 +120,7 @@ import com.tag.routine.ui.theme.PaletteDef
 import com.tag.routine.ui.theme.spacing
 import com.tag.routine.ui.theme.tagBrand
 import java.util.Locale
+import kotlin.math.roundToInt
 
 @Composable
 fun SettingsScreen(
@@ -433,6 +436,12 @@ fun SettingsScreen(
                 onCheckedChange = onNotifications,
             )
             if (settings.notificationsEnabled) {
+                var draftDigestMinutes by remember {
+                    mutableIntStateOf(AppConstants.clampDigestMinutes(settings.dailyDigestMinutes))
+                }
+                LaunchedEffect(settings.dailyDigestMinutes) {
+                    draftDigestMinutes = AppConstants.clampDigestMinutes(settings.dailyDigestMinutes)
+                }
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = spacing.xs),
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
@@ -442,7 +451,7 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_daily_digest),
                     subtitle = stringResource(
                         R.string.settings_daily_digest_sub,
-                        Dates.formatDigits(Dates.timeLabel(settings.dailyDigestMinutes, appLocale), appLocale),
+                        Dates.formatDigits(Dates.timeLabel(draftDigestMinutes, appLocale), appLocale),
                     ),
                     checked = settings.dailyDigestEnabled,
                     onCheckedChange = onDigest,
@@ -450,7 +459,9 @@ fun SettingsScreen(
                 if (settings.dailyDigestEnabled) {
                     DigestTimeSlider(
                         minutes = settings.dailyDigestMinutes,
+                        previewMinutes = draftDigestMinutes,
                         appLocale = appLocale,
+                        onPreviewMinutes = { draftDigestMinutes = it },
                         onMinutesChange = onDigestMinutes,
                     )
                 }
@@ -972,24 +983,41 @@ private fun SettingsToggle(
 @Composable
 private fun DigestTimeSlider(
     minutes: Int,
+    previewMinutes: Int,
     appLocale: Locale,
+    onPreviewMinutes: (Int) -> Unit,
     onMinutesChange: (Int) -> Unit,
 ) {
     val spacing = MaterialTheme.spacing
+    val clampedInitial = AppConstants.clampDigestMinutes(minutes)
+    var sliderValue by remember { mutableFloatStateOf(clampedInitial.toFloat()) }
+    LaunchedEffect(clampedInitial) {
+        sliderValue = clampedInitial.toFloat()
+    }
     Column(modifier = Modifier.padding(top = spacing.sm)) {
         Text(
             text = stringResource(
                 R.string.settings_digest_time,
-                Dates.formatDigits(Dates.timeLabel(minutes, appLocale), appLocale),
+                Dates.formatDigits(Dates.timeLabel(previewMinutes, appLocale), appLocale),
             ),
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Slider(
-            value = minutes.toFloat(),
-            onValueChange = { onMinutesChange(it.toInt()) },
-            valueRange = 0f..1440f,
-            steps = 23, // every hour
+            value = sliderValue,
+            onValueChange = { raw ->
+                val clamped = raw.coerceIn(0f, AppConstants.MAX_DIGEST_MINUTES.toFloat())
+                sliderValue = clamped
+                onPreviewMinutes(AppConstants.clampDigestMinutes(clamped.roundToInt()))
+            },
+            onValueChangeFinished = {
+                val committed = AppConstants.clampDigestMinutes(sliderValue.roundToInt())
+                onPreviewMinutes(committed)
+                if (committed != clampedInitial) {
+                    onMinutesChange(committed)
+                }
+            },
+            valueRange = 0f..AppConstants.MAX_DIGEST_MINUTES.toFloat(),
         )
     }
 }

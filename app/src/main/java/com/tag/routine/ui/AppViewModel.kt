@@ -18,6 +18,7 @@ import com.tag.routine.data.BackupRestoreReport
 import com.tag.routine.data.BackupValidationException
 import com.tag.routine.data.CalendarType
 import com.tag.routine.data.CopyEngine
+import com.tag.routine.data.DateRolloverPolicy
 import com.tag.routine.data.Dates
 import com.tag.routine.data.FocusEngine
 import com.tag.routine.data.FocusStats
@@ -35,6 +36,9 @@ import com.tag.routine.data.Snapshot
 import com.tag.routine.data.StatsEngine
 import com.tag.routine.data.TagEntity
 import com.tag.routine.data.TaskEntity
+import com.tag.routine.notifications.FocusTimerAlarms
+import com.tag.routine.notifications.FocusTimerRuntime
+import com.tag.routine.notifications.FocusTimerService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -43,7 +47,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedWriter
@@ -124,13 +130,50 @@ data class UiState(
 
 private data class Filters(val query: String, val filter: TaskFilter, val tagId: String?)
 
+private data class DateCursor(val today: LocalDate, val selected: LocalDate)
+
 class AppViewModel(private val container: AppContainer) : ViewModel() {
 
     private val repository = container.repository
     private val application = container.appContext
 
-    private val _selectedDate = MutableStateFlow(Dates.today())
-    val selectedDate: StateFlow<LocalDate> = _selectedDate.asStateFlow()
+    private val _dates = MutableStateFlow(
+        DateCursor(
+            today = container.currentDate.value,
+            selected = container.currentDate.value,
+        ),
+    )
+    val selectedDate: StateFlow<LocalDate> = _dates
+        .map { it.selected }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, _dates.value.selected)
+
+    init {
+        viewModelScope.launch {
+            container.currentDate.collect { observedToday ->
+                applyObservedDate(observedToday)
+            }
+        }
+    }
+
+    private fun applyObservedDate(observedToday: LocalDate) {
+        _dates.update { cursor ->
+            val reconciled = DateRolloverPolicy.reconcile(
+                currentToday = cursor.today,
+                selectedDate = cursor.selected,
+                observedToday = observedToday,
+            )
+            if (reconciled.changed) {
+                DateCursor(today = reconciled.today, selected = reconciled.selectedDate)
+            } else {
+                cursor
+            }
+        }
+    }
+
+    fun refreshDateIfNeeded(observed: LocalDate = Dates.today()) {
+        container.refreshCurrentDate(observed)
+        applyObservedDate(observed)
+    }
 
     private val search = MutableStateFlow("")
     private val filter = MutableStateFlow(TaskFilter.ALL)
@@ -149,7 +192,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     /** Live focus-timer state, delegated to [FocusController]. */
     val focus: StateFlow<FocusState> = focusController.state
 
-    fun startFocus(routine: RoutineEntity, minutes: Int) {
+    fun startFocus(routine: RoutineEntity?, minutes: Int) {
         val clamped = AppConstants.clampFocusMinutes(minutes)
         viewModelScope.launch { repository.setFocusMinutes(clamped) }
         focusController.start(routine, clamped)
@@ -167,14 +210,18 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
 
     val state: StateFlow<UiState> = combine(
         repository.snapshot,
-        _selectedDate,
+        _dates,
         filters,
-    ) { snapshot, selected, active ->
-        buildState(snapshot, selected, active)
+    ) { snapshot, dates, active ->
+        buildState(snapshot, dates.today, dates.selected, active)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(AppConstants.STATE_TIMEOUT_MILLIS), UiState())
 
-    private fun buildState(snapshot: Snapshot, selected: LocalDate, active: Filters): UiState {
-        val today = Dates.today()
+    private fun buildState(
+        snapshot: Snapshot,
+        today: LocalDate,
+        selected: LocalDate,
+        active: Filters,
+    ): UiState {
         val selectedIso = Dates.iso(selected)
         val doneIds = snapshot.routineLogs.filter { it.date == selectedIso }.map { it.routineId }.toSet()
 
@@ -319,7 +366,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     // ------------------------------------------------------------- actions
 
     fun selectDate(date: LocalDate) {
-        _selectedDate.value = date
+        _dates.update { it.copy(selected = date) }
     }
 
     fun setSearch(value: String) {
@@ -335,7 +382,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun toggleRoutine(routineId: String, done: Boolean) {
-        val date = _selectedDate.value
+        val date = _dates.value.selected
         viewModelScope.launch { repository.toggleRoutine(routineId, date, done) }
     }
 
@@ -378,7 +425,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
      * is never copied, and running it twice writes nothing the second time.
      */
     fun copyYesterdayToSelected() = viewModelScope.launch {
-        val target = _selectedDate.value
+        val target = _dates.value.selected
         val copied = repository.copyRoutines(target.minusDays(1), target)
         if (copied > 0) rescheduleReminders()
         _copyResult.value = CopyFeedback(copied, fromYesterday = true, eventId = ++copyEventSeq)
@@ -504,6 +551,11 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
                         appVersion = BuildConfig.VERSION_NAME,
                         appVersionCode = BuildConfig.VERSION_CODE,
                     )
+                    if (report.activeFocusRunCleared) {
+                        FocusTimerAlarms.cancel(application)
+                        FocusTimerService.stop(application)
+                        FocusTimerRuntime.discardWithoutRecording()
+                    }
                     rescheduleRemindersNow(removedRoutineIds = report.removedRoutineIds)
                     BackupUiState.RestoreSuccess(report)
                 } catch (e: BackupValidationException) {
@@ -581,7 +633,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
         colorId: Int = 0,
         repeatDaily: Boolean = false,
     ) = viewModelScope.launch {
-        val targetEpochDay = _selectedDate.value.toEpochDay()
+        val targetEpochDay = _dates.value.selected.toEpochDay()
         val resolvedDateEpochDay: Long
         val resolvedEndDateEpochDay: Long?
         val resolvedExcludedDates: String
@@ -651,7 +703,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var order = repository.newRoutineOrder()
             val now = System.currentTimeMillis()
-            val targetEpochDay = _selectedDate.value.toEpochDay()
+            val targetEpochDay = _dates.value.selected.toEpochDay()
             template.items.forEachIndexed { idx, item ->
                 val spec = com.tag.routine.data.RoutineColors.byId(item.colorId)
                 repository.saveRoutine(
@@ -718,7 +770,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun setDigestMinutes(minutes: Int) = viewModelScope.launch {
-        repository.setDigestMinutes(minutes)
+        repository.setDigestMinutes(AppConstants.clampDigestMinutes(minutes))
         rescheduleReminders()
     }
 

@@ -10,10 +10,12 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.tag.routine.widget.WidgetRefresh
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.settingsStore: DataStore<Preferences> by preferencesDataStore(name = "tag_settings")
+private val Context.focusRuntimeStore: DataStore<Preferences> by preferencesDataStore(name = "tag_focus_runtime")
 
 class SettingsStore(private val context: Context) {
 
@@ -74,20 +76,31 @@ class SettingsStore(private val context: Context) {
     /**
      * The focus run that is currently in progress, or null when no timer is running.
      *
-     * This is the durable copy of the timer: it is written when a run starts, pauses or
-     * resumes, and cleared when it ends. Because it lives in DataStore rather than in
-     * memory, a run survives the process being killed when the user closes the app.
+     * Stored in its own preferences file (`tag_focus_runtime`, excluded from Android Auto
+     * Backup) so transient timer state never leaks across device restores while still
+     * migrating any run persisted by older versions in `tag_settings`.
      */
-    val activeFocusRun: Flow<ActiveFocusRun?> = context.settingsStore.data.map { prefs ->
-        ActiveFocusRunCodec.decode(prefs[Keys.activeFocusRun])
+    val activeFocusRun: Flow<ActiveFocusRun?> = combine(
+        context.focusRuntimeStore.data,
+        context.settingsStore.data,
+    ) { runtime, legacy ->
+        ActiveFocusRunCodec.decode(runtime[Keys.activeFocusRun] ?: legacy[Keys.activeFocusRun])
     }
 
-    suspend fun setActiveFocusRun(run: ActiveFocusRun) = context.settingsStore.edit {
-        it[Keys.activeFocusRun] = ActiveFocusRunCodec.encode(run)
+    suspend fun setActiveFocusRun(run: ActiveFocusRun) {
+        context.focusRuntimeStore.edit {
+            it[Keys.activeFocusRun] = ActiveFocusRunCodec.encode(run)
+        }
+        if (context.settingsStore.data.first().contains(Keys.activeFocusRun)) {
+            context.settingsStore.edit { it.remove(Keys.activeFocusRun) }
+        }
     }
 
-    suspend fun clearActiveFocusRun() = context.settingsStore.edit {
-        it.remove(Keys.activeFocusRun)
+    suspend fun clearActiveFocusRun() {
+        context.focusRuntimeStore.edit { it.remove(Keys.activeFocusRun) }
+        if (context.settingsStore.data.first().contains(Keys.activeFocusRun)) {
+            context.settingsStore.edit { it.remove(Keys.activeFocusRun) }
+        }
     }
 
     suspend fun setSeeded(value: Boolean) = context.settingsStore.edit { it[Keys.seeded] = value }

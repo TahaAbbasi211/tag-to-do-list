@@ -17,6 +17,7 @@ import com.tag.routine.MainActivity
 import com.tag.routine.R
 import com.tag.routine.data.AppConstants
 import com.tag.routine.data.Dates
+import com.tag.routine.data.ExcludedDates
 import com.tag.routine.data.RoutineEntity
 import java.time.LocalDate
 import java.time.ZonedDateTime
@@ -33,6 +34,12 @@ internal object NotificationPolicy {
         permissionGranted: Boolean,
         notificationsEnabled: Boolean,
     ): Boolean = (sdkInt < Build.VERSION_CODES.TIRAMISU || permissionGranted) && notificationsEnabled
+
+    fun shouldRequestRuntimePermission(
+        sdkInt: Int,
+        permissionGranted: Boolean,
+        onboarded: Boolean,
+    ): Boolean = sdkInt >= Build.VERSION_CODES.TIRAMISU && !permissionGranted && onboarded
 }
 
 object Notifications {
@@ -357,7 +364,7 @@ object ReminderScheduler {
             val startOk = routine.dateEpochDay == 0L || dayEpoch >= routine.dateEpochDay
             val dayMatches = startOk &&
                 (routine.daysMask and Dates.weekdayBit(date)) != 0 &&
-                !routine.isExcludedOn(Dates.iso(date))
+                !ExcludedDates.isExcluded(routine.excludedDates, Dates.iso(date))
             if (dayMatches) {
                 val candidate = ZonedDateTime.of(
                     date,

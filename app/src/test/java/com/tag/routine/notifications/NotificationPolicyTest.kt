@@ -66,4 +66,96 @@ class NotificationPolicyTest {
             ),
         )
     }
+
+    @Test
+    fun `notification action cancellation requires mark-done or snooze with non-blank routineId`() {
+        val routineId = "routine-abc"
+        org.junit.Assert.assertEquals(
+            routineId.hashCode(),
+            NotificationActionPolicy.notificationIdFor(routineId),
+        )
+        assertTrue(
+            NotificationActionPolicy.shouldCancelNotification(
+                NotificationReceiver.ACTION_MARK_DONE,
+                routineId,
+            ),
+        )
+        assertTrue(
+            NotificationActionPolicy.shouldCancelNotification(
+                NotificationReceiver.ACTION_SNOOZE,
+                routineId,
+            ),
+        )
+        org.junit.Assert.assertEquals(
+            routineId.hashCode(),
+            NotificationActionPolicy.notificationIdToCancel(
+                NotificationReceiver.ACTION_MARK_DONE,
+                routineId,
+            ),
+        )
+        org.junit.Assert.assertEquals(
+            routineId.hashCode(),
+            NotificationActionPolicy.notificationIdToCancel(
+                NotificationReceiver.ACTION_SNOOZE,
+                routineId,
+            ),
+        )
+
+        assertFalse(
+            NotificationActionPolicy.shouldCancelNotification(
+                NotificationReceiver.ACTION_MARK_DONE,
+                null,
+            ),
+        )
+        assertFalse(
+            NotificationActionPolicy.shouldCancelNotification(
+                NotificationReceiver.ACTION_SNOOZE,
+                "   ",
+            ),
+        )
+        assertFalse(
+            NotificationActionPolicy.shouldCancelNotification(
+                "com.tag.routine.OTHER",
+                routineId,
+            ),
+        )
+        org.junit.Assert.assertNull(
+            NotificationActionPolicy.notificationIdToCancel(null, routineId),
+        )
+    }
+
+    @Test
+    fun `runtime notification permission waits until onboarding finishes on API 33+`() {
+        assertFalse(
+            NotificationPolicy.shouldRequestRuntimePermission(
+                sdkInt = 32,
+                permissionGranted = false,
+                onboarded = true,
+            ),
+        )
+        assertFalse(
+            NotificationPolicy.shouldRequestRuntimePermission(
+                sdkInt = 33,
+                permissionGranted = false,
+                onboarded = false,
+            ),
+        )
+        assertFalse(
+            NotificationPolicy.shouldRequestRuntimePermission(
+                sdkInt = 33,
+                permissionGranted = true,
+                onboarded = true,
+            ),
+        )
+        assertTrue(
+            NotificationPolicy.shouldRequestRuntimePermission(
+                sdkInt = 33,
+                permissionGranted = false,
+                onboarded = true,
+            ),
+        )
+        org.junit.Assert.assertEquals(0, com.tag.routine.data.AppConstants.clampDigestMinutes(-5))
+        org.junit.Assert.assertEquals(1439, com.tag.routine.data.AppConstants.clampDigestMinutes(1439))
+        org.junit.Assert.assertEquals(1439, com.tag.routine.data.AppConstants.clampDigestMinutes(1440))
+    }
 }

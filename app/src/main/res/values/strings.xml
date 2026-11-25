@@ -102,6 +102,9 @@
     <string name="routine_editor_set_time_first">Set a time first</string>
     <string name="routine_editor_remind_at">Remind me at %1$s on the selected days</string>
     <string name="routine_editor_delete">Delete routine</string>
+    <string name="routine_editor_error_hour">Enter an hour between 0 and 23</string>
+    <string name="routine_editor_error_minute">Enter a minute between 0 and 59</string>
+    <string name="routine_editor_error_time">Enter a valid time (00:00–23:59)</string>
 
     <!-- Insights -->
     <string name="insights_empty_title">No data yet</string>
@@ -212,10 +215,10 @@
     <string name="focus_pause">Pause</string>
     <string name="focus_resume">Resume</string>
     <string name="focus_stop">Stop</string>
-    <string name="focus_give_up">Give up</string>
+    <string name="focus_give_up">Finish early</string>
     <string name="focus_running">Focusing on %1$s</string>
     <string name="focus_no_routine">No routine selected</string>
-    <string name="focus_pick_routine">Pick a routine to focus on</string>
+    <string name="focus_pick_routine">Routine (optional)</string>
     <string name="focus_minutes">%1$d min</string>
     <string name="focus_session_done">Focus session complete</string>
     <string name="focus_total">Total focused: %1$s</string>
@@ -237,7 +240,6 @@
     <string name="focus_history_abandoned">Stopped early</string>
     <string name="focus_history_completed">Completed</string>
     <string name="focus_history_untitled">Focus session</string>
-    <string name="focus_needs_routine">Add a routine first to start focusing.</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Welcome to Tag</string>

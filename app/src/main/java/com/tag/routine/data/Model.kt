@@ -612,6 +612,21 @@ object Dates {
     fun dayOfWeekLabel(date: LocalDate, locale: Locale = Locale.getDefault()): String =
         date.format(formatter("EEE", locale))
 
+    /**
+     * Returns this weekend's target date for [calendarType]: Friday in Solar Hijri (Jalali),
+     * and Saturday in Gregorian. When [today] is already that day, [today] is returned.
+     */
+    fun nextWeekend(
+        today: LocalDate = today(),
+        calendarType: CalendarType = CalendarType.GREGORIAN,
+    ): LocalDate {
+        val target = when (calendarType) {
+            CalendarType.JALALI -> DayOfWeek.FRIDAY
+            CalendarType.GREGORIAN -> DayOfWeek.SATURDAY
+        }
+        return today.with(TemporalAdjusters.nextOrSame(target))
+    }
+
     fun greeting(
         hour: Int = java.time.LocalTime.now().hour,
         resources: Resources? = null,
@@ -639,6 +654,36 @@ object Dates {
 }
 
 // ---------------------------------------------------------------- stats
+
+/**
+ * Normalizes and matches comma-separated ISO dates stored in `RoutineEntity.excludedDates`,
+ * tolerating whitespace around tokens in legacy or externally formatted data.
+ */
+object ExcludedDates {
+
+    fun isExcluded(excludedDates: String, dateIso: String): Boolean {
+        val target = dateIso.trim()
+        if (target.isEmpty() || excludedDates.isBlank()) return false
+        return excludedDates.split(',').any { it.trim() == target }
+    }
+
+    fun normalize(raw: String): String =
+        raw.split(',')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+            .joinToString(",")
+
+    fun withExcluded(excludedDates: String, dateIso: String): String {
+        val target = dateIso.trim()
+        val existing = excludedDates.split(',')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+        if (target.isEmpty() || target in existing) return existing.joinToString(",")
+        return (existing + target).joinToString(",")
+    }
+}
 
 data class DayStat(
     val date: LocalDate,
@@ -694,7 +739,7 @@ object StatsEngine {
         if (!startOk) return false
         val endOk = routine.endDateEpochDay == null || dayEpoch <= routine.endDateEpochDay
         if (!endOk) return false
-        return !routine.isExcludedOn(Dates.iso(date))
+        return !ExcludedDates.isExcluded(routine.excludedDates, Dates.iso(date))
     }
 
     fun scheduledOn(date: LocalDate, routines: List<RoutineEntity>): List<RoutineEntity> =

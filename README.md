@@ -1,4 +1,4 @@
-# ✅ Tag — Daily Routine & Task Planner (v2.0)
+# ✅ Tag — Daily Routine & Task Planner (v2.1)
 
 A clean and customizable Android routine and task planner with day-centric scheduling, Gregorian & Solar Hijri (Jalali) calendar support, safe local JSON backup & restore, a built-in focus timer, unified Material 3 design system, optional Dynamic Color, an interactive home screen widget, full TalkBack and large-font support, tablet/landscape layouts, and full support for five languages.
 
@@ -45,7 +45,7 @@ A clean and customizable Android routine and task planner with day-centric sched
 
 - Android Studio Ladybug (2024.2.1) or newer
 - Android SDK API 35
-- JDK 17
+- JDK 21
 - A device or emulator running Android 8.0 (API 26) or newer
 
 ## 🚀 Getting Started
@@ -68,7 +68,7 @@ Run the unit tests with:
 ./gradlew :app:testDebugUnitTest
 ```
 
-The unit test suite covers the motion infrastructure and living-UI rules (`AnimationPolicyTest`, `DayPhaseTest`, `FocusMotionLogicTest`, `InsightsMotionLogicTest`, `ParticleEngineTest`, `StreakMilestoneTest`, `TagMotionTest`), the widget action decider (`WidgetActionDeciderTest`: valid mark-done actions, already-done/double-tap idempotency, missing/unscheduled routines, post-midnight stale dates, queue progression, and unique PendingIntent request codes), the widget state builder (`WidgetStateBuilderTest`: empty day, fully done day, partly done day, repeating and one-off items, next-item ordering by clock time, and the midnight boundary), widget manifest/layout/ProGuard guards (`WidgetConfigTest`), accessibility sentence builders for timeline rows, heatmap cells (Gregorian and Jalali, Persian digits) and chart summaries (`AccessibilityLabelsTest`), the reduced-motion rule (`MotionPreferencesTest`), backup validation, streaming bounds, legacy compatibility, duplicate-free merge, replace, round-trip fidelity, safety-backup retention, and mid-restore rollback (`BackupManagerTest`), Solar Hijri (Jalali) conversions, leap years, year boundaries, Saturday-start weeks and month labels (`JalaliCalendarTest`, `DatesTest`), weekly reporting (`WeeklyReportEngine`), 12-week calendar heatmap building (`HeatmapCalendar`), daily focus totals, unlinked focus sessions and per-item focus ranking (`FocusSummaryEngine`), copy rules, quick-add ranking, dynamic Today line, plus the existing stats, focus timer, ordering, migration and localization guards.
+The unit test suite (269 tests on both debug and release variants) covers the motion infrastructure and living-UI rules (`AnimationPolicyTest`, `DayPhaseTest`, `FocusMotionLogicTest`, `InsightsMotionLogicTest`, `MotionRevealRegistryTest`, `MotionThemePolicyTest`, `ParticleEngineTest`, `StreakMilestoneTest`, `TagMotionTest`), notification & midnight rollover policies (`NotificationPolicyTest`, `DateRolloverPolicyTest`), routine time validation (`RoutineTimeValidatorTest`), the widget action decider (`WidgetActionDeciderTest`: valid mark-done actions, already-done/double-tap idempotency, missing/unscheduled routines, post-midnight stale dates, queue progression, and unique PendingIntent request codes), the widget state builder (`WidgetStateBuilderTest`: empty day, fully done day, partly done day, repeating and one-off items, next-item ordering by clock time, and the midnight boundary), widget manifest/layout/ProGuard guards (`WidgetConfigTest`), accessibility sentence builders for timeline rows, heatmap cells (Gregorian and Jalali, Persian digits) and chart summaries (`AccessibilityLabelsTest`), the reduced-motion rule (`MotionPreferencesTest`), backup validation, streaming bounds, legacy compatibility, duplicate-free merge, replace (including orphaned `activeFocusRun` cleanup), round-trip fidelity, safety-backup retention, and mid-restore rollback (`BackupManagerTest`), Solar Hijri (Jalali) conversions, leap years, year boundaries, Saturday-start weeks, calendar-aware weekend dates and month labels (`JalaliCalendarTest`, `DatesTest`), weekly reporting (`WeeklyReportEngine`), 12-week calendar heatmap building (`HeatmapCalendar`), daily focus totals, unlinked focus sessions and per-item focus ranking (`FocusSummaryEngine`), copy rules, quick-add ranking, dynamic Today line, plus the existing stats, focus timer, ordering, migration and localization guards.
 
 ## 🔮 Future Improvements
 
@@ -82,6 +82,7 @@ The unit test suite covers the motion infrastructure and living-UI rules (`Anima
 - [x] One-tap item completion directly from the wide home screen widget (v1.8)
 - [x] TalkBack semantics, alternative swipe actions, large-font layouts and centred wide-screen content (v1.9)
 - [x] Living motion architecture, expressive Canvas charts/celebrations & Calm Focus mode (v2.0)
+- [x] Hardening release: core reliability fixes, reduced UX friction & animation/typography polish (v2.1)
 
 ## 🤝 Contributing
 
@@ -92,6 +93,12 @@ Contributions are welcome! Feel free to open an issue or submit a pull request.
 This project is licensed under the [MIT License](LICENSE).
 
 ## 📝 Changelog
+
+- **2.1**:
+  - **Core Reliability & Midnight/Notification Handling (`Receivers`, `DateRolloverPolicy`, `TagApp`, `AppViewModel`)**: `NotificationReceiver.rearm` now completes asynchronously under `goAsync()` (`try ... finally { pending.finish() }`), notification `Mark done` and `Snooze` actions actively cancel that item's notification via `NotificationManagerCompat`, and in-process `ACTION_DATE_CHANGED` / clock / timezone changes (plus `MainActivity.onStart`) update today's UI date via `DateRolloverPolicy` without adding periodic timers
+  - **Backup Consistency & Auto-Backup Isolation (`ExcludedDates`, `BackupCoordinator`, `SettingsStore`, Android Backup Rules)**: Unified `excludedDates` trimming/matching across storage and JSON backup parsing while preserving legacy backup compatibility; cleared orphaned `activeFocusRun` entries atomically during `BackupMode.REPLACE` when the linked routine no longer exists; and isolated `active_focus_run` into `tag_focus_runtime` excluded via `dataExtractionRules` / `fullBackupContent` while keeping Room database auto-backup intact
+  - **Onboarding, Focus & Editor Friction Fixes**: Deferred `POST_NOTIFICATIONS` permission requests until onboarding completion or reminder opt-in (with immediate reminder rescheduling once granted and safe no-crash fallback without permission), added an instant 5-language picker to Onboarding, enabled general unlinked Focus sessions (`routineId = null`) and softened `focus_give_up` wording across all 5 languages, clamped `DigestTimeSlider` to `0..1439` committing only in `onValueChangeFinished`, enforced `RoutineTimeValidator` bounds (`0..23` / `0..59`) with localized errors, and switched the Task Editor weekend chip via `Dates.nextWeekend` to Friday for Solar Hijri (Jalali) and Saturday for Gregorian calendars
+  - **Animation & Typography Polish (`MotionRevealRegistry`, `Theme`, `DayPhase`, `Type`)**: Prevented `CountUpText`, `AnimatedRing`, `MiniRing`, `ThinProgressBar`, `WeeklyBarChart`, `TrendSparkline`, `HeatmapGrid`, `StaggeredWordGreeting`, `TimelineRoutineItem` line reveals, and `staggeredEnter` from replaying from zero on tab switches while still animating real data changes; replaced dozens of concurrent `animateColorAsState` instances in `TagTheme` with a single Float `Animatable` crossfade; kept `DayPhase` live during long `RESUMED` sessions using boundary alarms; applied tabular numerals (`tnum`) to timers, counters, and metric displays; and removed provably unused `inter_light.ttf` and `inter_extrabold.ttf` font weights while aligning CI workflows on JDK 21 (`versionCode = 22`, `versionName = "2.1"`, zero database schema or permission changes)
 
 - **2.0**:
   - **Motion Infrastructure & Living Theme (`TagMotion`, `AnimationPolicy`, `DayPhase`)**: Unified timing/spring tokens, interactive `AnimationSetting` (`Auto` / `Full` / `Reduced` / `Off`) persisted cleanly with backward-compatible JSON backup/restore while respecting system "Remove animations" and low-RAM heuristics, lifecycle-aware ambient gating (`LocalAmbientAnimationsActive`), time-of-day hero & aurora tints (with Dynamic Color derivation), `HapticKind` feedback, zero-recomposition modifiers (`pressScale`, `staggeredEnter`, `breathing`, `floatY`, `glowPulse`), pure-Canvas components (`AuroraBackground`, `GlassCard`, `CountUpText`, `AnimatedRing`, `SparkleBurst`, `ConfettiBurst`, `StreakFlame`, `DigitRoll`, `CheckDraw`), and 5-language strings (`en`, `fa`, `de`, `fr`, `tr`)

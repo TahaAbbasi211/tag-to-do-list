@@ -49,7 +49,6 @@ import com.tag.routine.data.TaskEntity
 import com.tag.routine.ui.components.FilterPill
 import com.tag.routine.ui.i18n.ProvideAppLocale
 import com.tag.routine.ui.motion.AnimatedSheetContent
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.Locale
 
@@ -225,24 +224,28 @@ fun TaskEditorSheet(
                         shape = RoundedCornerShape(12.dp),
                     )
                     Spacer(Modifier.height(8.dp))
+                    val todayDate = Dates.today()
+                    val weekendDate = Dates.nextWeekend(todayDate, calendarType)
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         QuickDateChip(
                             label = stringResource(R.string.task_editor_quick_today),
-                            active = dueDate == Dates.iso(Dates.today()),
-                            onClick = { dueDate = Dates.iso(Dates.today()) },
+                            active = dueDate == Dates.iso(todayDate),
+                            onClick = { dueDate = Dates.iso(todayDate) },
                         )
                         QuickDateChip(
                             label = stringResource(R.string.task_editor_quick_tomorrow),
-                            active = dueDate == Dates.iso(Dates.today().plusDays(1)),
-                            onClick = { dueDate = Dates.iso(Dates.today().plusDays(1)) },
+                            active = dueDate == Dates.iso(todayDate.plusDays(1)),
+                            onClick = { dueDate = Dates.iso(todayDate.plusDays(1)) },
                         )
                         QuickDateChip(
                             label = stringResource(R.string.task_editor_quick_weekend),
-                            active = false,
-                            onClick = { dueDate = Dates.iso(nextSaturday()) },
+                            active = dueDate == Dates.iso(weekendDate) &&
+                                weekendDate != todayDate &&
+                                weekendDate != todayDate.plusDays(1),
+                            onClick = { dueDate = Dates.iso(weekendDate) },
                         )
                         QuickDateChip(
                             label = stringResource(R.string.task_editor_pick_date),
@@ -341,14 +344,4 @@ fun TaskEditorSheet(
 @Composable
 private fun QuickDateChip(label: String, active: Boolean, onClick: () -> Unit) {
     FilterPill(text = label, selected = active, onClick = onClick)
-}
-
-/** The next Saturday, which is the start of the weekend in Iran. */
-private fun nextSaturday(): LocalDate {
-    val today = Dates.today()
-    var candidate = today
-    while (candidate.dayOfWeek != DayOfWeek.SATURDAY) {
-        candidate = candidate.plusDays(1)
-    }
-    return candidate
 }

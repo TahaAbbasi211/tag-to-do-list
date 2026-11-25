@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 
 /** Live state of the focus timer, as rendered on the Focus screen. */
 data class FocusState(
+    val active: Boolean = false,
     val routineId: String? = null,
     val routineTitle: String? = null,
     val plannedMinutes: Int = AppConstants.DEFAULT_FOCUS_MINUTES,
@@ -85,11 +86,11 @@ class FocusController(
      * immediately swipe the app away, and the run must still be persisted and handed to
      * the service rather than being cancelled along with the screen.
      */
-    fun start(routine: RoutineEntity, minutes: Int) {
+    fun start(routine: RoutineEntity?, minutes: Int) {
         appScope().launch {
             FocusTimerRuntime.start(
-                routineId = routine.id,
-                routineTitle = routine.title,
+                routineId = routine?.id,
+                routineTitle = routine?.title,
                 minutes = AppConstants.clampFocusMinutes(minutes),
             )
             withAppContext { ctx -> FocusTimerRuntime.run.value?.let { FocusTimerAlarms.arm(ctx, it) } }
@@ -161,6 +162,7 @@ class FocusController(
     }
 
     private fun ActiveFocusRun.toUiState(): FocusState = FocusState(
+        active = true,
         routineId = routineId,
         routineTitle = routineTitle,
         plannedMinutes = plannedMinutes,

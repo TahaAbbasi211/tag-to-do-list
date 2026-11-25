@@ -102,6 +102,9 @@
     <string name="routine_editor_set_time_first">Önce bir saat belirle</string>
     <string name="routine_editor_remind_at">Seçilen günlerde saat %1$s olduğunda hatırlat</string>
     <string name="routine_editor_delete">Rutini sil</string>
+    <string name="routine_editor_error_hour">0 ile 23 arasında bir saat gir</string>
+    <string name="routine_editor_error_minute">0 ile 59 arasında bir dakika gir</string>
+    <string name="routine_editor_error_time">Geçerli bir saat gir (00:00–23:59)</string>
 
     <!-- Ä°statistikler -->
     <string name="insights_empty_title">Henüz veri yok</string>
@@ -212,10 +215,10 @@
     <string name="focus_pause">Duraklat</string>
     <string name="focus_resume">Devam et</string>
     <string name="focus_stop">Durdur</string>
-    <string name="focus_give_up">Vazgeç</string>
+    <string name="focus_give_up">Erken bitir</string>
     <string name="focus_running">%1$s üzerinde odaklanılıyor</string>
     <string name="focus_no_routine">Rutin seçilmedi</string>
-    <string name="focus_pick_routine">Odaklanmak için bir rutin seç</string>
+    <string name="focus_pick_routine">Rutin (isteğe bağlı)</string>
     <string name="focus_minutes">%1$d dk</string>
     <string name="focus_session_done">Odaklanma oturumu tamamlandı</string>
     <string name="focus_total">Toplam odaklanma: %1$s</string>
@@ -237,7 +240,6 @@
     <string name="focus_history_abandoned">Yarıda bırakıldı</string>
     <string name="focus_history_completed">Tamamlandı</string>
     <string name="focus_history_untitled">Odak oturumu</string>
-    <string name="focus_needs_routine">Başlamak için önce bir rutin ekle.</string>
 
     <!-- İlk açılış -->
     <string name="onboarding_title">Tag\'a hoş geldin</string>

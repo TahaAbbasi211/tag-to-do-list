@@ -67,6 +67,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.tag.routine.ui.theme.tabularNumbers
 import com.tag.routine.ui.theme.tagBrand
 import kotlin.math.PI
 import kotlin.math.cos
@@ -271,9 +272,18 @@ fun CountUpText(
     fontWeight: FontWeight? = FontWeight.Bold,
     maxLines: Int = 1,
     animateFromZero: Boolean = false,
+    revealKey: Any? = null,
 ) {
     val level = LocalAnimationLevel.current
-    val initial = if (animateFromZero && level.allowsMotion) 0 else value
+    val registry = LocalMotionRevealRegistry.current
+    val initial = remember(revealKey, level) {
+        when {
+            level.isOff -> value
+            revealKey != null && registry != null -> registry.initialInt(revealKey, value, animateFromZero)
+            animateFromZero && level.allowsMotion -> 0
+            else -> value
+        }
+    }
     val anim = remember { Animatable(initial.toFloat()) }
     var lastRendered by remember { mutableFloatStateOf(initial.toFloat()) }
 
@@ -281,9 +291,16 @@ fun CountUpText(
         if (level.isOff) {
             anim.snapTo(value.toFloat())
             lastRendered = value.toFloat()
+            if (revealKey != null) registry?.recordInt(revealKey, value)
             return@LaunchedEffect
         }
         val startValue = lastRendered
+        if (revealKey != null) registry?.recordInt(revealKey, value)
+        if (startValue == value.toFloat()) {
+            anim.snapTo(value.toFloat())
+            lastRendered = value.toFloat()
+            return@LaunchedEffect
+        }
         val durationMs = TagMotion.levelAdjustedDuration(TagMotion.DURATION_EMPHASIZED, level)
         anim.snapTo(startValue)
         anim.animateTo(
@@ -298,7 +315,7 @@ fun CountUpText(
     Text(
         text = format(displayed),
         modifier = modifier,
-        style = style,
+        style = style.tabularNumbers(),
         color = color,
         fontWeight = fontWeight,
         maxLines = maxLines,
@@ -322,29 +339,42 @@ fun AnimatedRing(
     animateFromZero: Boolean = false,
     pulseTrigger: Int = 0,
     contentDescription: String? = null,
+    revealKey: Any? = null,
 ) {
     val brand = tagBrand()
     val level = LocalAnimationLevel.current
+    val registry = LocalMotionRevealRegistry.current
     val ambientActive = LocalAmbientAnimationsActive.current
     val resolvedTrack = trackColor ?: MaterialTheme.colorScheme.surfaceContainerHighest
     val resolvedStart = startColor ?: brand.ringStart
     val resolvedEnd = endColor ?: brand.ringEnd
     val target = progress.coerceIn(0f, 1f)
 
-    val sweepAnim = remember { Animatable(if (animateFromZero && level.allowsMotion) 0f else target) }
+    val initialSweep = remember(revealKey, level) {
+        when {
+            level.isOff -> target
+            revealKey != null && registry != null -> registry.initialFloat(revealKey, target, animateFromZero)
+            animateFromZero && level.allowsMotion -> 0f
+            else -> target
+        }
+    }
+    val sweepAnim = remember { Animatable(initialSweep) }
     LaunchedEffect(target, level) {
         if (level.isOff) {
             sweepAnim.snapTo(target)
-        } else {
-            sweepAnim.animateTo(
-                targetValue = target,
-                animationSpec = if (level == AnimationLevel.FULL) {
-                    TagMotion.gentleSpring()
-                } else {
-                    TagMotion.quickTween()
-                },
-            )
+            if (revealKey != null) registry?.recordFloat(revealKey, target)
+            return@LaunchedEffect
         }
+        if (revealKey != null) registry?.recordFloat(revealKey, target)
+        if (sweepAnim.value == target) return@LaunchedEffect
+        sweepAnim.animateTo(
+            targetValue = target,
+            animationSpec = if (level == AnimationLevel.FULL) {
+                TagMotion.gentleSpring()
+            } else {
+                TagMotion.quickTween()
+            },
+        )
     }
 
     val pulseScale = remember { Animatable(1f) }
@@ -555,12 +585,13 @@ fun DigitRoll(
     fontWeight: FontWeight? = FontWeight.Bold,
 ) {
     val level = LocalAnimationLevel.current
+    val tabularStyle = style.tabularNumbers()
 
     if (level.isOff) {
         Text(
             text = text,
             modifier = modifier,
-            style = style,
+            style = tabularStyle,
             color = color,
             fontWeight = fontWeight,
             maxLines = 1,
@@ -601,7 +632,7 @@ fun DigitRoll(
                         ) { digit ->
                             Text(
                                 text = digit.toString(),
-                                style = style,
+                                style = tabularStyle,
                                 color = color,
                                 fontWeight = fontWeight,
                                 maxLines = 1,
@@ -612,7 +643,7 @@ fun DigitRoll(
                     } else {
                         Text(
                             text = ch.toString(),
-                            style = style,
+                            style = tabularStyle,
                             color = color,
                             fontWeight = fontWeight,
                             maxLines = 1,

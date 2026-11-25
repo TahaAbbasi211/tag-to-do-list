@@ -102,6 +102,9 @@
     <string name="routine_editor_set_time_first">اول یک زمان انتخاب کن</string>
     <string name="routine_editor_remind_at">در روزهای انتخاب‌شده ساعت %1$s یادآوری کن</string>
     <string name="routine_editor_delete">حذف روتین</string>
+    <string name="routine_editor_error_hour">ساعت باید بین 0 تا 23 باشد</string>
+    <string name="routine_editor_error_minute">دقیقه باید بین 0 تا 59 باشد</string>
+    <string name="routine_editor_error_time">زمان معتبر وارد کن (00:00 تا 23:59)</string>
 
     <!-- Insights -->
     <string name="insights_empty_title">هنوز داده‌ای نیست</string>
@@ -212,10 +215,10 @@
     <string name="focus_pause">توقف</string>
     <string name="focus_resume">ادامه</string>
     <string name="focus_stop">پایان</string>
-    <string name="focus_give_up">رها کردن</string>
+    <string name="focus_give_up">پایان جلسه</string>
     <string name="focus_running">در حال تمرکز روی %1$s</string>
     <string name="focus_no_routine">روتینی انتخاب نشده</string>
-    <string name="focus_pick_routine">یک روتین برای تمرکز انتخاب کن</string>
+    <string name="focus_pick_routine">روتین (اختیاری)</string>
     <string name="focus_minutes">%1$d دقیقه</string>
     <string name="focus_session_done">جلسه تمرکز کامل شد</string>
     <string name="focus_total">مجموع تمرکز: %1$s</string>
@@ -237,7 +240,6 @@
     <string name="focus_history_abandoned">نیمه‌کاره</string>
     <string name="focus_history_completed">کامل‌شده</string>
     <string name="focus_history_untitled">جلسه تمرکز</string>
-    <string name="focus_needs_routine">برای شروع تمرکز اول یک روتین اضافه کن.</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">به Tag خوش آمدید</string>

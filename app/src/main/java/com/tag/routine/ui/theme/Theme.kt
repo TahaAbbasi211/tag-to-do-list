@@ -5,7 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Build
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -15,8 +15,12 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
@@ -33,6 +37,7 @@ import com.tag.routine.ui.motion.LocalHapticsEnabled
 import com.tag.routine.ui.motion.TagMotion
 import com.tag.routine.ui.motion.rememberIsLifecycleResumed
 import com.tag.routine.ui.motion.rememberResolvedAnimationLevel
+import kotlinx.coroutines.delay
 import java.time.LocalTime
 
 // ------------------------------------------------------------------ palette definitions
@@ -245,7 +250,7 @@ fun TagTheme(
     dynamicColor: Boolean = false,
     animationSetting: AnimationSetting = AnimationSetting.AUTO,
     hapticsEnabled: Boolean = true,
-    dayPhase: DayPhase = DayPhase.of(LocalTime.now().hour),
+    dayPhase: DayPhase? = null,
     content: @Composable () -> Unit,
 ) {
     val dark = when (themeMode) {
@@ -259,12 +264,31 @@ fun TagTheme(
     val scheme = chooseScheme(context, dark, dynamicColor, def)
 
     val dynamicScheme = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) scheme else null
-    val brand = brandFor(def = def, dark = dark, dayPhase = dayPhase, dynamicScheme = dynamicScheme)
     val animationLevel = rememberResolvedAnimationLevel(animationSetting)
     val lifecycleResumed = rememberIsLifecycleResumed()
+    val resolvedDayPhase = dayPhase ?: rememberCurrentDayPhase(resumed = lifecycleResumed)
+    val brand = brandFor(
+        def = def,
+        dark = dark,
+        dayPhase = resolvedDayPhase,
+        dynamicScheme = dynamicScheme,
+    )
 
-    val animatedScheme = animateTagColorScheme(scheme, animationLevel)
-    val animatedBrand = animateTagBrand(brand, animationLevel)
+    val (animatedScheme, animatedBrand) = rememberAnimatedThemePair(
+        targetScheme = scheme,
+        targetBrand = brand,
+        visualKey = ThemeVisualKey(
+            dark = dark,
+            paletteKey = paletteKey,
+            dynamicColor = dynamicColor,
+            dayPhase = resolvedDayPhase,
+            primary = scheme.primary,
+            secondary = scheme.secondary,
+            background = scheme.background,
+            surface = scheme.surface,
+        ),
+        level = animationLevel,
+    )
 
     val view = LocalView.current
     if (!view.isInEditMode) {
@@ -294,71 +318,146 @@ fun TagTheme(
     }
 }
 
+private data class ThemeVisualKey(
+    val dark: Boolean,
+    val paletteKey: String,
+    val dynamicColor: Boolean,
+    val dayPhase: DayPhase,
+    val primary: Color,
+    val secondary: Color,
+    val background: Color,
+    val surface: Color,
+)
+
+/**
+ * Keeps [DayPhase] accurate across long foreground sessions by sleeping until the next
+ * boundary hour only while the host lifecycle is actively `RESUMED`.
+ */
 @Composable
-private fun themeColor(target: Color, level: AnimationLevel, label: String): Color {
-    if (level.isOff) return target
-    val animated by animateColorAsState(
-        targetValue = target,
-        animationSpec = if (level == AnimationLevel.FULL) TagMotion.standardTween() else TagMotion.quickTween(),
-        label = label,
-    )
-    return animated
+private fun rememberCurrentDayPhase(resumed: Boolean): DayPhase {
+    var phase by remember { mutableStateOf(DayPhase.of(LocalTime.now().hour)) }
+    LaunchedEffect(resumed) {
+        if (!resumed) return@LaunchedEffect
+        while (true) {
+            val now = LocalTime.now()
+            val current = DayPhase.of(now.hour)
+            if (phase != current) {
+                phase = current
+            }
+            delay(DayPhase.millisUntilNextBoundary(now) + 250L)
+        }
+    }
+    return phase
 }
 
+/**
+ * Drives all theme/palette/phase color transitions through a single Float [Animatable]
+ * instead of dozens of concurrent per-token `animateColorAsState` instances.
+ */
 @Composable
-private fun animateTagColorScheme(target: ColorScheme, level: AnimationLevel): ColorScheme {
-    if (level.isOff) return target
-    return target.copy(
-        primary = themeColor(target.primary, level, "cs-primary"),
-        onPrimary = themeColor(target.onPrimary, level, "cs-onPrimary"),
-        primaryContainer = themeColor(target.primaryContainer, level, "cs-primaryContainer"),
-        onPrimaryContainer = themeColor(target.onPrimaryContainer, level, "cs-onPrimaryContainer"),
-        secondary = themeColor(target.secondary, level, "cs-secondary"),
-        onSecondary = themeColor(target.onSecondary, level, "cs-onSecondary"),
-        secondaryContainer = themeColor(target.secondaryContainer, level, "cs-secondaryContainer"),
-        onSecondaryContainer = themeColor(target.onSecondaryContainer, level, "cs-onSecondaryContainer"),
-        tertiary = themeColor(target.tertiary, level, "cs-tertiary"),
-        onTertiary = themeColor(target.onTertiary, level, "cs-onTertiary"),
-        tertiaryContainer = themeColor(target.tertiaryContainer, level, "cs-tertiaryContainer"),
-        onTertiaryContainer = themeColor(target.onTertiaryContainer, level, "cs-onTertiaryContainer"),
-        background = themeColor(target.background, level, "cs-background"),
-        onBackground = themeColor(target.onBackground, level, "cs-onBackground"),
-        surface = themeColor(target.surface, level, "cs-surface"),
-        onSurface = themeColor(target.onSurface, level, "cs-onSurface"),
-        surfaceVariant = themeColor(target.surfaceVariant, level, "cs-surfaceVariant"),
-        onSurfaceVariant = themeColor(target.onSurfaceVariant, level, "cs-onSurfaceVariant"),
-        surfaceContainerLowest = themeColor(target.surfaceContainerLowest, level, "cs-scl"),
-        surfaceContainerLow = themeColor(target.surfaceContainerLow, level, "cs-sclow"),
-        surfaceContainer = themeColor(target.surfaceContainer, level, "cs-sc"),
-        surfaceContainerHigh = themeColor(target.surfaceContainerHigh, level, "cs-sch"),
-        surfaceContainerHighest = themeColor(target.surfaceContainerHighest, level, "cs-schigh"),
-        outline = themeColor(target.outline, level, "cs-outline"),
-        outlineVariant = themeColor(target.outlineVariant, level, "cs-outlineVariant"),
-        error = themeColor(target.error, level, "cs-error"),
-        onError = themeColor(target.onError, level, "cs-onError"),
-        errorContainer = themeColor(target.errorContainer, level, "cs-errorContainer"),
-        onErrorContainer = themeColor(target.onErrorContainer, level, "cs-onErrorContainer"),
+private fun rememberAnimatedThemePair(
+    targetScheme: ColorScheme,
+    targetBrand: TagBrand,
+    visualKey: ThemeVisualKey,
+    level: AnimationLevel,
+): Pair<ColorScheme, TagBrand> {
+    val targetPair = targetScheme to targetBrand
+    if (level.isOff) return targetPair
+
+    var lastKey by remember { mutableStateOf(visualKey) }
+    var fromPair by remember { mutableStateOf(targetPair) }
+    var toPair by remember { mutableStateOf(targetPair) }
+    val progress = remember { Animatable(1f) }
+
+    LaunchedEffect(visualKey, level) {
+        if (visualKey == lastKey) {
+            toPair = targetPair
+            return@LaunchedEffect
+        }
+        val currentFraction = progress.value.coerceIn(0f, 1f)
+        val snapshotStart = lerpColorScheme(fromPair.first, toPair.first, currentFraction) to
+            lerpTagBrand(fromPair.second, toPair.second, currentFraction)
+        lastKey = visualKey
+        fromPair = snapshotStart
+        toPair = targetPair
+        progress.snapTo(0f)
+        progress.animateTo(
+            targetValue = 1f,
+            animationSpec = if (level == AnimationLevel.FULL) {
+                TagMotion.standardTween()
+            } else {
+                TagMotion.quickTween()
+            },
+        )
+        fromPair = targetPair
+    }
+
+    val f = progress.value.coerceIn(0f, 1f)
+    return if (f >= 0.999f && visualKey == lastKey) {
+        targetPair
+    } else {
+        lerpColorScheme(fromPair.first, toPair.first, f) to
+            lerpTagBrand(fromPair.second, toPair.second, f)
+    }
+}
+
+internal fun lerpColorScheme(start: ColorScheme, stop: ColorScheme, fraction: Float): ColorScheme {
+    val f = fraction.coerceIn(0f, 1f)
+    if (f <= 0f) return start
+    if (f >= 1f) return stop
+    return stop.copy(
+        primary = lerp(start.primary, stop.primary, f),
+        onPrimary = lerp(start.onPrimary, stop.onPrimary, f),
+        primaryContainer = lerp(start.primaryContainer, stop.primaryContainer, f),
+        onPrimaryContainer = lerp(start.onPrimaryContainer, stop.onPrimaryContainer, f),
+        secondary = lerp(start.secondary, stop.secondary, f),
+        onSecondary = lerp(start.onSecondary, stop.onSecondary, f),
+        secondaryContainer = lerp(start.secondaryContainer, stop.secondaryContainer, f),
+        onSecondaryContainer = lerp(start.onSecondaryContainer, stop.onSecondaryContainer, f),
+        tertiary = lerp(start.tertiary, stop.tertiary, f),
+        onTertiary = lerp(start.onTertiary, stop.onTertiary, f),
+        tertiaryContainer = lerp(start.tertiaryContainer, stop.tertiaryContainer, f),
+        onTertiaryContainer = lerp(start.onTertiaryContainer, stop.onTertiaryContainer, f),
+        background = lerp(start.background, stop.background, f),
+        onBackground = lerp(start.onBackground, stop.onBackground, f),
+        surface = lerp(start.surface, stop.surface, f),
+        onSurface = lerp(start.onSurface, stop.onSurface, f),
+        surfaceVariant = lerp(start.surfaceVariant, stop.surfaceVariant, f),
+        onSurfaceVariant = lerp(start.onSurfaceVariant, stop.onSurfaceVariant, f),
+        surfaceContainerLowest = lerp(start.surfaceContainerLowest, stop.surfaceContainerLowest, f),
+        surfaceContainerLow = lerp(start.surfaceContainerLow, stop.surfaceContainerLow, f),
+        surfaceContainer = lerp(start.surfaceContainer, stop.surfaceContainer, f),
+        surfaceContainerHigh = lerp(start.surfaceContainerHigh, stop.surfaceContainerHigh, f),
+        surfaceContainerHighest = lerp(start.surfaceContainerHighest, stop.surfaceContainerHighest, f),
+        outline = lerp(start.outline, stop.outline, f),
+        outlineVariant = lerp(start.outlineVariant, stop.outlineVariant, f),
+        error = lerp(start.error, stop.error, f),
+        onError = lerp(start.onError, stop.onError, f),
+        errorContainer = lerp(start.errorContainer, stop.errorContainer, f),
+        onErrorContainer = lerp(start.onErrorContainer, stop.onErrorContainer, f),
     )
 }
 
-@Composable
-private fun animateTagBrand(target: TagBrand, level: AnimationLevel): TagBrand {
-    if (level.isOff) return target
-    return target.copy(
-        heroStart = themeColor(target.heroStart, level, "tb-heroStart"),
-        heroMid = themeColor(target.heroMid, level, "tb-heroMid"),
-        heroEnd = themeColor(target.heroEnd, level, "tb-heroEnd"),
-        ringStart = themeColor(target.ringStart, level, "tb-ringStart"),
-        ringEnd = themeColor(target.ringEnd, level, "tb-ringEnd"),
-        streak = themeColor(target.streak, level, "tb-streak"),
-        success = themeColor(target.success, level, "tb-success"),
-        warning = themeColor(target.warning, level, "tb-warning"),
-        priorityNormal = themeColor(target.priorityNormal, level, "tb-pNorm"),
-        chartTrack = themeColor(target.chartTrack, level, "tb-chartTrack"),
-        gridEmpty = themeColor(target.gridEmpty, level, "tb-gridEmpty"),
-        cardBorder = themeColor(target.cardBorder, level, "tb-cardBorder"),
-        auroraColors = target.auroraColors.mapIndexed { idx, color ->
-            themeColor(color, level, "tb-aurora-$idx")
+internal fun lerpTagBrand(start: TagBrand, stop: TagBrand, fraction: Float): TagBrand {
+    val f = fraction.coerceIn(0f, 1f)
+    if (f <= 0f) return start
+    if (f >= 1f) return stop
+    return stop.copy(
+        heroStart = lerp(start.heroStart, stop.heroStart, f),
+        heroMid = lerp(start.heroMid, stop.heroMid, f),
+        heroEnd = lerp(start.heroEnd, stop.heroEnd, f),
+        ringStart = lerp(start.ringStart, stop.ringStart, f),
+        ringEnd = lerp(start.ringEnd, stop.ringEnd, f),
+        streak = lerp(start.streak, stop.streak, f),
+        success = lerp(start.success, stop.success, f),
+        warning = lerp(start.warning, stop.warning, f),
+        priorityNormal = lerp(start.priorityNormal, stop.priorityNormal, f),
+        chartTrack = lerp(start.chartTrack, stop.chartTrack, f),
+        gridEmpty = lerp(start.gridEmpty, stop.gridEmpty, f),
+        cardBorder = lerp(start.cardBorder, stop.cardBorder, f),
+        auroraColors = List(stop.auroraColors.size) { idx ->
+            val a = start.auroraColors.getOrElse(idx) { stop.auroraColors[idx] }
+            lerp(a, stop.auroraColors[idx], f)
         },
     )
 }

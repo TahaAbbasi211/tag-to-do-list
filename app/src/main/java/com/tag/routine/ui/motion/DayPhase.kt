@@ -3,6 +3,8 @@ package com.tag.routine.ui.motion
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
+import java.time.Duration
+import java.time.LocalTime
 
 /**
  * Time-of-day visual phase that subtly shifts the living hero & aurora color temperature
@@ -28,6 +30,27 @@ enum class DayPhase {
                 in 19..20 -> DUSK
                 else -> NIGHT
             }
+        }
+
+        /** Next 24-hour boundary hour at which [DayPhase] transitions. */
+        fun nextBoundaryHour(hour: Int): Int {
+            val h = ((hour % 24) + 24) % 24
+            return when (h) {
+                in 0..3 -> 4
+                in 4..6 -> 7
+                in 7..11 -> 12
+                in 12..15 -> 16
+                in 16..18 -> 19
+                in 19..20 -> 21
+                else -> 4
+            }
+        }
+
+        /** Milliseconds remaining from [now] until the next [DayPhase] boundary. */
+        fun millisUntilNextBoundary(now: LocalTime = LocalTime.now()): Long {
+            val target = LocalTime.of(nextBoundaryHour(now.hour), 0)
+            val deltaMillis = Duration.between(now, target).toMillis()
+            return if (deltaMillis > 0L) deltaMillis else deltaMillis + 24L * 3_600_000L
         }
     }
 }
