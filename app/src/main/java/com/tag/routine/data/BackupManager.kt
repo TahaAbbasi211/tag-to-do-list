@@ -167,6 +167,7 @@ data class BackupRestoreReport(
     val settingsRestored: Boolean,
     val safetyBackupPath: String,
     val removedRoutineIds: List<String>,
+    val activeFocusRunCleared: Boolean = false,
 )
 
 /**
@@ -239,7 +240,7 @@ object BackupCodec {
             json.name("dateEpochDay").value(r.dateEpochDay)
             json.name("repeatDaily").value(r.repeatDaily)
             json.name("endDateEpochDay").value(r.endDateEpochDay)
-            json.name("excludedDates").value(r.excludedDates)
+            json.name("excludedDates").value(ExcludedDates.normalize(r.excludedDates))
             json.endObject()
         }
         json.endArray()
@@ -779,12 +780,18 @@ object BackupCodec {
                 }
                 "excludedDates" -> {
                     val raw = json.readStringOrNull().orEmpty()
-                    if (raw.isNotBlank()) {
-                        raw.split(',').forEach { part ->
-                            parseIsoDateStrict(part.trim())
-                        }
+                    excludedDates = if (raw.isBlank()) {
+                        ""
+                    } else {
+                        raw.split(',')
+                            .map { part ->
+                                val trimmed = part.trim()
+                                parseIsoDateStrict(trimmed)
+                                trimmed
+                            }
+                            .distinct()
+                            .joinToString(",")
                     }
-                    excludedDates = raw
                 }
                 else -> json.skipValue()
             }
@@ -1461,13 +1468,16 @@ interface BackupStorage {
     suspend fun insertTaskLogs(items: List<TaskLogEntity>)
     suspend fun insertFocusSessions(items: List<FocusSessionEntity>)
     suspend fun applySettings(settings: BackupSettings)
+    suspend fun readActiveFocusRun(): ActiveFocusRun?
+    suspend fun clearActiveFocusRun()
+    suspend fun restoreActiveFocusRun(run: ActiveFocusRun)
 }
 
 /**
  * Coordinates safe backup restoration:
  *  1. Snapshots live data and writes an automatic safety backup (keeping the last 3).
  *  2. Executes all database mutations inside a single atomic transaction.
- *  3. Rolls back database state if a post-DB settings write fails.
+ *  3. Rolls back database state if post-DB settings or active-timer writes fail.
  */
 class BackupCoordinator(
     private val storage: BackupStorage,
@@ -1533,6 +1543,14 @@ class BackupCoordinator(
             }
 
             BackupMode.REPLACE -> {
+                val activeRunBefore = try {
+                    storage.readActiveFocusRun()
+                } catch (t: Throwable) {
+                    throw BackupValidationException(BackupErrorCode.RESTORE_FAILED, "Could not inspect active timer", t)
+                }
+                val newRoutineIds = payload.routines.mapTo(HashSet()) { it.id }
+                val clearOrphanFocus = shouldClearActiveFocusRun(activeRunBefore, newRoutineIds)
+
                 try {
                     storage.runInTransaction {
                         writeFullSnapshot(
@@ -1551,33 +1569,43 @@ class BackupCoordinator(
                 }
 
                 var settingsApplied = false
-                if (payload.settings != null) {
-                    try {
+                var focusCleared = false
+                try {
+                    if (payload.settings != null) {
                         storage.applySettings(payload.settings)
                         settingsApplied = true
-                    } catch (t: Throwable) {
-                        // Roll back the committed DB state so DB and settings stay consistent.
-                        runCatching {
-                            storage.runInTransaction {
-                                writeFullSnapshot(
-                                    tags = before.tags,
-                                    routines = before.routines,
-                                    tasks = before.tasks,
-                                    routineLogs = before.routineLogs,
-                                    taskLogs = before.taskLogs,
-                                    focusSessions = before.focusSessions,
-                                )
-                            }
-                        }
-                        throw BackupValidationException(
-                            BackupErrorCode.RESTORE_FAILED,
-                            "Settings restore failed; database rolled back",
-                            t,
-                        )
                     }
+                    if (clearOrphanFocus) {
+                        storage.clearActiveFocusRun()
+                        focusCleared = true
+                    }
+                } catch (t: Throwable) {
+                    // Roll back DataStore and Room DB together so restore remains all-or-nothing.
+                    if (settingsApplied) {
+                        runCatching { storage.applySettings(BackupSettings.fromAppSettings(before.settings)) }
+                    }
+                    if (focusCleared && activeRunBefore != null) {
+                        runCatching { storage.restoreActiveFocusRun(activeRunBefore) }
+                    }
+                    runCatching {
+                        storage.runInTransaction {
+                            writeFullSnapshot(
+                                tags = before.tags,
+                                routines = before.routines,
+                                tasks = before.tasks,
+                                routineLogs = before.routineLogs,
+                                taskLogs = before.taskLogs,
+                                focusSessions = before.focusSessions,
+                            )
+                        }
+                    }
+                    throw BackupValidationException(
+                        BackupErrorCode.RESTORE_FAILED,
+                        "Preferences restore failed; database rolled back",
+                        t,
+                    )
                 }
 
-                val newRoutineIds = payload.routines.mapTo(HashSet()) { it.id }
                 val removedRoutineIds = previousRoutineIds.filter { it !in newRoutineIds }
 
                 BackupRestoreReport(
@@ -1592,6 +1620,7 @@ class BackupCoordinator(
                     settingsRestored = settingsApplied,
                     safetyBackupPath = safetyFile.absolutePath,
                     removedRoutineIds = removedRoutineIds,
+                    activeFocusRunCleared = focusCleared,
                 )
             }
         }
@@ -1612,5 +1641,17 @@ class BackupCoordinator(
         if (routineLogs.isNotEmpty()) storage.insertRoutineLogs(routineLogs)
         if (taskLogs.isNotEmpty()) storage.insertTaskLogs(taskLogs)
         if (focusSessions.isNotEmpty()) storage.insertFocusSessions(focusSessions)
+    }
+
+    companion object {
+        /**
+         * Returns true when a running/paused focus session is attached to a routine that
+         * does not exist in [restoredRoutineIds]. General sessions (`routineId == null`)
+         * do not depend on a routine row and are preserved.
+         */
+        fun shouldClearActiveFocusRun(
+            activeRun: ActiveFocusRun?,
+            restoredRoutineIds: Set<String>,
+        ): Boolean = activeRun?.routineId != null && activeRun.routineId !in restoredRoutineIds
     }
 }

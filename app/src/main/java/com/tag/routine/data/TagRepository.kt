@@ -112,7 +112,7 @@ class TagRepository(
     /** Hides a repeating routine on [date] only, preserving the routine row and all logs. */
     suspend fun excludeRoutineForDate(routineId: String, date: LocalDate) {
         val item = routineDao.byId(routineId) ?: return
-        routineDao.upsert(item.withExcludedDate(Dates.iso(date)))
+        routineDao.upsert(item.copy(excludedDates = ExcludedDates.withExcluded(item.excludedDates, Dates.iso(date))))
         notifyWidget()
     }
 
@@ -381,6 +381,17 @@ class TagRepository(
 
         override suspend fun applySettings(settings: BackupSettings) {
             settingsStore.applyBackupSettings(settings)
+        }
+
+        override suspend fun readActiveFocusRun(): ActiveFocusRun? =
+            settingsStore.activeFocusRun.first()
+
+        override suspend fun clearActiveFocusRun() {
+            settingsStore.clearActiveFocusRun()
+        }
+
+        override suspend fun restoreActiveFocusRun(run: ActiveFocusRun) {
+            settingsStore.setActiveFocusRun(run)
         }
     }
 

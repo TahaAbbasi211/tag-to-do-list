@@ -66,4 +66,61 @@ class NotificationPolicyTest {
             ),
         )
     }
+
+    @Test
+    fun `notification action cancellation requires mark-done or snooze with non-blank routineId`() {
+        val routineId = "routine-abc"
+        org.junit.Assert.assertEquals(
+            routineId.hashCode(),
+            NotificationActionPolicy.notificationIdFor(routineId),
+        )
+        assertTrue(
+            NotificationActionPolicy.shouldCancelNotification(
+                NotificationReceiver.ACTION_MARK_DONE,
+                routineId,
+            ),
+        )
+        assertTrue(
+            NotificationActionPolicy.shouldCancelNotification(
+                NotificationReceiver.ACTION_SNOOZE,
+                routineId,
+            ),
+        )
+        org.junit.Assert.assertEquals(
+            routineId.hashCode(),
+            NotificationActionPolicy.notificationIdToCancel(
+                NotificationReceiver.ACTION_MARK_DONE,
+                routineId,
+            ),
+        )
+        org.junit.Assert.assertEquals(
+            routineId.hashCode(),
+            NotificationActionPolicy.notificationIdToCancel(
+                NotificationReceiver.ACTION_SNOOZE,
+                routineId,
+            ),
+        )
+
+        assertFalse(
+            NotificationActionPolicy.shouldCancelNotification(
+                NotificationReceiver.ACTION_MARK_DONE,
+                null,
+            ),
+        )
+        assertFalse(
+            NotificationActionPolicy.shouldCancelNotification(
+                NotificationReceiver.ACTION_SNOOZE,
+                "   ",
+            ),
+        )
+        assertFalse(
+            NotificationActionPolicy.shouldCancelNotification(
+                "com.tag.routine.OTHER",
+                routineId,
+            ),
+        )
+        org.junit.Assert.assertNull(
+            NotificationActionPolicy.notificationIdToCancel(null, routineId),
+        )
+    }
 }

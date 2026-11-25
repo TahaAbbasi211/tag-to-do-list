@@ -17,11 +17,24 @@ import com.tag.routine.widget.WidgetRefresh
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 /** Hand-rolled dependency container: one database, one repository, one app scope. */
 class AppContainer(context: Context) {
     val appContext: Context = context.applicationContext
+
+    private val _currentDate = MutableStateFlow(Dates.today())
+    val currentDate: StateFlow<LocalDate> = _currentDate.asStateFlow()
+
+    fun refreshCurrentDate(observed: LocalDate = Dates.today()) {
+        if (_currentDate.value != observed) {
+            _currentDate.value = observed
+        }
+    }
 
     val database: TagDatabase = Room.databaseBuilder(appContext, TagDatabase::class.java, TagDatabase.NAME)
         // Real migrations instead of a destructive fallback: an upgrade must never drop
@@ -104,12 +117,21 @@ class TagApp : Application() {
     private fun registerDateChangeReceiver() {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                if (intent.action == Intent.ACTION_DATE_CHANGED) {
-                    WidgetRefresh.request(context)
+                when (intent.action) {
+                    Intent.ACTION_DATE_CHANGED,
+                    Intent.ACTION_TIME_CHANGED,
+                    Intent.ACTION_TIMEZONE_CHANGED,
+                    -> {
+                        containerOrNull?.refreshCurrentDate(Dates.today())
+                        WidgetRefresh.request(context)
+                    }
                 }
             }
         }
-        val filter = IntentFilter(Intent.ACTION_DATE_CHANGED)
+        val filter = IntentFilter(Intent.ACTION_DATE_CHANGED).apply {
+            addAction(Intent.ACTION_TIME_CHANGED)
+            addAction(Intent.ACTION_TIMEZONE_CHANGED)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
         } else {

@@ -163,7 +163,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        // Ensures widgets catch up on day boundaries or after any skipped background refresh.
+        // Ensures the calendar date and widgets catch up on midnight or clock boundaries.
+        viewModel.refreshDateIfNeeded()
         WidgetRefresh.request(applicationContext)
     }
 

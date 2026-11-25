@@ -128,6 +128,15 @@ object FocusTimerRuntime {
     suspend fun finish() = settleLock.withLock { settleLocked() }
 
     /**
+     * Drops the active run from memory and disk without recording a history row.
+     * Used when a full backup replace removes the linked routine.
+     */
+    suspend fun discardWithoutRecording() = settleLock.withLock {
+        _run.value = null
+        TagApp.containerOrNull?.repository?.clearActiveFocusRun()
+    }
+
+    /**
      * The body of [finish] and [advance], which must be called while holding [settleLock].
      *
      * When the in-memory copy is gone — the process was killed and the notification's

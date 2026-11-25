@@ -640,6 +640,36 @@ object Dates {
 
 // ---------------------------------------------------------------- stats
 
+/**
+ * Normalizes and matches comma-separated ISO dates stored in `RoutineEntity.excludedDates`,
+ * tolerating whitespace around tokens in legacy or externally formatted data.
+ */
+object ExcludedDates {
+
+    fun isExcluded(excludedDates: String, dateIso: String): Boolean {
+        val target = dateIso.trim()
+        if (target.isEmpty() || excludedDates.isBlank()) return false
+        return excludedDates.split(',').any { it.trim() == target }
+    }
+
+    fun normalize(raw: String): String =
+        raw.split(',')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+            .joinToString(",")
+
+    fun withExcluded(excludedDates: String, dateIso: String): String {
+        val target = dateIso.trim()
+        val existing = excludedDates.split(',')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+        if (target.isEmpty() || target in existing) return existing.joinToString(",")
+        return (existing + target).joinToString(",")
+    }
+}
+
 data class DayStat(
     val date: LocalDate,
     val scheduled: Int,
@@ -694,7 +724,7 @@ object StatsEngine {
         if (!startOk) return false
         val endOk = routine.endDateEpochDay == null || dayEpoch <= routine.endDateEpochDay
         if (!endOk) return false
-        return !routine.isExcludedOn(Dates.iso(date))
+        return !ExcludedDates.isExcluded(routine.excludedDates, Dates.iso(date))
     }
 
     fun scheduledOn(date: LocalDate, routines: List<RoutineEntity>): List<RoutineEntity> =

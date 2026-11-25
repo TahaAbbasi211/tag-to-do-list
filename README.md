@@ -45,7 +45,7 @@ A clean and customizable Android routine and task planner with day-centric sched
 
 - Android Studio Ladybug (2024.2.1) or newer
 - Android SDK API 35
-- JDK 17
+- JDK 21
 - A device or emulator running Android 8.0 (API 26) or newer
 
 ## 🚀 Getting Started

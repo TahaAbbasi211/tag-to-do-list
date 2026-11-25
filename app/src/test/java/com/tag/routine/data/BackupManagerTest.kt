@@ -153,10 +153,14 @@ class BackupManagerTest {
         )
     }
 
-    private class FakeBackupStorage(initial: Snapshot) : BackupStorage {
+    private class FakeBackupStorage(
+        initial: Snapshot,
+        var activeFocusRun: ActiveFocusRun? = null,
+    ) : BackupStorage {
         var current: Snapshot = initial
         var failInsideTransactionOnCall: Int? = null
         var failApplySettings: Boolean = false
+        var failClearActiveFocusRun: Boolean = false
         private var txCalls = 0
 
         private var txSnapshot: Snapshot? = null
@@ -261,6 +265,19 @@ class BackupManagerTest {
                 throw IllegalStateException("Simulated DataStore write failure")
             }
             update { snap -> snap.copy(settings = settings.appliedTo(snap.settings)) }
+        }
+
+        override suspend fun readActiveFocusRun(): ActiveFocusRun? = activeFocusRun
+
+        override suspend fun clearActiveFocusRun() {
+            if (failClearActiveFocusRun) {
+                throw IllegalStateException("Simulated focus runtime clear failure")
+            }
+            activeFocusRun = null
+        }
+
+        override suspend fun restoreActiveFocusRun(run: ActiveFocusRun) {
+            activeFocusRun = run
         }
     }
 
@@ -859,5 +876,133 @@ class BackupManagerTest {
             runBlocking { coord3.restore(replacement, BackupMode.REPLACE, nowMillis = 32_000L) }
         }
         assertEquals(original, storageNoSafety.current)
+    }
+
+    @Test
+    fun `excludedDates trims whitespace during parse, export, and scheduling lookup`() {
+        val backupJson = """
+            {
+              "app": "Tag",
+              "formatVersion": 3,
+              "exportedAt": 1763640000000,
+              "routines": [
+                {
+                  "id": "r-space",
+                  "title": "Walk",
+                  "group": "Morning",
+                  "daysMask": 127,
+                  "reminder": false,
+                  "colorHex": 1,
+                  "archived": false,
+                  "sortOrder": 0,
+                  "createdAt": 1000,
+                  "dateEpochDay": 0,
+                  "repeatDaily": true,
+                  "excludedDates": " 2026-11-19 , 2026-11-20 , 2026-11-19 "
+                }
+              ],
+              "tasks": [],
+              "tags": []
+            }
+        """.trimIndent()
+
+        val payload = BackupCodec.parseAndValidate(backupJson)
+        val routine = payload.routines.single()
+        assertEquals("2026-11-19,2026-11-20", routine.excludedDates)
+
+        val unparsedDirty = routine.copy(excludedDates = " 2026-11-19 , 2026-11-20 ")
+        assertTrue(ExcludedDates.isExcluded(unparsedDirty.excludedDates, "2026-11-19"))
+        assertTrue(ExcludedDates.isExcluded(unparsedDirty.excludedDates, " 2026-11-20 "))
+        assertFalse(StatsEngine.isScheduledOn(unparsedDirty, LocalDate.of(2026, 11, 19)))
+        assertFalse(StatsEngine.isScheduledOn(unparsedDirty, LocalDate.of(2026, 11, 20)))
+        assertTrue(StatsEngine.isScheduledOn(unparsedDirty, LocalDate.of(2026, 11, 21)))
+
+        val exported = BackupCodec.encodeToString(
+            Snapshot(routines = listOf(unparsedDirty), loaded = true),
+            exportedAt = 100L,
+        )
+        assertTrue(exported.contains("\"2026-11-19,2026-11-20\""))
+        assertEquals("2026-11-19,2026-11-20", BackupCodec.parseAndValidate(exported).routines.single().excludedDates)
+    }
+
+    @Test
+    fun `replace clears activeFocusRun only when its linked routine is absent after restore`() = runBlocking {
+        val existing = sampleSnapshot()
+        val orphanRun = ActiveFocusRun(
+            id = "run-orphan",
+            routineId = "r-2",
+            routineTitle = "Read paper",
+            plannedMinutes = 25,
+            segmentStartedAt = 10_000L,
+            accumulatedSeconds = 0,
+            startedAt = 10_000L,
+        )
+        val keptRun = orphanRun.copy(id = "run-kept", routineId = "r-1", routineTitle = "Morning stretch")
+        val generalRun = orphanRun.copy(id = "run-general", routineId = null, routineTitle = null)
+
+        val replacementWithR1Only = BackupPayload(
+            formatVersion = 2, // legacy backup without settings still cleans orphan timer
+            routines = listOf(existing.routines[0]),
+        )
+
+        // 1. Linked routine removed -> activeFocusRun cleared
+        val storageOrphan = FakeBackupStorage(existing, activeFocusRun = orphanRun)
+        val reportOrphan = BackupCoordinator(storageOrphan, tempFolder.newFolder("safety-orphan"))
+            .restore(replacementWithR1Only, BackupMode.REPLACE, nowMillis = 40_000L)
+        assertTrue(reportOrphan.activeFocusRunCleared)
+        assertNull(storageOrphan.activeFocusRun)
+
+        // 2. Linked routine preserved -> activeFocusRun preserved
+        val storageKept = FakeBackupStorage(existing, activeFocusRun = keptRun)
+        val reportKept = BackupCoordinator(storageKept, tempFolder.newFolder("safety-kept"))
+            .restore(replacementWithR1Only, BackupMode.REPLACE, nowMillis = 41_000L)
+        assertFalse(reportKept.activeFocusRunCleared)
+        assertEquals(keptRun, storageKept.activeFocusRun)
+
+        // 3. General session (routineId == null) -> preserved
+        val storageGeneral = FakeBackupStorage(existing, activeFocusRun = generalRun)
+        val reportGeneral = BackupCoordinator(storageGeneral, tempFolder.newFolder("safety-general"))
+            .restore(replacementWithR1Only, BackupMode.REPLACE, nowMillis = 42_000L)
+        assertFalse(reportGeneral.activeFocusRunCleared)
+        assertEquals(generalRun, storageGeneral.activeFocusRun)
+
+        // 4. Failure while clearing activeFocusRun rolls back DB and settings atomically
+        val storageFailFocus = FakeBackupStorage(existing, activeFocusRun = orphanRun).apply {
+            failClearActiveFocusRun = true
+        }
+        val withSettings = replacementWithR1Only.copy(
+            formatVersion = 3,
+            exportedAt = 5000L,
+            settings = BackupSettings(userName = "UpdatedName"),
+        )
+        assertValidationFails(BackupErrorCode.RESTORE_FAILED) {
+            runBlocking {
+                BackupCoordinator(storageFailFocus, tempFolder.newFolder("safety-fail-focus"))
+                    .restore(withSettings, BackupMode.REPLACE, nowMillis = 43_000L)
+            }
+        }
+        assertEquals(existing, storageFailFocus.current)
+        assertEquals(orphanRun, storageFailFocus.activeFocusRun)
+    }
+
+    @Test
+    fun `android auto backup keeps database enabled and excludes only active focus runtime store`() {
+        val appDir = listOf(File("src/main"), File("app/src/main"), File("../app/src/main"))
+            .firstOrNull { it.isDirectory }
+            ?.absoluteFile?.parentFile?.parentFile
+            ?: error("could not locate app module from ${File(".").absolutePath}")
+
+        val manifest = File(appDir, "src/main/AndroidManifest.xml").readText(StandardCharsets.UTF_8)
+        assertTrue(manifest.contains("""android:allowBackup="true""""))
+        assertTrue(manifest.contains("""android:fullBackupContent="@xml/backup_rules""""))
+        assertTrue(manifest.contains("""android:dataExtractionRules="@xml/data_extraction_rules""""))
+
+        val backupRules = File(appDir, "src/main/res/xml/backup_rules.xml").readText(StandardCharsets.UTF_8)
+        assertTrue(backupRules.contains("""datastore/tag_focus_runtime.preferences_pb"""))
+        assertFalse(backupRules.contains("""domain="database""""))
+
+        val extractionRules = File(appDir, "src/main/res/xml/data_extraction_rules.xml").readText(StandardCharsets.UTF_8)
+        assertTrue(extractionRules.contains("""datastore/tag_focus_runtime.preferences_pb"""))
+        assertFalse(extractionRules.contains("""domain="database""""))
     }
 }
