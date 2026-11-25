@@ -118,12 +118,18 @@ fun Modifier.staggeredEnter(
     val level = LocalAnimationLevel.current
     if (level.isOff) return@composed this
 
+    val registry = LocalMotionRevealRegistry.current
+    val token = "stagger:$key:$index"
+    val shouldAnimate = remember(token, level) {
+        !level.isOff && (registry?.consumeFirstReveal(token) ?: true)
+    }
+
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val slidePx = with(LocalDensity.current) { slideDistanceDp.toPx() }
-    val progress = remember(key) { Animatable(0f) }
+    val progress = remember(key) { Animatable(if (shouldAnimate) 0f else 1f) }
 
     LaunchedEffect(key, level) {
-        if (level.isOff) {
+        if (level.isOff || !shouldAnimate) {
             progress.snapTo(1f)
             return@LaunchedEffect
         }

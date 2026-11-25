@@ -77,6 +77,7 @@ import com.tag.routine.ui.motion.AnimatedRing
 import com.tag.routine.ui.motion.AuroraBackground
 import com.tag.routine.ui.motion.CountUpText
 import com.tag.routine.ui.theme.spacing
+import com.tag.routine.ui.theme.tabularNumbers
 import com.tag.routine.ui.theme.tagBrand
 import java.time.DayOfWeek
 import java.time.temporal.TemporalAdjusters
@@ -242,6 +243,7 @@ private fun InsightsContent(state: UiState) {
                                 startColor = MaterialTheme.colorScheme.primary,
                                 endColor = brand.success,
                                 animateFromZero = true,
+                                revealKey = "insights-hero-ring",
                             )
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 CountUpText(
@@ -251,6 +253,7 @@ private fun InsightsContent(state: UiState) {
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary,
                                     animateFromZero = true,
+                                    revealKey = "insights-hero-count",
                                     modifier = Modifier.clearAndSetSemantics {},
                                 )
                                 Text(
@@ -622,7 +625,7 @@ private fun FocusedItemRow(
             Spacer(Modifier.width(spacing.sm))
             Text(
                 text = Dates.formatDuration(stat.minutes, resources, appLocale),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium.tabularNumbers(),
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
                 maxLines = 1,
@@ -634,6 +637,7 @@ private fun FocusedItemRow(
             modifier = Modifier.fillMaxWidth(),
             color = accent,
             animateFromZero = true,
+            revealKey = "insights-focused:${stat.routine.id}",
         )
     }
 }
@@ -663,6 +667,7 @@ private fun RoutineLeaderboardRow(
             size = 38.dp,
             stroke = 4.dp,
             color = MaterialTheme.colorScheme.primary,
+            revealKey = "insights-leaderboard:$title",
         )
         Spacer(Modifier.width(spacing.md))
         Column(modifier = Modifier.weight(1f)) {
@@ -785,7 +790,7 @@ private fun WeeklyReportCard(
                                 )
                                 Text(
                                     text = Dates.formatPercent(pct, appLocale),
-                                    style = MaterialTheme.typography.labelSmall,
+                                    style = MaterialTheme.typography.labelSmall.tabularNumbers(),
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.primary,
                                 )
@@ -794,6 +799,7 @@ private fun WeeklyReportCard(
                                 progress = (pct / 100f).coerceIn(0f, 1f),
                                 color = MaterialTheme.colorScheme.primary,
                                 animateFromZero = true,
+                                revealKey = "insights-report-current",
                             )
                         }
                     }
@@ -810,7 +816,7 @@ private fun WeeklyReportCard(
                                 )
                                 Text(
                                     text = Dates.formatPercent(pct, appLocale),
-                                    style = MaterialTheme.typography.labelSmall,
+                                    style = MaterialTheme.typography.labelSmall.tabularNumbers(),
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.secondary,
                                 )
@@ -819,6 +825,7 @@ private fun WeeklyReportCard(
                                 progress = (pct / 100f).coerceIn(0f, 1f),
                                 color = MaterialTheme.colorScheme.secondary,
                                 animateFromZero = true,
+                                revealKey = "insights-report-prev",
                             )
                         }
                     }
@@ -995,7 +1002,7 @@ private fun WeeklyHighlightRow(
             Spacer(Modifier.width(spacing.sm))
             Text(
                 text = Dates.formatPercent(item.percent, appLocale),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium.tabularNumbers(),
                 fontWeight = FontWeight.Bold,
                 color = accentColor,
                 maxLines = 1,
@@ -1007,6 +1014,7 @@ private fun WeeklyHighlightRow(
             color = accentColor,
             height = 6.dp,
             animateFromZero = true,
+            revealKey = "insights-highlight:$label:${item.routine.id}",
             modifier = Modifier.fillMaxWidth(),
         )
     }

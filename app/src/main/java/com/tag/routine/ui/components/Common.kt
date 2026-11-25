@@ -79,11 +79,13 @@ import com.tag.routine.ui.motion.CountUpText
 import com.tag.routine.ui.motion.HapticKind
 import com.tag.routine.ui.motion.LocalAmbientAnimationsActive
 import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.LocalMotionRevealRegistry
 import com.tag.routine.ui.motion.TagMotion
 import com.tag.routine.ui.motion.floatY
 import com.tag.routine.ui.motion.glowPulse
 import com.tag.routine.ui.motion.rememberTagHaptics
 import com.tag.routine.ui.theme.spacing
+import com.tag.routine.ui.theme.tabularNumbers
 import com.tag.routine.ui.theme.tagBrand
 import kotlin.math.PI
 import kotlin.math.abs
@@ -861,25 +863,38 @@ fun ThinProgressBar(
     track: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
     height: Dp = 8.dp,
     animateFromZero: Boolean = false,
+    revealKey: Any? = null,
 ) {
     val level = LocalAnimationLevel.current
+    val registry = LocalMotionRevealRegistry.current
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val target = progress.coerceIn(0f, 1f)
-    val fillAnim = remember { Animatable(if (animateFromZero && level.allowsMotion) 0f else target) }
+    val initialFill = remember(revealKey, level) {
+        when {
+            level.isOff -> target
+            revealKey != null && registry != null -> registry.initialFloat(revealKey, target, animateFromZero)
+            animateFromZero && level.allowsMotion -> 0f
+            else -> target
+        }
+    }
+    val fillAnim = remember { Animatable(initialFill) }
 
     LaunchedEffect(target, level) {
         if (level.isOff) {
             fillAnim.snapTo(target)
-        } else {
-            fillAnim.animateTo(
-                targetValue = target,
-                animationSpec = if (level == com.tag.routine.ui.motion.AnimationLevel.FULL) {
-                    TagMotion.emphasizedTween()
-                } else {
-                    TagMotion.quickTween()
-                },
-            )
+            if (revealKey != null) registry?.recordFloat(revealKey, target)
+            return@LaunchedEffect
         }
+        if (revealKey != null) registry?.recordFloat(revealKey, target)
+        if (fillAnim.value == target) return@LaunchedEffect
+        fillAnim.animateTo(
+            targetValue = target,
+            animationSpec = if (level == com.tag.routine.ui.motion.AnimationLevel.FULL) {
+                TagMotion.emphasizedTween()
+            } else {
+                TagMotion.quickTween()
+            },
+        )
     }
 
     val barProgress = if (level.isOff) target else fillAnim.value.coerceIn(0f, 1f)
@@ -920,7 +935,7 @@ fun StatTile(
     ) {
         Text(
             text = value,
-            style = MaterialTheme.typography.displaySmall.copy(fontSize = 24.sp, lineHeight = 30.sp),
+            style = MaterialTheme.typography.displaySmall.copy(fontSize = 24.sp, lineHeight = 30.sp).tabularNumbers(),
             color = accent,
             fontWeight = FontWeight.Bold,
             maxLines = 2,
@@ -939,6 +954,7 @@ fun AnimatedStatTile(
     accent: Color = MaterialTheme.colorScheme.primary,
     suffix: String? = null,
     animateFromZero: Boolean = true,
+    revealKey: Any? = "tile:$label",
 ) {
     StatTileFrame(
         label = label,
@@ -954,6 +970,7 @@ fun AnimatedStatTile(
             fontWeight = FontWeight.Bold,
             maxLines = 2,
             animateFromZero = animateFromZero,
+            revealKey = revealKey,
         )
     }
 }

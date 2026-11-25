@@ -94,11 +94,13 @@ import com.tag.routine.ui.motion.AnimationLevel
 import com.tag.routine.ui.motion.HapticKind
 import com.tag.routine.ui.motion.InsightsMotionLogic
 import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.LocalMotionRevealRegistry
 import com.tag.routine.ui.motion.TagMotion
 import com.tag.routine.ui.motion.glowPulse
 import com.tag.routine.ui.motion.pressScale
 import com.tag.routine.ui.motion.rememberTagHaptics
 import com.tag.routine.ui.theme.spacing
+import com.tag.routine.ui.theme.tabularNumbers
 import com.tag.routine.ui.theme.tagBrand
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -252,18 +254,20 @@ fun WeekStrip(
                             animationSpec = colorSpec,
                             label = "week-fg",
                         )
-                        val dotAnim = remember { Animatable(if (level.isOff) 1f else 0f) }
+                        val registry = LocalMotionRevealRegistry.current
+                        val shouldAnimateDot = remember(date, hasItems, level) {
+                            hasItems && !level.isOff && (registry?.consumeFirstReveal("week-dot:$date:$hasItems") ?: true)
+                        }
+                        val dotAnim = remember { Animatable(if (shouldAnimateDot) 0f else 1f) }
                         LaunchedEffect(hasItems, level) {
-                            if (level.isOff) {
+                            if (level.isOff || !hasItems || !shouldAnimateDot) {
                                 dotAnim.snapTo(1f)
-                            } else if (hasItems) {
+                            } else {
                                 dotAnim.snapTo(0f)
                                 kotlinx.coroutines.delay(
                                     TagMotion.staggerDelayMillis(index, stepMs = 35, maxDelayMs = 240).toLong(),
                                 )
                                 dotAnim.animateTo(1f, TagMotion.bouncySpring())
-                            } else {
-                                dotAnim.snapTo(1f)
                             }
                         }
 
@@ -306,7 +310,7 @@ fun WeekStrip(
                             Spacer(Modifier.height(4.dp))
                             Text(
                                 text = Dates.formatDigits(Dates.dayOfMonth(date, calendarType).toString(), appLocale),
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.titleMedium.tabularNumbers(),
                                 color = contentColor,
                                 fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.SemiBold,
                                 maxLines = 1,
@@ -398,11 +402,15 @@ fun WeeklyBarChart(
             horizontalArrangement = Arrangement.spacedBy(9.dp),
             verticalAlignment = Alignment.Bottom,
         ) {
+            val registry = LocalMotionRevealRegistry.current
             data.forEachIndexed { index, stat ->
                 val isToday = stat.date == today
-                val barReveal = remember(stat.date) { Animatable(if (level.isOff) 1f else 0f) }
+                val shouldAnimateBar = remember(stat.date, stat.ratio, level) {
+                    !level.isOff && (registry?.shouldAnimateValue("insights-bar:${stat.date}", stat.ratio) ?: true)
+                }
+                val barReveal = remember(stat.date) { Animatable(if (shouldAnimateBar) 0f else 1f) }
                 LaunchedEffect(stat.ratio, stat.date, level) {
-                    if (level.isOff) {
+                    if (level.isOff || !shouldAnimateBar) {
                         barReveal.snapTo(1f)
                     } else {
                         barReveal.snapTo(0f)
@@ -433,7 +441,7 @@ fun WeeklyBarChart(
                 ) {
                     Text(
                         text = if (stat.hasData) Dates.formatPercent((stat.ratio * 100).toInt(), appLocale) else "–",
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelSmall.tabularNumbers(),
                         color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         softWrap = false,
@@ -508,9 +516,13 @@ fun TrendSparkline(
     }
     val hasDataMask = remember(stats) { stats.map { it.hasData } }
 
-    val drawProgress = remember { Animatable(if (level.isOff) 1f else 0f) }
+    val registry = LocalMotionRevealRegistry.current
+    val shouldAnimate = remember(ratios, level) {
+        !level.isOff && (registry?.shouldAnimateValue("insights-sparkline", ratios) ?: true)
+    }
+    val drawProgress = remember { Animatable(if (shouldAnimate) 0f else 1f) }
     LaunchedEffect(ratios, level) {
-        if (level.isOff) {
+        if (level.isOff || !shouldAnimate) {
             drawProgress.snapTo(1f)
         } else {
             drawProgress.snapTo(0f)
@@ -684,10 +696,17 @@ fun HeatmapGrid(
 
     val neutralLabel = stringResource(R.string.insights_heatmap_legend_neutral)
     val level = LocalAnimationLevel.current
+    val registry = LocalMotionRevealRegistry.current
     val haptics = rememberTagHaptics()
-    val wave = remember { Animatable(if (level.isOff) 1f else 0f) }
-    LaunchedEffect(weekColumns.size, level) {
-        if (level.isOff) {
+    val heatmapSignature = remember(weekColumns) {
+        weekColumns.map { col -> col.cells.map { it.intensity } }
+    }
+    val shouldAnimateWave = remember(heatmapSignature, level) {
+        !level.isOff && (registry?.shouldAnimateValue("insights-heatmap-wave:$weeks", heatmapSignature) ?: true)
+    }
+    val wave = remember { Animatable(if (shouldAnimateWave) 0f else 1f) }
+    LaunchedEffect(weekColumns.size, heatmapSignature, level) {
+        if (level.isOff || !shouldAnimateWave) {
             wave.snapTo(1f)
         } else {
             wave.snapTo(0f)
@@ -1138,19 +1157,31 @@ fun MiniRing(
     size: Dp = 40.dp,
     stroke: Dp = 4.dp,
     color: Color = MaterialTheme.colorScheme.primary,
+    revealKey: Any? = null,
 ) {
     val level = LocalAnimationLevel.current
+    val registry = LocalMotionRevealRegistry.current
     val target = progress.coerceIn(0f, 1f)
-    val sweepAnim = remember { Animatable(if (level.isOff) target else 0f) }
+    val initialSweep = remember(revealKey, level) {
+        when {
+            level.isOff -> target
+            revealKey != null && registry != null -> registry.initialFloat(revealKey, target, animateFromZero = true)
+            else -> 0f
+        }
+    }
+    val sweepAnim = remember { Animatable(initialSweep) }
     LaunchedEffect(target, level) {
         if (level.isOff) {
             sweepAnim.snapTo(target)
-        } else {
-            sweepAnim.animateTo(
-                targetValue = target,
-                animationSpec = if (level == AnimationLevel.FULL) TagMotion.emphasizedTween() else TagMotion.quickTween(),
-            )
+            if (revealKey != null) registry?.recordFloat(revealKey, target)
+            return@LaunchedEffect
         }
+        if (revealKey != null) registry?.recordFloat(revealKey, target)
+        if (sweepAnim.value == target) return@LaunchedEffect
+        sweepAnim.animateTo(
+            targetValue = target,
+            animationSpec = if (level == AnimationLevel.FULL) TagMotion.emphasizedTween() else TagMotion.quickTween(),
+        )
     }
     val shown = if (level.isOff) target else sweepAnim.value.coerceIn(0f, 1f)
     Canvas(

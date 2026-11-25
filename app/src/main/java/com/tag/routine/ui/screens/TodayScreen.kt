@@ -117,6 +117,7 @@ import com.tag.routine.ui.motion.CountUpText
 import com.tag.routine.ui.motion.GlassCard
 import com.tag.routine.ui.motion.HapticKind
 import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.LocalMotionRevealRegistry
 import com.tag.routine.ui.motion.SparkleBurst
 import com.tag.routine.ui.motion.StreakFlame
 import com.tag.routine.ui.motion.StreakMilestones
@@ -124,6 +125,7 @@ import com.tag.routine.ui.motion.TagMotion
 import com.tag.routine.ui.motion.pressScale
 import com.tag.routine.ui.motion.rememberTagHaptics
 import com.tag.routine.ui.theme.spacing
+import com.tag.routine.ui.theme.tabularNumbers
 import com.tag.routine.ui.theme.tagBrand
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -294,10 +296,12 @@ fun TodayScreen(
     val activeMilestone = StreakMilestones.milestoneFor(streak)
     var dismissedMilestone by rememberSaveable { mutableIntStateOf(0) }
 
-    // FAB entrance spring
-    val fabEntrance = remember { Animatable(if (level.isOff) 1f else 0.72f) }
+    // FAB entrance spring (played once per session so switching tabs doesn't replay)
+    val revealRegistry = LocalMotionRevealRegistry.current
+    val animateFab = remember { revealRegistry?.consumeFirstReveal("today-fab") ?: true }
+    val fabEntrance = remember { Animatable(if (level.isOff || !animateFab) 1f else 0.72f) }
     LaunchedEffect(level) {
-        if (level.isOff) {
+        if (level.isOff || !animateFab) {
             fabEntrance.snapTo(1f)
         } else {
             fabEntrance.animateTo(1f, TagMotion.bouncySpring())
@@ -375,6 +379,7 @@ fun TodayScreen(
                                             endColor = brand.ringEnd,
                                             animateFromZero = true,
                                             pulseTrigger = ringPulseCount,
+                                            revealKey = "today-hero-ring",
                                             contentDescription = heroProgressDesc,
                                         )
                                         CountUpText(
@@ -384,6 +389,7 @@ fun TodayScreen(
                                             fontWeight = FontWeight.Bold,
                                             color = brand.onHero,
                                             animateFromZero = true,
+                                            revealKey = "today-hero-count",
                                         )
                                     }
                                 }
@@ -713,7 +719,7 @@ fun TodayScreen(
                             )
                             Text(
                                 text = Dates.formatPercent((state.progress * 100).toInt(), appLocale),
-                                style = MaterialTheme.typography.labelSmall,
+                                style = MaterialTheme.typography.labelSmall.tabularNumbers(),
                                 fontWeight = FontWeight.Bold,
                                 color = brand.onHero,
                                 maxLines = 1,
@@ -753,7 +759,7 @@ fun TodayScreen(
                                 )
                                 Text(
                                     text = Dates.formatDigits(streak.toString(), appLocale),
-                                    style = MaterialTheme.typography.labelSmall,
+                                    style = MaterialTheme.typography.labelSmall.tabularNumbers(),
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFFDE68A),
                                     maxLines = 1,
@@ -847,6 +853,7 @@ private fun StaggeredWordGreeting(
     stackHero: Boolean,
 ) {
     val level = LocalAnimationLevel.current
+    val revealRegistry = LocalMotionRevealRegistry.current
     val words = remember(text) { text.split(' ').filter { it.isNotEmpty() } }
 
     if (level.isOff || stackHero || words.size <= 1) {
@@ -862,6 +869,10 @@ private fun StaggeredWordGreeting(
         return
     }
 
+    val animateWords = remember(text) {
+        revealRegistry?.shouldAnimateValue("today-greeting", text) ?: true
+    }
+
     FlowRow(
         modifier = Modifier.semantics(mergeDescendants = true) {
             contentDescription = text
@@ -871,14 +882,18 @@ private fun StaggeredWordGreeting(
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         words.forEachIndexed { index, word ->
-            val wordAlpha = remember(text, index) { Animatable(0f) }
+            val wordAlpha = remember(text, index) { Animatable(if (animateWords) 0f else 1f) }
             LaunchedEffect(text, level) {
-                wordAlpha.snapTo(0f)
-                delay(TagMotion.staggerDelayMillis(index, stepMs = 50, maxDelayMs = 300).toLong())
-                wordAlpha.animateTo(
-                    targetValue = 1f,
-                    animationSpec = TagMotion.standardTween(),
-                )
+                if (animateWords) {
+                    wordAlpha.snapTo(0f)
+                    delay(TagMotion.staggerDelayMillis(index, stepMs = 50, maxDelayMs = 300).toLong())
+                    wordAlpha.animateTo(
+                        targetValue = 1f,
+                        animationSpec = TagMotion.standardTween(),
+                    )
+                } else {
+                    wordAlpha.snapTo(1f)
+                }
             }
             Text(
                 text = word,

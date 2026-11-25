@@ -669,6 +669,7 @@ private fun FocusSetupCard(
                         startColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.34f),
                         endColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.42f),
                         animateFromZero = true,
+                        revealKey = "focus-setup-ring",
                     )
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,

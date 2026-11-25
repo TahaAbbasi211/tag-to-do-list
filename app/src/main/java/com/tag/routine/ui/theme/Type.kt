@@ -13,18 +13,20 @@ import androidx.compose.ui.unit.sp
 import com.tag.routine.R
 
 val Inter = FontFamily(
-    Font(R.font.inter_light, FontWeight.Light),
     Font(R.font.inter_regular, FontWeight.Normal),
     Font(R.font.inter_medium, FontWeight.Medium),
     Font(R.font.inter_semibold, FontWeight.SemiBold),
     Font(R.font.inter_bold, FontWeight.Bold),
-    Font(R.font.inter_extrabold, FontWeight.ExtraBold),
 )
 
 val InterDisplay = FontFamily(
     Font(R.font.inter_display_semibold, FontWeight.SemiBold),
     Font(R.font.inter_display_bold, FontWeight.Bold),
 )
+
+const val TABULAR_NUMBERS_FEATURE = "tnum"
+
+fun TextStyle.tabularNumbers(): TextStyle = copy(fontFeatureSettings = TABULAR_NUMBERS_FEATURE)
 
 private val lineHeightStyle = LineHeightStyle(
     alignment = LineHeightStyle.Alignment.Center,
@@ -47,6 +49,7 @@ val TagTypography = Typography(
         fontSize = 40.sp,
         lineHeight = 46.sp,
         letterSpacing = (-1.0).sp,
+        fontFeatureSettings = TABULAR_NUMBERS_FEATURE,
         lineHeightStyle = lineHeightStyle,
     ),
     displayMedium = TextStyle(
@@ -55,6 +58,7 @@ val TagTypography = Typography(
         fontSize = 32.sp,
         lineHeight = 38.sp,
         letterSpacing = (-0.6).sp,
+        fontFeatureSettings = TABULAR_NUMBERS_FEATURE,
         lineHeightStyle = lineHeightStyle,
     ),
     displaySmall = TextStyle(

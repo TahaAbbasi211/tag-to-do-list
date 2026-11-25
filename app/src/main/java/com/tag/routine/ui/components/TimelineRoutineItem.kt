@@ -62,12 +62,14 @@ import com.tag.routine.data.AppSettings
 import com.tag.routine.data.RoutineColors
 import com.tag.routine.ui.accessibility.AccessibilityLabels
 import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.LocalMotionRevealRegistry
 import com.tag.routine.ui.motion.TagMotion
 import com.tag.routine.ui.motion.breathing
 import com.tag.routine.ui.motion.glowPulse
 import com.tag.routine.ui.motion.pressScale
 import com.tag.routine.ui.motion.staggeredEnter
 import com.tag.routine.ui.theme.TagTheme
+import com.tag.routine.ui.theme.tabularNumbers
 import kotlinx.coroutines.launch
 
 /**
@@ -144,10 +146,14 @@ fun TimelineRoutineItem(
         label = "timeline-title-color",
     )
 
-    // Progressive vertical track entrance when opening or changing days.
-    val lineReveal = remember(dayKey) { Animatable(if (level.isOff) 1f else 0f) }
+    // Progressive vertical track entrance when opening or changing days (once per day+slot).
+    val revealRegistry = LocalMotionRevealRegistry.current
+    val revealLine = remember(dayKey, index) {
+        revealRegistry?.consumeFirstReveal("timeline-line:$dayKey:$index") ?: true
+    }
+    val lineReveal = remember(dayKey) { Animatable(if (level.isOff || !revealLine) 1f else 0f) }
     LaunchedEffect(dayKey, level) {
-        if (level.isOff) {
+        if (level.isOff || !revealLine) {
             lineReveal.snapTo(1f)
         } else {
             val delay = TagMotion.staggerDelayMillis(index, stepMs = 30, maxDelayMs = 240)
@@ -263,7 +269,7 @@ fun TimelineRoutineItem(
             if (!timeLabel.isNullOrBlank()) {
                 Text(
                     text = timeLabel,
-                    style = MaterialTheme.typography.bodySmall.copy(
+                    style = MaterialTheme.typography.bodySmall.tabularNumbers().copy(
                         fontSize = 13.sp,
                         lineHeight = 18.sp,
                         fontWeight = FontWeight.Medium,

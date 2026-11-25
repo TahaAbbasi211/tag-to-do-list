@@ -51,6 +51,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -93,6 +94,8 @@ import com.tag.routine.ui.i18n.LocalizedApp
 import com.tag.routine.ui.motion.AnimationLevel
 import com.tag.routine.ui.motion.FocusMotionLogic
 import com.tag.routine.ui.motion.LocalAnimationLevel
+import com.tag.routine.ui.motion.LocalMotionRevealRegistry
+import com.tag.routine.ui.motion.MotionRevealRegistry
 import com.tag.routine.ui.motion.TagMotion
 import com.tag.routine.ui.screens.FocusScreen
 import com.tag.routine.ui.screens.InsightsScreen
@@ -361,10 +364,13 @@ private fun TagRoot(
         }
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
-    ) {
+    val revealRegistry = remember { MotionRevealRegistry() }
+
+    CompositionLocalProvider(LocalMotionRevealRegistry provides revealRegistry) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background,
+        ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -594,6 +600,7 @@ private fun TagRoot(
                     .semantics { liveRegion = LiveRegionMode.Polite },
             )
         }
+    }
     }
 
     if (creatingTask || editingTask != null) {
