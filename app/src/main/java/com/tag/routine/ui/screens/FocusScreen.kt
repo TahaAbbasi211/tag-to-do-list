@@ -36,6 +36,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Stop
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -245,6 +246,7 @@ private fun FocusCalmSurface(
                         appLocale = appLocale,
                         calmMode = true,
                         onToggleCalmMode = onExitCalmMode,
+                        showPhaseLabel = focus.isBreak,
                     )
                     Text(
                         text = stringResource(R.string.focus_calm_mode_exit),
@@ -952,13 +954,15 @@ private fun RunningSession(
                 },
             )
 
-            Text(
-                text = focusPhaseLabel(focus.phase),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = statusColor,
-                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-            )
+            if (breakModeEnabled || focus.isBreak) {
+                Text(
+                    text = focusPhaseLabel(focus.phase),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = statusColor,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+            }
 
             FocusCountdownRing(
                 focus = focus,
@@ -1009,6 +1013,17 @@ private fun RunningSession(
                         ),
                         onClick = if (focus.isBreak) onSkipBreak else onFinish,
                         variant = AppButtonVariant.Secondary,
+                        leadingIcon = if (focus.isBreak) {
+                            null
+                        } else {
+                            {
+                                Icon(
+                                    Icons.Rounded.Stop,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         shape = MaterialTheme.shapes.small,
                     )
@@ -1024,6 +1039,17 @@ private fun RunningSession(
                         ),
                         onClick = if (focus.isBreak) onSkipBreak else onFinish,
                         variant = AppButtonVariant.Secondary,
+                        leadingIcon = if (focus.isBreak) {
+                            null
+                        } else {
+                            {
+                                Icon(
+                                    Icons.Rounded.Stop,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+                        },
                         modifier = Modifier.weight(1f),
                         shape = MaterialTheme.shapes.small,
                     )
