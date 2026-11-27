@@ -86,6 +86,23 @@
     <string name="task_editor_quick_tomorrow">Demain</string>
     <string name="task_editor_quick_weekend">Ce week-end</string>
     <string name="task_editor_pick_date">Choisir une date</string>
+    <string name="task_editor_due_time">Heure d’échéance</string>
+    <string name="task_editor_due_time_none">Aucune heure</string>
+    <string name="task_editor_due_time_clear">Effacer l’heure</string>
+    <string name="task_editor_pick_time">Choisir une heure</string>
+    <string name="task_editor_time_hour">Heure</string>
+    <string name="task_editor_time_minute">Minute</string>
+    <string name="task_editor_time_invalid">Saisissez une heure valide (00:00 à 23:59).</string>
+    <string name="task_editor_reminder">Rappel</string>
+    <string name="task_editor_reminder_hint">Choisissez quand être rappelé avant l’échéance.</string>
+    <string name="task_editor_reminder_at_due">À l’heure d’échéance</string>
+    <string name="task_editor_reminder_10m">10 minutes avant</string>
+    <string name="task_editor_reminder_1h">1 heure avant</string>
+    <string name="task_editor_reminder_1d">1 jour avant</string>
+    <string name="task_editor_reminder_needs_time">Sans heure, seul le rappel 1 jour avant est possible.</string>
+    <string name="task_editor_reminder_no_date">Choisissez d’abord une date d’échéance.</string>
+    <string name="task_editor_reminder_past">Ce rappel est déjà passé. Choisissez une heure plus tardive.</string>
+    <string name="task_editor_reminder_day_before_rule">Sans heure, le rappel est fixé à 09:00 la veille.</string>
 
     <!-- Ã‰diteur de routine -->
     <string name="routine_editor_new">Nouvelle routine</string>
@@ -155,6 +172,13 @@
     <string name="settings_tags">Étiquettes</string>
     <string name="settings_new_tag">Nouvelle étiquette</string>
     <string name="settings_delete_tag">Supprimer l\'étiquette</string>
+    <string name="settings_edit_tag">Modifier l’étiquette</string>
+    <string name="settings_tag_dialog_title">Modifier l’étiquette</string>
+    <string name="settings_tag_name">Nom de l’étiquette</string>
+    <string name="settings_tag_color">Couleur</string>
+    <string name="settings_tag_color_option">Couleur %1$d</string>
+    <string name="settings_delete_tag_title">Supprimer l’étiquette ?</string>
+    <string name="settings_delete_tag_message">Les tâches sont conservées et deviennent sans étiquette. Cette action est irréversible.</string>
     <string name="settings_data">Données</string>
     <string name="settings_export">Exporter la sauvegarde</string>
     <string name="settings_import">Importer la sauvegarde</string>
@@ -196,6 +220,10 @@
     <string name="notif_channel_routines_desc">Rappels pour les routines planifiées.</string>
     <string name="notif_channel_digest">Résumé quotidien</string>
     <string name="notif_channel_digest_desc">Un court résumé de ce qu\'il reste à faire aujourd\'hui.</string>
+    <string name="notif_channel_tasks">Rappels de tâches</string>
+    <string name="notif_channel_tasks_desc">Rappels pour les tâches avec une heure d’échéance.</string>
+    <string name="notif_task_body">Échéance %1$s. Touchez pour ouvrir Tag.</string>
+    <string name="notif_task_body_no_time">Rappel de tâche. Touchez pour ouvrir Tag.</string>
     <string name="notif_routine_body">C\'est l\'heure de ta routine. Appuie pour ouvrir Tag.</string>
     <string name="notif_digest_title">Ta journée jusqu\'ici</string>
     <string name="notif_digest_nothing">Rien de prévu aujourd\'hui. Profite du calme.</string>

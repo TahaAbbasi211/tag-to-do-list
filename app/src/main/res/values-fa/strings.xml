@@ -86,6 +86,23 @@
     <string name="task_editor_quick_tomorrow">فردا</string>
     <string name="task_editor_quick_weekend">آخر این هفته</string>
     <string name="task_editor_pick_date">انتخاب تاریخ</string>
+    <string name="task_editor_due_time">ساعت سررسید</string>
+    <string name="task_editor_due_time_none">بدون ساعت</string>
+    <string name="task_editor_due_time_clear">پاک کردن ساعت</string>
+    <string name="task_editor_pick_time">انتخاب ساعت</string>
+    <string name="task_editor_time_hour">ساعت</string>
+    <string name="task_editor_time_minute">دقیقه</string>
+    <string name="task_editor_time_invalid">یک ساعت معتبر وارد کنید (۰۰:۰۰ تا ۲۳:۵۹).</string>
+    <string name="task_editor_reminder">یادآوری</string>
+    <string name="task_editor_reminder_hint">زمان یادآوری پیش از سررسید را انتخاب کنید.</string>
+    <string name="task_editor_reminder_at_due">در زمان سررسید</string>
+    <string name="task_editor_reminder_10m">۱۰ دقیقه قبل</string>
+    <string name="task_editor_reminder_1h">۱ ساعت قبل</string>
+    <string name="task_editor_reminder_1d">۱ روز قبل</string>
+    <string name="task_editor_reminder_needs_time">بدون ساعت، فقط یادآوری ۱ روز قبل ممکن است.</string>
+    <string name="task_editor_reminder_no_date">ابتدا تاریخ سررسید را انتخاب کنید.</string>
+    <string name="task_editor_reminder_past">این یادآوری در گذشته است. زمان دیرتری انتخاب کنید.</string>
+    <string name="task_editor_reminder_day_before_rule">بدون ساعت، یادآوری یک روز قبل ساعت ۰۹:۰۰ است.</string>
 
     <!-- Routine editor -->
     <string name="routine_editor_new">روتین جدید</string>
@@ -155,6 +172,13 @@
     <string name="settings_tags">برچسب‌ها</string>
     <string name="settings_new_tag">برچسب جدید</string>
     <string name="settings_delete_tag">حذف برچسب</string>
+    <string name="settings_edit_tag">ویرایش برچسب</string>
+    <string name="settings_tag_dialog_title">ویرایش برچسب</string>
+    <string name="settings_tag_name">نام برچسب</string>
+    <string name="settings_tag_color">رنگ</string>
+    <string name="settings_tag_color_option">رنگ %1$d</string>
+    <string name="settings_delete_tag_title">حذف برچسب؟</string>
+    <string name="settings_delete_tag_message">کارها باقی می‌مانند و بدون برچسب می‌شوند. این کار برگشت‌پذیر نیست.</string>
     <string name="settings_data">داده‌ها</string>
     <string name="settings_export">خروجی بکاپ</string>
     <string name="settings_import">بازیابی از بکاپ</string>
@@ -196,6 +220,10 @@
     <string name="notif_channel_routines_desc">یادآوری برای روتین‌های زمان‌بندی‌شده.</string>
     <string name="notif_channel_digest">خلاصه روزانه</string>
     <string name="notif_channel_digest_desc">خلاصه کوتاهی از کارهای باقی‌مانده امروز.</string>
+    <string name="notif_channel_tasks">یادآور کارها</string>
+    <string name="notif_channel_tasks_desc">یادآوری برای کارهای دارای ساعت سررسید.</string>
+    <string name="notif_task_body">سررسید %1$s. برای باز کردن Tag ضربه بزنید.</string>
+    <string name="notif_task_body_no_time">یادآور کار. برای باز کردن Tag ضربه بزنید.</string>
     <string name="notif_routine_body">وقت روتینت است. برای باز کردن Tag بزن.</string>
     <string name="notif_digest_title">وضعیت امروزت</string>
     <string name="notif_digest_nothing">امروز چیزی برنامه‌ریزی نشده. از آرامشت لذت ببر.</string>

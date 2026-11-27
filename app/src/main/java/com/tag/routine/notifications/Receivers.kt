@@ -9,10 +9,13 @@ import com.tag.routine.R
 import com.tag.routine.TagApp
 import com.tag.routine.data.AppConstants
 import com.tag.routine.data.Dates
+import com.tag.routine.data.RemindAtCalculator
+import com.tag.routine.widget.WidgetLocale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.time.ZoneId
 
 /** Pure decision logic for notification action dismissal, kept Android-free for unit tests. */
 internal object NotificationActionPolicy {
@@ -36,11 +39,11 @@ class NotificationReceiver : BroadcastReceiver() {
         // Notification actions carry an action string rather than a kind extra.
         when (intent.action) {
             ACTION_MARK_DONE -> {
-                handleMarkDone(context, intent)
+                if (intent.isTaskIntent()) handleTaskDone(context, intent) else handleMarkDone(context, intent)
                 return
             }
             ACTION_SNOOZE -> {
-                handleSnooze(context, intent)
+                if (intent.isTaskIntent()) handleTaskSnooze(context, intent) else handleSnooze(context, intent)
                 return
             }
         }
@@ -57,6 +60,39 @@ class NotificationReceiver : BroadcastReceiver() {
                         val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return@rearm
                         ReminderScheduler.scheduleRoutine(context, alarmManager, routine)
                     }
+                }
+            }
+
+            Notifications.KIND_TASK -> {
+                val taskId = intent.getStringExtra(Notifications.EXTRA_TASK_ID) ?: return
+                rearm(context) { container ->
+                    val snapshot = container.repository.snapshot.first()
+                    val task = snapshot.tasks.firstOrNull { it.id == taskId } ?: return@rearm
+                    if (task.done) return@rearm
+                    val dueDate = task.dueDate?.let(Dates::parse) ?: return@rearm
+                    val settings = snapshot.settings
+                    val locale = WidgetLocale.localeFor(settings)
+                    val zone = ZoneId.systemDefault()
+                    val dueLabel = if (task.dueTimeMinutes != null) {
+                        Dates.shortDateTime(
+                            epochMillis = RemindAtCalculator.dueInstantMillis(
+                                dueDate,
+                                task.dueTimeMinutes,
+                                zone,
+                            ),
+                            zone = zone,
+                            locale = locale,
+                            calendarType = settings.calendarType,
+                        )
+                    } else {
+                        Dates.dayMonth(dueDate, locale, settings.calendarType)
+                    }
+                    Notifications.notifyTask(
+                        context = WidgetLocale.localizedContext(context, settings),
+                        taskId = task.id,
+                        title = task.title,
+                        dueLabel = dueLabel,
+                    )
                 }
             }
 
@@ -119,6 +155,36 @@ class NotificationReceiver : BroadcastReceiver() {
         )
     }
 
+    private fun handleTaskDone(context: Context, intent: Intent) {
+        val taskId = intent.getStringExtra(Notifications.EXTRA_TASK_ID) ?: return
+        cancelTaskNotification(context, taskId)
+        rearm(context) { container ->
+            container.repository.setTaskDone(taskId, true)
+        }
+    }
+
+    private fun handleTaskSnooze(context: Context, intent: Intent) {
+        val taskId = intent.getStringExtra(Notifications.EXTRA_TASK_ID) ?: return
+        cancelTaskNotification(context, taskId)
+        val title = intent.getStringExtra(Notifications.EXTRA_TASK_TITLE)
+        val dueLabel = intent.getStringExtra(Notifications.EXTRA_TASK_DUE_LABEL)
+        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
+        ReminderScheduler.snoozeTask(
+            context = context,
+            alarmManager = alarmManager,
+            taskId = taskId,
+            title = title,
+            dueLabel = dueLabel,
+            minutes = AppConstants.SNOOZE_MINUTES,
+        )
+    }
+
+    private fun cancelTaskNotification(context: Context, taskId: String) {
+        runCatching {
+            NotificationManagerCompat.from(context).cancel(TaskReminderIds.notificationId(taskId))
+        }
+    }
+
     private fun cancelRoutineNotification(context: Context, action: String?, routineId: String?) {
         val notificationId = NotificationActionPolicy.notificationIdToCancel(action, routineId) ?: return
         runCatching { NotificationManagerCompat.from(context).cancel(notificationId) }
@@ -136,6 +202,9 @@ class NotificationReceiver : BroadcastReceiver() {
         }
     }
 
+    private fun Intent.isTaskIntent(): Boolean =
+        getStringExtra(Notifications.EXTRA_KIND) == Notifications.KIND_TASK
+
     companion object {
         const val ACTION_MARK_DONE = "com.tag.routine.MARK_DONE"
         const val ACTION_SNOOZE = "com.tag.routine.SNOOZE"
@@ -147,7 +216,13 @@ class BootReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: return
-        if (action != Intent.ACTION_BOOT_COMPLETED && action != Intent.ACTION_MY_PACKAGE_REPLACED) return
+        if (action != Intent.ACTION_BOOT_COMPLETED &&
+            action != Intent.ACTION_MY_PACKAGE_REPLACED &&
+            action != Intent.ACTION_TIME_CHANGED &&
+            action != Intent.ACTION_TIMEZONE_CHANGED
+        ) {
+            return
+        }
         val container = TagApp.containerOrNull ?: return
         val pending = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
@@ -156,6 +231,7 @@ class BootReceiver : BroadcastReceiver() {
                 ReminderScheduler.rescheduleAll(
                     context = context,
                     routines = snapshot.routines,
+                    tasks = snapshot.tasks,
                     digestMinutes = snapshot.settings.dailyDigestMinutes,
                     digestEnabled = snapshot.settings.notificationsEnabled && snapshot.settings.dailyDigestEnabled,
                     notificationsEnabled = snapshot.settings.notificationsEnabled,

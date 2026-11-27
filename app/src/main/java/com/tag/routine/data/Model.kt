@@ -548,6 +548,20 @@ object Dates {
         }
     }
 
+    /**
+     * Converts Persian (۰..۹) and Arabic-Indic (٠..٩) digits to ASCII without touching
+     * any other character. Used by numeric inputs, which must accept both keyboards.
+     */
+    fun toLatinDigits(text: String): String = buildString(text.length) {
+        for (ch in text) {
+            when {
+                ch in '۰'..'۹' -> append(('0'.code + (ch - '۰')).toChar())
+                ch in '\u0660'..'\u0669' -> append(('0'.code + (ch - '\u0660')).toChar())
+                else -> append(ch)
+            }
+        }
+    }
+
     /** Locale-appropriate percent symbol (`٪` for Persian, `%` otherwise). */
     fun percentSymbol(locale: Locale = Locale.getDefault()): String =
         if (locale.language.equals("fa", ignoreCase = true)) "\u066A" else "%"

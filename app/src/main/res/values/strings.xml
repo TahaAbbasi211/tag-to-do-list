@@ -86,6 +86,23 @@
     <string name="task_editor_quick_tomorrow">Tomorrow</string>
     <string name="task_editor_quick_weekend">This weekend</string>
     <string name="task_editor_pick_date">Pick a date</string>
+    <string name="task_editor_due_time">Due time</string>
+    <string name="task_editor_due_time_none">No time</string>
+    <string name="task_editor_due_time_clear">Clear time</string>
+    <string name="task_editor_pick_time">Set time</string>
+    <string name="task_editor_time_hour">Hour</string>
+    <string name="task_editor_time_minute">Minute</string>
+    <string name="task_editor_time_invalid">Enter a valid time (00:00 to 23:59).</string>
+    <string name="task_editor_reminder">Remind me</string>
+    <string name="task_editor_reminder_hint">Choose when to be reminded before the due time.</string>
+    <string name="task_editor_reminder_at_due">At due time</string>
+    <string name="task_editor_reminder_10m">10 minutes before</string>
+    <string name="task_editor_reminder_1h">1 hour before</string>
+    <string name="task_editor_reminder_1d">1 day before</string>
+    <string name="task_editor_reminder_needs_time">Without a time, only 1 day before is available.</string>
+    <string name="task_editor_reminder_no_date">Pick a due date first.</string>
+    <string name="task_editor_reminder_past">This reminder is already in the past. Pick a later time.</string>
+    <string name="task_editor_reminder_day_before_rule">Without a time, the reminder is 09:00 the day before.</string>
 
     <!-- Routine editor -->
     <string name="routine_editor_new">New Routine</string>
@@ -155,6 +172,13 @@
     <string name="settings_tags">Tags</string>
     <string name="settings_new_tag">New tag</string>
     <string name="settings_delete_tag">Delete tag</string>
+    <string name="settings_edit_tag">Edit tag</string>
+    <string name="settings_tag_dialog_title">Edit tag</string>
+    <string name="settings_tag_name">Tag name</string>
+    <string name="settings_tag_color">Color</string>
+    <string name="settings_tag_color_option">Color %1$d</string>
+    <string name="settings_delete_tag_title">Delete tag?</string>
+    <string name="settings_delete_tag_message">Tasks keep their data and become untagged. This cannot be undone.</string>
     <string name="settings_data">Data</string>
     <string name="settings_export">Export backup</string>
     <string name="settings_import">Import backup</string>
@@ -196,6 +220,10 @@
     <string name="notif_channel_routines_desc">Reminders for scheduled routines.</string>
     <string name="notif_channel_digest">Daily summary</string>
     <string name="notif_channel_digest_desc">A short summary of what is left today.</string>
+    <string name="notif_channel_tasks">Task reminders</string>
+    <string name="notif_channel_tasks_desc">Reminders for tasks with a due time.</string>
+    <string name="notif_task_body">Due %1$s. Tap to open Tag.</string>
+    <string name="notif_task_body_no_time">Task reminder. Tap to open Tag.</string>
     <string name="notif_routine_body">Time for your routine. Tap to open Tag.</string>
     <string name="notif_digest_title">Your day so far</string>
     <string name="notif_digest_nothing">Nothing scheduled today. Enjoy the calm.</string>

@@ -613,6 +613,7 @@ private fun TagRoot(
                 creatingTask = false
                 editingTask = null
             },
+            onRequestNotificationPermission = onRequestNotificationPermission,
             onSave = { title, note, tagId, priority, dueDate, dueTime, remindAt ->
                 viewModel.saveTask(
                     existing = editingTask,

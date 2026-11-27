@@ -19,6 +19,7 @@ import com.tag.routine.data.AppConstants
 import com.tag.routine.data.Dates
 import com.tag.routine.data.ExcludedDates
 import com.tag.routine.data.RoutineEntity
+import com.tag.routine.data.TaskEntity
 import java.time.LocalDate
 import java.time.ZonedDateTime
 
@@ -45,11 +46,16 @@ internal object NotificationPolicy {
 object Notifications {
     const val CHANNEL_ROUTINES = "tag_routines"
     const val CHANNEL_DIGEST = "tag_digest"
+    const val CHANNEL_TASKS = "tag_tasks"
     const val EXTRA_KIND = "kind"
     const val EXTRA_ROUTINE_ID = "routine_id"
     const val EXTRA_ROUTINE_TITLE = "routine_title"
+    const val EXTRA_TASK_ID = "task_id"
+    const val EXTRA_TASK_TITLE = "task_title"
+    const val EXTRA_TASK_DUE_LABEL = "task_due_label"
     const val EXTRA_DIGEST_TEXT = "digest_text"
     const val KIND_ROUTINE = "routine"
+    const val KIND_TASK = "task"
     const val KIND_DIGEST = "digest"
 
     fun ensureChannels(context: Context) {
@@ -69,8 +75,17 @@ object Notifications {
         ).apply {
             description = context.getString(R.string.notif_channel_digest_desc)
         }
+        val tasks = NotificationChannel(
+            CHANNEL_TASKS,
+            context.getString(R.string.notif_channel_tasks),
+            NotificationManager.IMPORTANCE_HIGH,
+        ).apply {
+            description = context.getString(R.string.notif_channel_tasks_desc)
+            enableVibration(true)
+        }
         manager.createNotificationChannel(routines)
         manager.createNotificationChannel(digest)
+        manager.createNotificationChannel(tasks)
     }
 
     fun notifyRoutine(context: Context, routineId: String, title: String) {
@@ -128,6 +143,65 @@ object Notifications {
             )
             .build()
         post(context, routineId.hashCode(), notification)
+    }
+
+    /**
+     * Task reminder with the same safe posting path as routines. The due label is
+     * formatted by the receiver through Dates, so it follows the app language and the
+     * Jalali/Gregorian choice instead of hard-coding a pattern here.
+     */
+    fun notifyTask(context: Context, taskId: String, title: String, dueLabel: String?) {
+        if (!canPost(context)) return
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val contentIntent = PendingIntent.getActivity(
+            context,
+            TaskReminderIds.notificationId(taskId),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val doneIntent = PendingIntent.getBroadcast(
+            context,
+            TaskReminderIds.doneRequestCode(taskId),
+            Intent(context, NotificationReceiver::class.java).apply {
+                action = NotificationReceiver.ACTION_MARK_DONE
+                putExtra(EXTRA_KIND, KIND_TASK)
+                putExtra(EXTRA_TASK_ID, taskId)
+                putExtra(EXTRA_TASK_TITLE, title)
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val snoozeIntent = PendingIntent.getBroadcast(
+            context,
+            TaskReminderIds.snoozeRequestCode(taskId),
+            Intent(context, NotificationReceiver::class.java).apply {
+                action = NotificationReceiver.ACTION_SNOOZE
+                putExtra(EXTRA_KIND, KIND_TASK)
+                putExtra(EXTRA_TASK_ID, taskId)
+                putExtra(EXTRA_TASK_TITLE, title)
+                putExtra(EXTRA_TASK_DUE_LABEL, dueLabel)
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val body = if (dueLabel.isNullOrBlank()) {
+            context.getString(R.string.notif_task_body_no_time)
+        } else {
+            context.getString(R.string.notif_task_body, dueLabel)
+        }
+        val notification = NotificationCompat.Builder(context, CHANNEL_TASKS)
+            .setSmallIcon(R.drawable.ic_stat_tag)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setColor(0xFF7C6CFF.toInt())
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(contentIntent)
+            .addAction(0, context.getString(R.string.notif_action_done), doneIntent)
+            .addAction(0, context.getString(R.string.notif_action_snooze), snoozeIntent)
+            .build()
+        post(context, TaskReminderIds.notificationId(taskId), notification)
     }
 
     fun notifyDigest(context: Context, text: String) {
@@ -204,10 +278,12 @@ object ReminderScheduler {
     fun rescheduleAll(
         context: Context,
         routines: List<RoutineEntity>,
+        tasks: List<TaskEntity> = emptyList(),
         digestMinutes: Int?,
         digestEnabled: Boolean,
         notificationsEnabled: Boolean = true,
         removedRoutineIds: Collection<String> = emptyList(),
+        removedTaskIds: Collection<String> = emptyList(),
     ) {
         Notifications.ensureChannels(context)
         val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
@@ -216,11 +292,23 @@ object ReminderScheduler {
             cancelRoutine(context, alarmManager, routineId)
             runCatching { notificationManager.cancel(routineId.hashCode()) }
         }
+        removedTaskIds.forEach { taskId ->
+            cancelTask(context, alarmManager, taskId)
+            runCatching { notificationManager.cancel(TaskReminderIds.notificationId(taskId)) }
+        }
         routines.forEach { routine ->
             if (notificationsEnabled && !routine.archived && routine.reminder && routine.timeMinutes != null) {
                 scheduleRoutine(context, alarmManager, routine)
             } else {
                 cancelRoutine(context, alarmManager, routine.id)
+            }
+        }
+        val now = System.currentTimeMillis()
+        tasks.forEach { task ->
+            if (notificationsEnabled && TaskReminderPolicy.shouldSchedule(task, now)) {
+                scheduleTask(context, alarmManager, task)
+            } else {
+                cancelTask(context, alarmManager, task.id)
             }
         }
         if (notificationsEnabled && digestEnabled && digestMinutes != null) {
@@ -295,6 +383,75 @@ object ReminderScheduler {
         )
         alarmManager.cancel(pending)
         pending.cancel()
+    }
+
+    fun scheduleTask(context: Context, alarmManager: AlarmManager, task: TaskEntity) {
+        val remindAt = task.remindAt
+        if (remindAt == null || !TaskReminderPolicy.shouldSchedule(task, System.currentTimeMillis())) {
+            cancelTask(context, alarmManager, task.id)
+            return
+        }
+        val pending = taskPendingIntent(context, task)
+        setAlarm(
+            context,
+            alarmManager,
+            remindAt,
+            pending,
+            TaskReminderIds.alarmRequestCode(task.id),
+        )
+    }
+
+    /** Fires a task reminder again after the notification's snooze action. */
+    fun snoozeTask(
+        context: Context,
+        alarmManager: AlarmManager,
+        taskId: String,
+        title: String?,
+        dueLabel: String?,
+        minutes: Int,
+    ) {
+        val intent = Intent(context, NotificationReceiver::class.java).apply {
+            putExtra(Notifications.EXTRA_KIND, Notifications.KIND_TASK)
+            putExtra(Notifications.EXTRA_TASK_ID, taskId)
+            if (title != null) putExtra(Notifications.EXTRA_TASK_TITLE, title)
+            if (dueLabel != null) putExtra(Notifications.EXTRA_TASK_DUE_LABEL, dueLabel)
+        }
+        val pending = PendingIntent.getBroadcast(
+            context,
+            TaskReminderIds.alarmRequestCode(taskId),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val triggerAt = System.currentTimeMillis() + minutes * 60_000L
+        setAlarm(context, alarmManager, triggerAt, pending, TaskReminderIds.alarmRequestCode(taskId))
+        runCatching {
+            NotificationManagerCompat.from(context).cancel(TaskReminderIds.notificationId(taskId))
+        }
+    }
+
+    fun cancelTask(context: Context, alarmManager: AlarmManager, taskId: String) {
+        val pending = PendingIntent.getBroadcast(
+            context,
+            TaskReminderIds.alarmRequestCode(taskId),
+            Intent(context, NotificationReceiver::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        alarmManager.cancel(pending)
+        pending.cancel()
+    }
+
+    private fun taskPendingIntent(context: Context, task: TaskEntity): PendingIntent {
+        val intent = Intent(context, NotificationReceiver::class.java).apply {
+            putExtra(Notifications.EXTRA_KIND, Notifications.KIND_TASK)
+            putExtra(Notifications.EXTRA_TASK_ID, task.id)
+            putExtra(Notifications.EXTRA_TASK_TITLE, task.title)
+        }
+        return PendingIntent.getBroadcast(
+            context,
+            TaskReminderIds.alarmRequestCode(task.id),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
     }
 
     fun cancelDigest(context: Context, alarmManager: AlarmManager) {

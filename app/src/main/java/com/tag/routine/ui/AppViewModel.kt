@@ -39,6 +39,9 @@ import com.tag.routine.data.TaskEntity
 import com.tag.routine.notifications.FocusTimerAlarms
 import com.tag.routine.notifications.FocusTimerRuntime
 import com.tag.routine.notifications.FocusTimerService
+import com.tag.routine.notifications.ReminderScheduler
+import com.tag.routine.notifications.TaskReminderAction
+import com.tag.routine.notifications.TaskReminderPolicy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -245,23 +248,15 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             }
 
         val tagById = snapshot.tags.associateBy { it.id }
-        val scoped = snapshot.tasks.filter { active.tagId == null || it.tagId == active.tagId }
-        val searched = if (active.query.isBlank()) scoped else scoped.filter {
-            it.title.contains(active.query, ignoreCase = true) ||
-                it.note.contains(active.query, ignoreCase = true)
-        }
-
-        val filtered = searched.filter { task ->
-            when (active.filter) {
-                TaskFilter.ALL -> true
-                TaskFilter.DONE -> task.done
-                TaskFilter.TODAY -> !task.done && task.dueDate == Dates.iso(today)
-                TaskFilter.OVERDUE -> !task.done && task.dueDate != null &&
-                    (Dates.parse(task.dueDate)?.isBefore(today) == true)
-                TaskFilter.UPCOMING -> !task.done && task.dueDate != null &&
-                    (Dates.parse(task.dueDate)?.isAfter(today) == true)
-            }
-        }
+        val filtered = TaskFilterEngine.apply(
+            snapshot.tasks,
+            TaskFilterEngine.Criteria(
+                query = active.query,
+                filter = active.filter,
+                tagId = active.tagId,
+                today = today,
+            ),
+        )
 
         val calendarType = snapshot.settings.calendarType
         val rows = filtered
@@ -388,10 +383,20 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
 
     fun toggleTask(taskId: String) = viewModelScope.launch {
         val task = repository.task(taskId) ?: return@launch
-        repository.setTaskDone(taskId, !task.done)
+        val becomingDone = !task.done
+        repository.setTaskDone(taskId, becomingDone)
+        val updated = task.copy(done = becomingDone)
+        when (TaskReminderPolicy.actionForToggle(updated, becomingDone, System.currentTimeMillis())) {
+            TaskReminderAction.SCHEDULE -> scheduleTaskReminder(updated)
+            TaskReminderAction.CANCEL -> cancelTaskReminder(taskId)
+            TaskReminderAction.NONE -> Unit
+        }
     }
 
-    fun deleteTask(taskId: String) = viewModelScope.launch { repository.deleteTask(taskId) }
+    fun deleteTask(taskId: String) = viewModelScope.launch {
+        cancelTaskReminder(taskId)
+        repository.deleteTask(taskId)
+    }
 
     fun deleteRoutine(routineId: String) = viewModelScope.launch {
         repository.deleteRoutine(routineId)
@@ -447,10 +452,16 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     /** Re-inserts a task the user just deleted. */
-    fun restoreTask(task: TaskEntity) = viewModelScope.launch { repository.saveTask(task) }
+    fun restoreTask(task: TaskEntity) = viewModelScope.launch {
+        repository.saveTask(task)
+        rescheduleReminders()
+    }
 
     /** Re-inserts a tag the user just deleted. */
     fun restoreTag(tag: TagEntity) = viewModelScope.launch { repository.saveTag(tag) }
+
+    /** Renames or recolours a tag without touching the tasks that use it. */
+    fun updateTag(tag: TagEntity) = viewModelScope.launch { repository.saveTag(tag) }
 
     /** Moves a routine one slot earlier ([up] = true) or later within its group. */
     fun moveRoutine(routineId: String, up: Boolean) = viewModelScope.launch {
@@ -544,6 +555,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
             val next = withContext(Dispatchers.IO) {
                 try {
                     val safetyDir = File(application.filesDir, SafetyBackupStore.DIR_NAME)
+                    val taskIdsBefore = repository.freshSnapshot().tasks.map { it.id }.toSet()
                     val report = repository.restoreBackup(
                         payload = payload,
                         mode = mode,
@@ -556,7 +568,11 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
                         FocusTimerService.stop(application)
                         FocusTimerRuntime.discardWithoutRecording()
                     }
-                    rescheduleRemindersNow(removedRoutineIds = report.removedRoutineIds)
+                    val taskIdsAfter = repository.freshSnapshot().tasks.map { it.id }.toSet()
+                    rescheduleRemindersNow(
+                        removedRoutineIds = report.removedRoutineIds,
+                        removedTaskIds = taskIdsBefore - taskIdsAfter,
+                    )
                     BackupUiState.RestoreSuccess(report)
                 } catch (e: BackupValidationException) {
                     BackupUiState.RestoreError(e.code)
@@ -619,6 +635,7 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
                 remindAt = remindAt,
             ),
         )
+        rescheduleReminders()
     }
 
     fun saveRoutine(
@@ -787,25 +804,47 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
 
     fun resetProgress() = viewModelScope.launch { repository.resetProgress() }
 
-    fun rescheduleReminders(removedRoutineIds: Collection<String> = emptyList()) {
+    fun rescheduleReminders(
+        removedRoutineIds: Collection<String> = emptyList(),
+        removedTaskIds: Collection<String> = emptyList(),
+    ) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                rescheduleRemindersNow(removedRoutineIds)
+                rescheduleRemindersNow(removedRoutineIds, removedTaskIds)
             }
         }
     }
 
-    private suspend fun rescheduleRemindersNow(removedRoutineIds: Collection<String> = emptyList()) {
+    private suspend fun rescheduleRemindersNow(
+        removedRoutineIds: Collection<String> = emptyList(),
+        removedTaskIds: Collection<String> = emptyList(),
+    ) {
         val snapshot = repository.freshSnapshot()
         val settings = snapshot.settings
-        com.tag.routine.notifications.ReminderScheduler.rescheduleAll(
+        ReminderScheduler.rescheduleAll(
             context = application,
             routines = snapshot.routines,
+            tasks = snapshot.tasks,
             digestMinutes = settings.dailyDigestMinutes,
             digestEnabled = settings.notificationsEnabled && settings.dailyDigestEnabled,
             notificationsEnabled = settings.notificationsEnabled,
             removedRoutineIds = removedRoutineIds,
+            removedTaskIds = removedTaskIds,
         )
+    }
+
+    private fun scheduleTaskReminder(task: TaskEntity) {
+        val alarmManager = application.getSystemService(android.app.AlarmManager::class.java) ?: return
+        ReminderScheduler.scheduleTask(application, alarmManager, task)
+    }
+
+    private fun cancelTaskReminder(taskId: String) {
+        val alarmManager = application.getSystemService(android.app.AlarmManager::class.java) ?: return
+        ReminderScheduler.cancelTask(application, alarmManager, taskId)
+        runCatching {
+            androidx.core.app.NotificationManagerCompat.from(application)
+                .cancel(com.tag.routine.notifications.TaskReminderIds.notificationId(taskId))
+        }
     }
 
     fun defaultIconFor(group: String): String = RoutineIcons.defaultFor(group)
