@@ -211,7 +211,7 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 }
 
-/** Restores every alarm after a reboot or an app update. */
+/** Restores every alarm after a reboot, app update, or clock/time-zone change. */
 class BootReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {

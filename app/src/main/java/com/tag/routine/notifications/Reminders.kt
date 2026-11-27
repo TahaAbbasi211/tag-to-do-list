@@ -265,7 +265,7 @@ object Notifications {
 }
 
 /**
- * Schedules routine reminders and the daily summary. Alarms are re-armed by
+ * Schedules routine and task reminders plus the daily summary. Alarms are re-armed by
  * [NotificationReceiver] after they fire so they behave like repeating alarms while
  * still respecting per-day schedules.
  */
