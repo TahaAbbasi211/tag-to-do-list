@@ -63,6 +63,7 @@ class AppContainer(context: Context) {
             ReminderScheduler.rescheduleAll(
                 context = appContext,
                 routines = snapshot.routines,
+                tasks = snapshot.tasks,
                 digestMinutes = snapshot.settings.dailyDigestMinutes,
                 digestEnabled = snapshot.settings.notificationsEnabled && snapshot.settings.dailyDigestEnabled,
                 notificationsEnabled = snapshot.settings.notificationsEnabled,

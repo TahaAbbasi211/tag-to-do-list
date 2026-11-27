@@ -61,6 +61,11 @@ data class BackupSettings(
     val dailyDigestMinutes: Int = 8 * 60,
     val hapticsEnabled: Boolean = true,
     val focusMinutes: Int = AppConstants.DEFAULT_FOCUS_MINUTES,
+    val breakModeEnabled: Boolean = false,
+    val shortBreakMinutes: Int = AppConstants.DEFAULT_SHORT_BREAK_MINUTES,
+    val longBreakMinutes: Int = AppConstants.DEFAULT_LONG_BREAK_MINUTES,
+    val longBreakInterval: Int = AppConstants.DEFAULT_LONG_BREAK_INTERVAL,
+    val autoStartBreak: Boolean = true,
     val templatesCardDismissed: Boolean = false,
     val animationSetting: AnimationSetting = AnimationSetting.AUTO,
 ) {
@@ -76,6 +81,11 @@ data class BackupSettings(
         dailyDigestMinutes = dailyDigestMinutes.coerceIn(0, 1439),
         hapticsEnabled = hapticsEnabled,
         focusMinutes = AppConstants.clampFocusMinutes(focusMinutes),
+        breakModeEnabled = breakModeEnabled,
+        shortBreakMinutes = AppConstants.clampShortBreakMinutes(shortBreakMinutes),
+        longBreakMinutes = AppConstants.clampLongBreakMinutes(longBreakMinutes),
+        longBreakInterval = AppConstants.clampLongBreakInterval(longBreakInterval),
+        autoStartBreak = autoStartBreak,
         templatesCardDismissed = templatesCardDismissed,
         animationSetting = animationSetting,
         onboarded = true,
@@ -110,6 +120,11 @@ data class BackupSettings(
             dailyDigestMinutes = settings.dailyDigestMinutes,
             hapticsEnabled = settings.hapticsEnabled,
             focusMinutes = settings.focusMinutes,
+            breakModeEnabled = settings.breakModeEnabled,
+            shortBreakMinutes = settings.shortBreakMinutes,
+            longBreakMinutes = settings.longBreakMinutes,
+            longBreakInterval = settings.longBreakInterval,
+            autoStartBreak = settings.autoStartBreak,
             templatesCardDismissed = settings.templatesCardDismissed,
             animationSetting = settings.animationSetting,
         )
@@ -320,6 +335,11 @@ object BackupCodec {
         json.name("dailyDigestMinutes").value(s.dailyDigestMinutes)
         json.name("hapticsEnabled").value(s.hapticsEnabled)
         json.name("focusMinutes").value(s.focusMinutes)
+        json.name("breakModeEnabled").value(s.breakModeEnabled)
+        json.name("shortBreakMinutes").value(s.shortBreakMinutes)
+        json.name("longBreakMinutes").value(s.longBreakMinutes)
+        json.name("longBreakInterval").value(s.longBreakInterval)
+        json.name("autoStartBreak").value(s.autoStartBreak)
         json.name("templatesCardDismissed").value(s.templatesCardDismissed)
         json.name("animationSetting").value(s.animationSetting.key)
         json.endObject()
@@ -1097,6 +1117,11 @@ object BackupCodec {
         var dailyDigestMinutes = 8 * 60
         var hapticsEnabled = true
         var focusMinutes = AppConstants.DEFAULT_FOCUS_MINUTES
+        var breakModeEnabled = false
+        var shortBreakMinutes = AppConstants.DEFAULT_SHORT_BREAK_MINUTES
+        var longBreakMinutes = AppConstants.DEFAULT_LONG_BREAK_MINUTES
+        var longBreakInterval = AppConstants.DEFAULT_LONG_BREAK_INTERVAL
+        var autoStartBreak = true
         var templatesCardDismissed = false
         var animationSetting = AnimationSetting.AUTO
 
@@ -1146,6 +1171,38 @@ object BackupCodec {
                     }
                     focusMinutes = v
                 }
+                "breakModeEnabled" -> breakModeEnabled = json.readBoolean()
+                "shortBreakMinutes" -> {
+                    val v = json.readInt()
+                    if (v !in AppConstants.MIN_BREAK_MINUTES..AppConstants.MAX_BREAK_MINUTES) {
+                        throw BackupValidationException(
+                            BackupErrorCode.INVALID_FIELD_TYPE,
+                            "Invalid shortBreakMinutes: $v",
+                        )
+                    }
+                    shortBreakMinutes = v
+                }
+                "longBreakMinutes" -> {
+                    val v = json.readInt()
+                    if (v !in AppConstants.MIN_BREAK_MINUTES..AppConstants.MAX_BREAK_MINUTES) {
+                        throw BackupValidationException(
+                            BackupErrorCode.INVALID_FIELD_TYPE,
+                            "Invalid longBreakMinutes: $v",
+                        )
+                    }
+                    longBreakMinutes = v
+                }
+                "longBreakInterval" -> {
+                    val v = json.readInt()
+                    if (v !in AppConstants.MIN_LONG_BREAK_INTERVAL..AppConstants.MAX_LONG_BREAK_INTERVAL) {
+                        throw BackupValidationException(
+                            BackupErrorCode.INVALID_FIELD_TYPE,
+                            "Invalid longBreakInterval: $v",
+                        )
+                    }
+                    longBreakInterval = v
+                }
+                "autoStartBreak" -> autoStartBreak = json.readBoolean()
                 "templatesCardDismissed" -> templatesCardDismissed = json.readBoolean()
                 "animationSetting" -> animationSetting = AnimationSetting.fromKey(json.readStringOrNull())
                 else -> json.skipValue()
@@ -1164,6 +1221,11 @@ object BackupCodec {
             dailyDigestMinutes = dailyDigestMinutes,
             hapticsEnabled = hapticsEnabled,
             focusMinutes = focusMinutes,
+            breakModeEnabled = breakModeEnabled,
+            shortBreakMinutes = shortBreakMinutes,
+            longBreakMinutes = longBreakMinutes,
+            longBreakInterval = longBreakInterval,
+            autoStartBreak = autoStartBreak,
             templatesCardDismissed = templatesCardDismissed,
             animationSetting = animationSetting,
         )

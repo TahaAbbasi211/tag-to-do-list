@@ -154,6 +154,13 @@ data class AppSettings(
     val templatesCardDismissed: Boolean = false,
     /** User-selected animation level preference (Auto / Full / Reduced / Off). */
     val animationSetting: AnimationSetting = AnimationSetting.AUTO,
+    /** Optional Pomodoro-style break timer. Off keeps the original focus-only timer. */
+    val breakModeEnabled: Boolean = false,
+    val shortBreakMinutes: Int = AppConstants.DEFAULT_SHORT_BREAK_MINUTES,
+    val longBreakMinutes: Int = AppConstants.DEFAULT_LONG_BREAK_MINUTES,
+    val longBreakInterval: Int = AppConstants.DEFAULT_LONG_BREAK_INTERVAL,
+    /** Start the break automatically when a focus session ends. */
+    val autoStartBreak: Boolean = true,
 ) {
     object ThemeMode {
         const val SYSTEM = 0
@@ -173,6 +180,20 @@ data class AppSettings(
 }
 
 // ---------------------------------------------------------------- focus run
+
+/** Phase of the optional Pomodoro cycle; [FOCUS] is the only recorded phase. */
+enum class FocusPhase(val key: String) {
+    FOCUS("focus"),
+    SHORT_BREAK("short_break"),
+    LONG_BREAK("long_break");
+
+    val isBreak: Boolean get() = this != FOCUS
+
+    companion object {
+        fun fromKey(value: String?): FocusPhase =
+            entries.firstOrNull { it.key == value } ?: FOCUS
+    }
+}
 
 /**
  * A focus run that is still in progress, exactly as it is stored on disk.
@@ -196,6 +217,12 @@ data class ActiveFocusRun(
     val accumulatedSeconds: Int,
     /** Epoch millis the run was first started, used to date the recorded session. */
     val startedAt: Long,
+    /** Focus, short break, or long break. Persisted runs from before v2.2 decode as focus. */
+    val phase: FocusPhase = FocusPhase.FOCUS,
+    /** 1-based index of the focus session in the current cycle. */
+    val cycleCount: Int = 1,
+    /** The focus length this cycle uses; keeps the next focus correct after a break. */
+    val focusMinutes: Int = plannedMinutes,
 ) {
     val running: Boolean get() = segmentStartedAt != null
 
@@ -228,7 +255,9 @@ data class ActiveFocusRun(
  */
 object ActiveFocusRunCodec {
 
-    private const val VERSION = "1"
+    private const val VERSION = "2"
+    private const val VERSION_PHASE_AWARE = "2"
+    private const val VERSION_LEGACY = "1"
     private const val SEPARATOR = "\t"
 
     fun encode(run: ActiveFocusRun): String = listOf(
@@ -240,12 +269,25 @@ object ActiveFocusRunCodec {
         (run.segmentStartedAt ?: 0L).toString(),
         run.accumulatedSeconds.toString(),
         run.startedAt.toString(),
+        run.phase.key,
+        run.cycleCount.toString(),
+        run.focusMinutes.toString(),
     ).joinToString(SEPARATOR)
 
     fun decode(raw: String?): ActiveFocusRun? {
         if (raw.isNullOrBlank()) return null
         val parts = raw.split(SEPARATOR)
-        if (parts.size != 8 || parts[0] != VERSION) return null
+        if (parts.isEmpty()) return null
+        return when (parts[0]) {
+            VERSION_LEGACY -> decodeLegacy(parts)
+            VERSION_PHASE_AWARE -> decodePhaseAware(parts)
+            else -> null
+        }
+    }
+
+    /** Runs stored by 2.1 and earlier have no phase fields; they are always focus runs. */
+    private fun decodeLegacy(parts: List<String>): ActiveFocusRun? {
+        if (parts.size != 8) return null
         return runCatching {
             ActiveFocusRun(
                 id = parts[1],
@@ -255,6 +297,33 @@ object ActiveFocusRunCodec {
                 segmentStartedAt = parts[5].toLong().takeIf { it > 0L },
                 accumulatedSeconds = parts[6].toInt().coerceAtLeast(0),
                 startedAt = parts[7].toLong(),
+                phase = FocusPhase.FOCUS,
+                cycleCount = 1,
+                focusMinutes = AppConstants.clampFocusMinutes(parts[4].toInt()),
+            )
+        }.getOrNull()?.takeIf { it.id.isNotBlank() }
+    }
+
+    private fun decodePhaseAware(parts: List<String>): ActiveFocusRun? {
+        if (parts.size != 11) return null
+        return runCatching {
+            val phase = FocusPhase.fromKey(parts[8])
+            val planned = if (phase.isBreak) {
+                AppConstants.clampShortBreakMinutes(parts[4].toInt())
+            } else {
+                AppConstants.clampFocusMinutes(parts[4].toInt())
+            }
+            ActiveFocusRun(
+                id = parts[1],
+                routineId = decodeText(parts[2]),
+                routineTitle = decodeText(parts[3]),
+                plannedMinutes = planned,
+                segmentStartedAt = parts[5].toLong().takeIf { it > 0L },
+                accumulatedSeconds = parts[6].toInt().coerceAtLeast(0),
+                startedAt = parts[7].toLong(),
+                phase = phase,
+                cycleCount = parts[9].toInt().coerceIn(1, 999),
+                focusMinutes = AppConstants.clampFocusMinutes(parts[10].toInt()),
             )
         }.getOrNull()?.takeIf { it.id.isNotBlank() }
     }
@@ -548,6 +617,20 @@ object Dates {
                     !usePersian && ch == '\u066A' -> append('%')
                     else -> append(ch)
                 }
+            }
+        }
+    }
+
+    /**
+     * Converts Persian (۰..۹) and Arabic-Indic (٠..٩) digits to ASCII without touching
+     * any other character. Used by numeric inputs, which must accept both keyboards.
+     */
+    fun toLatinDigits(text: String): String = buildString(text.length) {
+        for (ch in text) {
+            when {
+                ch in '۰'..'۹' -> append(('0'.code + (ch - '۰')).toChar())
+                ch in '\u0660'..'\u0669' -> append(('0'.code + (ch - '\u0660')).toChar())
+                else -> append(ch)
             }
         }
     }

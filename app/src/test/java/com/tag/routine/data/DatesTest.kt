@@ -124,4 +124,12 @@ class DatesTest {
         // On Saturday in Jalali mode, next Friday is 6 days ahead.
         assertEquals(friday.plusWeeks(1), Dates.nextWeekend(saturday, CalendarType.JALALI))
     }
+
+    @Test
+    fun `toLatinDigits accepts Persian and Arabic-Indic keyboards`() {
+        assertEquals("2025", Dates.toLatinDigits("۲۰۲۵"))
+        assertEquals("09:30", Dates.toLatinDigits("٠٩:٣٠"))
+        assertEquals("12", Dates.toLatinDigits("12"))
+        assertEquals("abc", Dates.toLatinDigits("abc"))
+    }
 }

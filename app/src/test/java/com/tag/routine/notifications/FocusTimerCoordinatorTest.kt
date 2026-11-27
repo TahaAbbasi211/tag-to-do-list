@@ -1,6 +1,8 @@
 package com.tag.routine.notifications
 
 import com.tag.routine.data.ActiveFocusRun
+import com.tag.routine.data.FocusBreakSettings
+import com.tag.routine.data.FocusPhase
 import com.tag.routine.data.FocusRunStorage
 import com.tag.routine.data.FocusSessionEntity
 import com.tag.routine.data.FocusTimerEngine
@@ -21,6 +23,7 @@ class FocusTimerCoordinatorTest {
         private val recordDelayMs: Long = 0L,
     ) : FocusRunStorage {
         var activeRun: ActiveFocusRun? = null
+        var breakSettings = FocusBreakSettings()
         val sessions = linkedMapOf<String, FocusSessionEntity>()
         var recordCallCount = 0
 
@@ -33,6 +36,8 @@ class FocusTimerCoordinatorTest {
         override suspend fun clearActiveFocusRun() {
             activeRun = null
         }
+
+        override suspend fun focusBreakSettings(): FocusBreakSettings = breakSettings
 
         override suspend fun recordFocusSession(
             routineId: String?,
@@ -207,5 +212,94 @@ class FocusTimerCoordinatorTest {
         assertEquals("r2", next.routineId)
         assertEquals(1, storage.sessions.size)
         assertEquals("r-disk", storage.sessions["disk-run-1"]?.routineId)
+    }
+
+    @Test
+    fun `break mode off records the focus and clears the run as before`() = runBlocking {
+        val storage = InMemoryFocusStorage()
+        val coordinator = FocusTimerCoordinator { storage }
+        coordinator.start("r1", "Focus", 1, now = t0)
+
+        val transition = coordinator.advanceWithTransition(now = t0 + 60_000L)
+
+        assertTrue(transition.completed)
+        assertEquals(FocusPhase.FOCUS, transition.previousPhase)
+        assertTrue(transition.recordedFocus)
+        assertNull(transition.next)
+        assertNull(coordinator.run.value)
+        assertEquals(1, storage.sessions.size)
+        assertTrue(requireNotNull(storage.sessions.values.first()).completed)
+    }
+
+    @Test
+    fun `break mode on records only the focus and starts a short break`() = runBlocking {
+        val storage = InMemoryFocusStorage().apply {
+            breakSettings = FocusBreakSettings(enabled = true, shortBreakMinutes = 5)
+        }
+        val coordinator = FocusTimerCoordinator { storage }
+        coordinator.start("r1", "Focus", 1, now = t0)
+
+        val transition = coordinator.advanceWithTransition(now = t0 + 60_000L)
+        val next = requireNotNull(transition.next)
+
+        assertEquals(FocusPhase.SHORT_BREAK, next.phase)
+        assertTrue(next.running)
+        assertEquals(1, storage.sessions.size)
+        assertEquals(next, storage.activeRun)
+        assertEquals(next, coordinator.run.value)
+    }
+
+    @Test
+    fun `finishing a break yields a paused focus run and adds no history row`() = runBlocking {
+        val storage = InMemoryFocusStorage().apply {
+            breakSettings = FocusBreakSettings(enabled = true, shortBreakMinutes = 5)
+        }
+        val coordinator = FocusTimerCoordinator { storage }
+        coordinator.start("r1", "Focus", 1, now = t0)
+        coordinator.advanceWithTransition(now = t0 + 60_000L)
+
+        val transition = coordinator.advanceWithTransition(now = t0 + 6 * 60_000L)
+        val next = requireNotNull(transition.next)
+
+        assertEquals(FocusPhase.FOCUS, next.phase)
+        assertEquals(2, next.cycleCount)
+        assertFalse(next.running)
+        assertEquals(1, storage.sessions.size)
+        assertEquals(next, storage.activeRun)
+    }
+
+    @Test
+    fun `skipping a break advances the cycle without recording break time`() = runBlocking {
+        val storage = InMemoryFocusStorage().apply {
+            breakSettings = FocusBreakSettings(enabled = true)
+        }
+        val coordinator = FocusTimerCoordinator { storage }
+        coordinator.start("r1", "Focus", 1, now = t0)
+        coordinator.advanceWithTransition(now = t0 + 60_000L)
+
+        assertTrue(coordinator.skipBreak(now = t0 + 2 * 60_000L))
+        val next = requireNotNull(coordinator.run.value)
+
+        assertEquals(FocusPhase.FOCUS, next.phase)
+        assertEquals(2, next.cycleCount)
+        assertFalse(next.running)
+        assertEquals(1, storage.sessions.size)
+        assertEquals(next, storage.activeRun)
+    }
+
+    @Test
+    fun `stopping during a break discards it without recording`() = runBlocking {
+        val storage = InMemoryFocusStorage().apply {
+            breakSettings = FocusBreakSettings(enabled = true)
+        }
+        val coordinator = FocusTimerCoordinator { storage }
+        coordinator.start("r1", "Focus", 1, now = t0)
+        coordinator.advanceWithTransition(now = t0 + 60_000L)
+
+        coordinator.finish(now = t0 + 2 * 60_000L)
+
+        assertNull(coordinator.run.value)
+        assertNull(storage.activeRun)
+        assertEquals(1, storage.sessions.size)
     }
 }

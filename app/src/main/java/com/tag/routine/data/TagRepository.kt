@@ -292,6 +292,16 @@ class TagRepository(
     /** Remembers the focus length the user last chose. */
     suspend fun setFocusMinutes(minutes: Int) = settingsStore.setFocusMinutes(minutes)
 
+    suspend fun setBreakModeEnabled(enabled: Boolean) = settingsStore.setBreakModeEnabled(enabled)
+
+    suspend fun setShortBreakMinutes(minutes: Int) = settingsStore.setShortBreakMinutes(minutes)
+
+    suspend fun setLongBreakMinutes(minutes: Int) = settingsStore.setLongBreakMinutes(minutes)
+
+    suspend fun setLongBreakInterval(sessions: Int) = settingsStore.setLongBreakInterval(sessions)
+
+    suspend fun setAutoStartBreak(enabled: Boolean) = settingsStore.setAutoStartBreak(enabled)
+
     suspend fun markSeeded() = settingsStore.setSeeded(true)
 
     // ------------------------------------------------------------ focus timer
@@ -308,6 +318,9 @@ class TagRepository(
     override suspend fun setActiveFocusRun(run: ActiveFocusRun) = settingsStore.setActiveFocusRun(run)
 
     override suspend fun clearActiveFocusRun() = settingsStore.clearActiveFocusRun()
+
+    override suspend fun focusBreakSettings(): FocusBreakSettings =
+        FocusBreakSettings.from(settingsStore.currentSettings())
 
     /**
      * Records one focus run so it can show up in the insights screen.

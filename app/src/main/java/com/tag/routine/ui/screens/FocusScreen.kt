@@ -87,6 +87,7 @@ import com.tag.routine.R
 import com.tag.routine.data.AppConstants
 import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
+import com.tag.routine.data.FocusPhase
 import com.tag.routine.data.FocusStats
 import com.tag.routine.data.RoutineColors
 import com.tag.routine.data.RoutineEntity
@@ -135,10 +136,13 @@ fun FocusScreen(
     defaultMinutes: Int,
     calendarType: CalendarType = CalendarType.GREGORIAN,
     calmMode: Boolean = false,
+    breakModeEnabled: Boolean = false,
+    longBreakInterval: Int = AppConstants.DEFAULT_LONG_BREAK_INTERVAL,
     onToggleCalmMode: () -> Unit = {},
     onStart: (RoutineEntity?, Int) -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
+    onSkipBreak: () -> Unit = {},
     onFinish: () -> Unit,
 ) {
     val activeCalmMode = FocusMotionLogic.resolveCalmMode(
@@ -183,15 +187,25 @@ fun FocusScreen(
                     stats = stats,
                     defaultMinutes = defaultMinutes,
                     calendarType = calendarType,
+                    breakModeEnabled = breakModeEnabled,
+                    longBreakInterval = longBreakInterval,
                     onEnterCalmMode = onToggleCalmMode,
                     onStart = onStart,
                     onPause = onPause,
                     onResume = onResume,
+                    onSkipBreak = onSkipBreak,
                     onFinish = onFinish,
                 )
             }
         }
     }
+}
+
+@Composable
+private fun focusPhaseLabel(phase: FocusPhase): String = when (phase) {
+    FocusPhase.FOCUS -> stringResource(R.string.focus_phase_focus)
+    FocusPhase.SHORT_BREAK -> stringResource(R.string.focus_phase_short_break)
+    FocusPhase.LONG_BREAK -> stringResource(R.string.focus_phase_long_break)
 }
 
 @Composable
@@ -206,7 +220,11 @@ private fun FocusCalmSurface(
     val ringSize = if (fontScale > 1.4f) 292.dp else 252.dp
 
     AuroraBackground(
-        colors = brand.auroraColors,
+        colors = if (focus.isBreak) {
+            listOf(Color(0xFF2ED3B7), Color(0xFF4FD9C0), Color(0xFF38BDF8))
+        } else {
+            brand.auroraColors
+        },
         baseColor = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize(),
     ) {
@@ -228,6 +246,7 @@ private fun FocusCalmSurface(
                         appLocale = appLocale,
                         calmMode = true,
                         onToggleCalmMode = onExitCalmMode,
+                        showPhaseLabel = focus.isBreak,
                     )
                     Text(
                         text = stringResource(R.string.focus_calm_mode_exit),
@@ -248,10 +267,13 @@ private fun FocusContent(
     stats: FocusStats,
     defaultMinutes: Int,
     calendarType: CalendarType = CalendarType.GREGORIAN,
+    breakModeEnabled: Boolean,
+    longBreakInterval: Int,
     onEnterCalmMode: () -> Unit,
     onStart: (RoutineEntity?, Int) -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
+    onSkipBreak: () -> Unit,
     onFinish: () -> Unit,
 ) {
     val spacing = MaterialTheme.spacing
@@ -285,8 +307,10 @@ private fun FocusContent(
     var celebrateActive by remember { mutableStateOf(false) }
     var celebrateSeed by remember { mutableLongStateOf(0L) }
 
-    LaunchedEffect(focus.active, latestCompletedEndedAt) {
-        if (focus.active) {
+    LaunchedEffect(focus.active, focus.phase, latestCompletedEndedAt) {
+        // A break means the focus session just ended, even though the timer is still
+        // "active"; celebrate the completed focus before the break UI takes over.
+        if (focus.active && !focus.isBreak) {
             if (!hadActiveSession) {
                 baselineCompletedEndedAt = latestCompletedEndedAt
                 hadActiveSession = true
@@ -395,9 +419,12 @@ private fun FocusContent(
                     RunningSession(
                         focus = focus,
                         appLocale = appLocale,
+                        breakModeEnabled = breakModeEnabled,
+                        longBreakInterval = longBreakInterval,
                         onToggleCalmMode = onEnterCalmMode,
                         onPause = onPause,
                         onResume = onResume,
+                        onSkipBreak = onSkipBreak,
                         onFinish = {
                             hadActiveSession = false
                             onFinish()
@@ -507,6 +534,7 @@ private fun FocusCountdownRing(
     appLocale: Locale,
     calmMode: Boolean,
     onToggleCalmMode: () -> Unit,
+    showPhaseLabel: Boolean = true,
 ) {
     val brand = tagBrand()
     val spacing = MaterialTheme.spacing
@@ -517,10 +545,19 @@ private fun FocusCountdownRing(
     val coolEnd = if (brand.isDark) Color(0xFF60A5FA) else Color(0xFF2563EB)
     val warmStart = if (brand.isDark) Color(0xFFFBBF24) else Color(0xFFD97706)
     val warmEnd = if (brand.isDark) Color(0xFFFB7185) else Color(0xFFE11D48)
-    val ringStart = lerp(coolStart, warmStart, warmth)
-    val ringEnd = lerp(coolEnd, warmEnd, warmth)
+    // Breaks stay calm and green/teal instead of heating up as they near the end.
+    val ringStart = if (focus.isBreak) {
+        if (brand.isDark) Color(0xFF2ED3B7) else Color(0xFF0F9D8A)
+    } else {
+        lerp(coolStart, warmStart, warmth)
+    }
+    val ringEnd = if (focus.isBreak) {
+        if (brand.isDark) Color(0xFF4FD9C0) else Color(0xFF2ED3B7)
+    } else {
+        lerp(coolEnd, warmEnd, warmth)
+    }
 
-    val isLastMinute = FocusMotionLogic.isLastMinute(
+    val isLastMinute = !focus.isBreak && FocusMotionLogic.isLastMinute(
         remainingSeconds = focus.remainingSeconds,
         running = focus.running,
         totalSeconds = focus.totalSeconds,
@@ -529,8 +566,9 @@ private fun FocusCountdownRing(
     val mins = focus.remainingSeconds / 60
     val secs = focus.remainingSeconds % 60
     val formattedClock = Dates.formatDigits("%02d:%02d".format(Locale.ROOT, mins, secs), appLocale)
+    val phaseText = focusPhaseLabel(focus.phase)
     val a11yDescription = Dates.formatDigits(
-        stringResource(R.string.a11y_focus_remaining) + " " +
+        phaseText + ", " + stringResource(R.string.a11y_focus_remaining) + " " +
             "%02d:%02d".format(Locale.ROOT, mins, secs),
         appLocale,
     )
@@ -583,6 +621,19 @@ private fun FocusCountdownRing(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(horizontal = spacing.lg),
         ) {
+            if (showPhaseLabel) {
+                Text(
+                    text = phaseText,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (focus.isBreak) {
+                        MaterialTheme.colorScheme.tertiary
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
+                )
+                Spacer(Modifier.height(spacing.xs))
+            }
             DigitRoll(
                 text = formattedClock,
                 style = MaterialTheme.typography.displayMedium,
@@ -591,8 +642,12 @@ private fun FocusCountdownRing(
             )
             Spacer(Modifier.height(spacing.xs))
             Text(
-                text = if (calmMode) {
-                    focus.routineTitle ?: stringResource(R.string.focus_history_untitled)
+                text = if (calmMode || focus.isBreak) {
+                    if (focus.isBreak) {
+                        phaseText
+                    } else {
+                        focus.routineTitle ?: stringResource(R.string.focus_history_untitled)
+                    }
                 } else {
                     Dates.formatDigits(
                         stringResource(R.string.focus_minutes, focus.plannedMinutes),
@@ -838,22 +893,38 @@ private fun FocusSetupCard(
 private fun RunningSession(
     focus: FocusState,
     appLocale: Locale,
+    breakModeEnabled: Boolean,
+    longBreakInterval: Int,
     onToggleCalmMode: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
+    onSkipBreak: () -> Unit,
     onFinish: () -> Unit,
 ) {
     val brand = tagBrand()
     val spacing = MaterialTheme.spacing
     val fontScale = LocalDensity.current.fontScale
     val stackButtons = fontScale > 1.35f
-    val statusColor = if (focus.running) brand.success else brand.warning
+    val statusColor = if (focus.isBreak) {
+        MaterialTheme.colorScheme.tertiary
+    } else if (focus.running) {
+        brand.success
+    } else {
+        brand.warning
+    }
 
     AppCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
+        border = BorderStroke(
+            1.dp,
+            if (focus.isBreak) {
+                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.45f)
+            } else {
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
+            },
+        ),
     ) {
         Column(
             modifier = Modifier
@@ -863,10 +934,14 @@ private fun RunningSession(
             verticalArrangement = Arrangement.spacedBy(spacing.lg),
         ) {
             MetaPill(
-                text = stringResource(
-                    R.string.focus_running,
-                    focus.routineTitle ?: stringResource(R.string.focus_history_untitled),
-                ),
+                text = if (focus.isBreak) {
+                    focusPhaseLabel(focus.phase)
+                } else {
+                    stringResource(
+                        R.string.focus_running,
+                        focus.routineTitle ?: stringResource(R.string.focus_history_untitled),
+                    )
+                },
                 container = statusColor.copy(alpha = 0.14f),
                 contentColor = MaterialTheme.colorScheme.onSurface,
                 leading = {
@@ -879,6 +954,16 @@ private fun RunningSession(
                 },
             )
 
+            if (breakModeEnabled || focus.isBreak) {
+                Text(
+                    text = focusPhaseLabel(focus.phase),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = statusColor,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+            }
+
             FocusCountdownRing(
                 focus = focus,
                 ringSize = if (fontScale > 1.4f) 268.dp else 216.dp,
@@ -886,7 +971,24 @@ private fun RunningSession(
                 appLocale = appLocale,
                 calmMode = false,
                 onToggleCalmMode = onToggleCalmMode,
+                showPhaseLabel = false,
             )
+
+            if (breakModeEnabled) {
+                Text(
+                    text = Dates.formatDigits(
+                        stringResource(
+                            R.string.focus_cycle,
+                            focus.cycleCount.coerceAtLeast(1),
+                            longBreakInterval.coerceAtLeast(2),
+                        ),
+                        appLocale,
+                    ),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
 
             Text(
                 text = stringResource(R.string.focus_calm_mode_enter),
@@ -906,11 +1008,21 @@ private fun RunningSession(
                         modifier = Modifier.fillMaxWidth(),
                     )
                     AppButton(
-                        text = stringResource(R.string.focus_give_up),
-                        onClick = onFinish,
+                        text = stringResource(
+                            if (focus.isBreak) R.string.focus_skip_break else R.string.focus_give_up,
+                        ),
+                        onClick = if (focus.isBreak) onSkipBreak else onFinish,
                         variant = AppButtonVariant.Secondary,
-                        leadingIcon = {
-                            Icon(Icons.Rounded.Stop, contentDescription = null, modifier = Modifier.size(18.dp))
+                        leadingIcon = if (focus.isBreak) {
+                            null
+                        } else {
+                            {
+                                Icon(
+                                    Icons.Rounded.Stop,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
                         },
                         modifier = Modifier.fillMaxWidth(),
                         shape = MaterialTheme.shapes.small,
@@ -922,11 +1034,21 @@ private fun RunningSession(
                     horizontalArrangement = Arrangement.spacedBy(spacing.md),
                 ) {
                     AppButton(
-                        text = stringResource(R.string.focus_give_up),
-                        onClick = onFinish,
+                        text = stringResource(
+                            if (focus.isBreak) R.string.focus_skip_break else R.string.focus_give_up,
+                        ),
+                        onClick = if (focus.isBreak) onSkipBreak else onFinish,
                         variant = AppButtonVariant.Secondary,
-                        leadingIcon = {
-                            Icon(Icons.Rounded.Stop, contentDescription = null, modifier = Modifier.size(18.dp))
+                        leadingIcon = if (focus.isBreak) {
+                            null
+                        } else {
+                            {
+                                Icon(
+                                    Icons.Rounded.Stop,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
                         },
                         modifier = Modifier.weight(1f),
                         shape = MaterialTheme.shapes.small,

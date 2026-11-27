@@ -2,6 +2,7 @@ package com.tag.routine.ui
 
 import com.tag.routine.data.ActiveFocusRun
 import com.tag.routine.data.AppConstants
+import com.tag.routine.data.FocusPhase
 import com.tag.routine.data.RoutineEntity
 import com.tag.routine.data.TagRepository
 import com.tag.routine.notifications.FocusTimerAlarms
@@ -28,7 +29,10 @@ data class FocusState(
     /** Seconds already elapsed in the current run. */
     val elapsedSeconds: Int = 0,
     val running: Boolean = false,
+    val phase: FocusPhase = FocusPhase.FOCUS,
+    val cycleCount: Int = 1,
 ) {
+    val isBreak: Boolean get() = phase.isBreak
     val totalSeconds: Int get() = plannedMinutes * 60
     val remainingSeconds: Int get() = (totalSeconds - elapsedSeconds).coerceAtLeast(0)
     val progress: Float
@@ -133,6 +137,18 @@ class FocusController(
         }
     }
 
+    /** Skips a running or paused break and leaves the next focus run paused. */
+    fun skipBreak() {
+        appScope().launch {
+            actionLock.withLock {
+                if (FocusTimerRuntime.skipBreak()) {
+                    withAppContext { ctx -> FocusTimerAlarms.cancel(ctx) }
+                    stopTimerService()
+                }
+            }
+        }
+    }
+
     /**
      * Ends the run early. The service settles it, so the session is recorded exactly
      * once whether the user stops from the app or from the notification.
@@ -190,6 +206,8 @@ class FocusController(
         plannedMinutes = plannedMinutes,
         elapsedSeconds = elapsedSeconds(),
         running = running,
+        phase = phase,
+        cycleCount = cycleCount,
     )
 
     /**
@@ -208,7 +226,19 @@ class FocusController(
                 val run = FocusTimerRuntime.run.value
                 if (run == null) return@launch
                 _state.value = run.toUiState()
-                FocusTimerRuntime.advance()
+                val transition = FocusTimerRuntime.advanceWithTransition()
+                if (transition.completed) {
+                    withAppContext { ctx -> FocusTimerAlarms.cancel(ctx) }
+                    val next = transition.next
+                    if (next != null && next.running) {
+                        withAppContext { ctx -> FocusTimerAlarms.arm(ctx, next) }
+                        startTimerService()
+                    } else {
+                        // A finished/skipped break leaves a paused focus run; nothing
+                        // should keep the foreground service or its alarm alive.
+                        stopTimerService()
+                    }
+                }
                 delay(1_000)
             }
         }

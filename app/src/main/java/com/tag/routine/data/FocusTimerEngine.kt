@@ -16,6 +16,9 @@ interface FocusRunStorage {
         completed: Boolean,
         id: String,
     )
+
+    /** Break preferences for phase transitions; defaults keep the legacy focus-only timer. */
+    suspend fun focusBreakSettings(): FocusBreakSettings = FocusBreakSettings()
 }
 
 /**
@@ -40,6 +43,7 @@ object FocusTimerEngine {
         routineTitle: String?,
         minutes: Int,
         now: Long = System.currentTimeMillis(),
+        cycleCount: Int = 1,
     ): ActiveFocusRun {
         val planned = AppConstants.clampFocusMinutes(minutes)
         return ActiveFocusRun(
@@ -50,6 +54,9 @@ object FocusTimerEngine {
             segmentStartedAt = now,
             accumulatedSeconds = 0,
             startedAt = now,
+            phase = FocusPhase.FOCUS,
+            cycleCount = cycleCount.coerceIn(1, AppConstants.MAX_LONG_BREAK_INTERVAL),
+            focusMinutes = planned,
         )
     }
 
@@ -103,6 +110,8 @@ object FocusTimerEngine {
         id: String,
         now: Long = System.currentTimeMillis(),
     ): FocusSessionEntity? {
+        // Break time is rest, never focus history, even if a caller settles it.
+        if (run.phase != FocusPhase.FOCUS) return null
         val elapsed = run.elapsedSeconds(now).coerceAtMost(run.totalSeconds)
         if (elapsed < AppConstants.MIN_FOCUS_SECONDS) return null
         // Never trust a start far in the future (a clock change mid-run).

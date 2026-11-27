@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -25,6 +27,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -34,22 +37,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.tag.routine.R
 import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
 import com.tag.routine.data.Priorities
+import com.tag.routine.data.RemindAtCalculator
+import com.tag.routine.data.RemindError
+import com.tag.routine.data.ReminderOffset
 import com.tag.routine.data.TagEntity
 import com.tag.routine.data.TaskEntity
 import com.tag.routine.ui.components.FilterPill
 import com.tag.routine.ui.i18n.ProvideAppLocale
 import com.tag.routine.ui.motion.AnimatedSheetContent
 import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -60,6 +69,7 @@ fun TaskEditorSheet(
     localizedContext: Context,
     calendarType: CalendarType = CalendarType.GREGORIAN,
     onDismiss: () -> Unit,
+    onRequestNotificationPermission: () -> Unit = {},
     onSave: (
         title: String,
         note: String,
@@ -76,8 +86,28 @@ fun TaskEditorSheet(
     var selectedTagId by remember { mutableStateOf(existing?.tagId) }
     var priority by remember { mutableStateOf(existing?.priority ?: Priorities.NORMAL) }
     var dueDate by remember { mutableStateOf(existing?.dueDate) }
-    val dueTimeMinutes = existing?.dueTimeMinutes
+    var dueTimeMinutes by remember { mutableStateOf(existing?.dueTimeMinutes) }
+    var reminderEnabled by remember { mutableStateOf(existing?.remindAt != null) }
+    var reminderOffset by remember {
+        mutableStateOf(
+            existing?.let { task ->
+                val parsed = task.dueDate?.let(Dates::parse)
+                if (parsed != null) {
+                    RemindAtCalculator.inferOffset(
+                        dueDate = parsed,
+                        dueTimeMinutes = task.dueTimeMinutes,
+                        remindAt = task.remindAt,
+                        zone = ZoneId.systemDefault(),
+                    )
+                } else {
+                    null
+                }
+            } ?: ReminderOffset.AT_DUE,
+        )
+    }
+    var errorRes by remember { mutableStateOf<Int?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -211,7 +241,12 @@ fun TaskEditorSheet(
                                     )
                                 }
                             } else {
-                                IconButton(onClick = { dueDate = null }) {
+                                IconButton(onClick = {
+                                    dueDate = null
+                                    dueTimeMinutes = null
+                                    reminderEnabled = false
+                                    errorRes = null
+                                }) {
                                     Icon(
                                         imageVector = Icons.Rounded.Close,
                                         contentDescription = stringResource(R.string.action_clear),
@@ -255,6 +290,130 @@ fun TaskEditorSheet(
                     }
                 }
 
+                if (dueDate != null) {
+                    Column {
+                        Text(
+                            text = stringResource(R.string.task_editor_due_time),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            OutlinedTextField(
+                                value = dueTimeMinutes
+                                    ?.let { Dates.formatMinutes(it, appLocale) }
+                                    .orEmpty(),
+                                onValueChange = { },
+                                readOnly = true,
+                                placeholder = { Text(stringResource(R.string.task_editor_due_time_none)) },
+                                trailingIcon = {
+                                    if (dueTimeMinutes != null) {
+                                        IconButton(onClick = {
+                                            dueTimeMinutes = null
+                                            if (reminderOffset != ReminderOffset.ONE_DAY_BEFORE) {
+                                                reminderOffset = ReminderOffset.ONE_DAY_BEFORE
+                                            }
+                                            errorRes = null
+                                        }) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Close,
+                                                contentDescription = stringResource(R.string.task_editor_due_time_clear),
+                                            )
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.weight(1f),
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp),
+                            )
+                            TextButton(onClick = { showTimePicker = true }) {
+                                Text(stringResource(R.string.task_editor_pick_time))
+                            }
+                        }
+                    }
+
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.task_editor_reminder),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Medium,
+                                )
+                                Text(
+                                    text = stringResource(R.string.task_editor_reminder_hint),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Switch(
+                                checked = reminderEnabled,
+                                onCheckedChange = { enabled ->
+                                    reminderEnabled = enabled
+                                    errorRes = null
+                                    if (enabled) {
+                                        onRequestNotificationPermission()
+                                        if (dueTimeMinutes == null) {
+                                            reminderOffset = ReminderOffset.ONE_DAY_BEFORE
+                                        }
+                                    }
+                                },
+                            )
+                        }
+                        if (reminderEnabled) {
+                            Spacer(Modifier.height(8.dp))
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                ReminderOffset.entries.forEach { offset ->
+                                    val label = when (offset) {
+                                        ReminderOffset.AT_DUE -> R.string.task_editor_reminder_at_due
+                                        ReminderOffset.TEN_MINUTES_BEFORE -> R.string.task_editor_reminder_10m
+                                        ReminderOffset.ONE_HOUR_BEFORE -> R.string.task_editor_reminder_1h
+                                        ReminderOffset.ONE_DAY_BEFORE -> R.string.task_editor_reminder_1d
+                                    }
+                                    FilterPill(
+                                        text = stringResource(label),
+                                        selected = reminderOffset == offset,
+                                        onClick = {
+                                            if (offset != ReminderOffset.ONE_DAY_BEFORE && dueTimeMinutes == null) {
+                                                errorRes = R.string.task_editor_reminder_needs_time
+                                            } else {
+                                                reminderOffset = offset
+                                                errorRes = null
+                                            }
+                                        },
+                                    )
+                                }
+                            }
+                            if (dueTimeMinutes == null) {
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    text = stringResource(R.string.task_editor_reminder_day_before_rule),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                        errorRes?.let { message ->
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(message),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    }
+                }
+
                 Spacer(Modifier.height(8.dp))
 
                 Row(
@@ -266,10 +425,40 @@ fun TaskEditorSheet(
                     }
                     Button(
                         onClick = {
-                            if (title.isNotBlank()) {
-                                onSave(title, note, selectedTagId, priority, dueDate, dueTimeMinutes, null)
-                                onDismiss()
+                            if (title.isBlank()) return@Button
+                            val parsedDue = dueDate?.let(Dates::parse)
+                            val remindAt = if (reminderEnabled) {
+                                if (parsedDue == null) {
+                                    errorRes = R.string.task_editor_reminder_no_date
+                                    return@Button
+                                }
+                                if (dueTimeMinutes == null && reminderOffset != ReminderOffset.ONE_DAY_BEFORE) {
+                                    errorRes = R.string.task_editor_reminder_needs_time
+                                    return@Button
+                                }
+                                val result = RemindAtCalculator.calculate(
+                                    dueDate = parsedDue,
+                                    dueTimeMinutes = dueTimeMinutes,
+                                    offset = reminderOffset,
+                                    zone = ZoneId.systemDefault(),
+                                    nowMillis = System.currentTimeMillis(),
+                                )
+                                if (result.epochMillis == null) {
+                                    errorRes = when (result.error) {
+                                        RemindError.IN_PAST -> R.string.task_editor_reminder_past
+                                        RemindError.INVALID_DUE_TIME -> R.string.task_editor_time_invalid
+                                        RemindError.MISSING_DUE_TIME -> R.string.task_editor_reminder_needs_time
+                                        null -> R.string.task_editor_reminder_past
+                                    }
+                                    return@Button
+                                }
+                                result.epochMillis
+                            } else {
+                                null
                             }
+                            errorRes = null
+                            onSave(title, note, selectedTagId, priority, dueDate, dueTimeMinutes, remindAt)
+                            onDismiss()
                         },
                         modifier = Modifier.weight(1f),
                         enabled = title.isNotBlank(),
@@ -338,6 +527,103 @@ fun TaskEditorSheet(
                 }
             }
         }
+    }
+
+    if (showTimePicker) {
+        TimeInputDialog(
+            initialMinutes = dueTimeMinutes,
+            localizedContext = localizedContext,
+            onDismiss = { showTimePicker = false },
+            onConfirm = { minutes ->
+                dueTimeMinutes = minutes
+                showTimePicker = false
+                errorRes = null
+            },
+        )
+    }
+}
+
+/**
+ * A clock dialog with separate hour and minute fields.
+ *
+ * Material's TimePicker does not reliably follow the in-app language override for digits,
+ * so the fields format through [Dates.formatDigits] and accept Persian/Arabic-Indic input
+ * by normalising it before validation.
+ */
+@Composable
+private fun TimeInputDialog(
+    initialMinutes: Int?,
+    localizedContext: Context,
+    onDismiss: () -> Unit,
+    onConfirm: (Int) -> Unit,
+) {
+    var hour by remember {
+        mutableStateOf(initialMinutes?.let { "%02d".format(Locale.ROOT, it / 60) } ?: "")
+    }
+    var minute by remember {
+        mutableStateOf(initialMinutes?.let { "%02d".format(Locale.ROOT, it % 60) } ?: "")
+    }
+    var invalid by remember { mutableStateOf(false) }
+
+    ProvideAppLocale(localizedContext) {
+        val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stringResource(R.string.task_editor_pick_time)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OutlinedTextField(
+                            value = Dates.formatDigits(hour, locale),
+                            onValueChange = { raw ->
+                                hour = Dates.toLatinDigits(raw).filter { it.isDigit() }.take(2)
+                                invalid = false
+                            },
+                            label = { Text(stringResource(R.string.task_editor_time_hour)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                        )
+                        OutlinedTextField(
+                            value = Dates.formatDigits(minute, locale),
+                            onValueChange = { raw ->
+                                minute = Dates.toLatinDigits(raw).filter { it.isDigit() }.take(2)
+                                invalid = false
+                            },
+                            label = { Text(stringResource(R.string.task_editor_time_minute)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                    if (invalid) {
+                        Text(
+                            text = stringResource(R.string.task_editor_time_invalid),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val h = hour.toIntOrNull()
+                    val m = minute.toIntOrNull()
+                    if (h != null && m != null && h in 0..23 && m in 0..59) {
+                        onConfirm(h * 60 + m)
+                    } else {
+                        invalid = true
+                    }
+                }) {
+                    Text(stringResource(R.string.action_ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
     }
 }
 
