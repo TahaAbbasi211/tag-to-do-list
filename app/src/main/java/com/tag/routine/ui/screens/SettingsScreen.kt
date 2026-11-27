@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,7 +35,9 @@ import androidx.compose.material.icons.automirrored.rounded.Label
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.DeleteForever
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Notifications
@@ -74,6 +77,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -91,6 +95,8 @@ import com.tag.routine.data.AppConstants
 import com.tag.routine.data.AppSettings
 import com.tag.routine.data.CalendarType
 import com.tag.routine.data.Dates
+import com.tag.routine.data.Palette
+import com.tag.routine.data.TagEntity
 import com.tag.routine.ui.BackupUiState
 import com.tag.routine.ui.UiState
 import com.tag.routine.ui.components.AppButton
@@ -143,6 +149,7 @@ fun SettingsScreen(
     onConfirmReplaceRestore: () -> Unit,
     onReset: () -> Unit,
     onAddTag: (String) -> Unit,
+    onUpdateTag: (TagEntity) -> Unit,
     onDeleteTag: (String) -> Unit,
     onSetName: (String) -> Unit,
     onFocusMinutes: (Int) -> Unit,
@@ -158,6 +165,8 @@ fun SettingsScreen(
     // the language the user picked.
     val localizedContext = LocalContext.current
     var showResetDialog by remember { mutableStateOf(false) }
+    var editingTag by remember { mutableStateOf<TagEntity?>(null) }
+    var deletingTag by remember { mutableStateOf<TagEntity?>(null) }
     var newTag by remember { mutableStateOf("") }
     var nameInput by remember { mutableStateOf(settings.userName) }
     var focusInput by remember { mutableStateOf(settings.focusMinutes.toString()) }
@@ -505,9 +514,15 @@ fun SettingsScreen(
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f),
                             )
-                            IconButton(
-                                onClick = { onDeleteTag(tag.id) },
-                            ) {
+                            IconButton(onClick = { editingTag = tag }) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Edit,
+                                    contentDescription = stringResource(R.string.settings_edit_tag),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(19.dp),
+                                )
+                            }
+                            IconButton(onClick = { deletingTag = tag }) {
                                 Icon(
                                     imageVector = Icons.Rounded.DeleteForever,
                                     contentDescription = stringResource(R.string.settings_delete_tag),
@@ -664,6 +679,113 @@ fun SettingsScreen(
             }
         }
     }
+    }
+
+    // Tag edit dialog: name plus a 48dp colour swatch row, so it stays usable with
+    // TalkBack, large fonts, and both layout directions.
+    editingTag?.let { tag ->
+        var name by remember(tag.id) { mutableStateOf(tag.name) }
+        var color by remember(tag.id) { mutableStateOf(tag.colorHex) }
+        LocalizedAlertDialog(
+            localizedContext = localizedContext,
+            onDismissRequest = { editingTag = null },
+            title = { Text(stringResource(R.string.settings_tag_dialog_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text(stringResource(R.string.settings_tag_name)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.small,
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_tag_color),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                    ) {
+                        Palette.swatches.forEachIndexed { index, swatch ->
+                            val colorLabel = stringResource(
+                                R.string.settings_tag_color_option,
+                                index + 1,
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(swatch))
+                                    .selectable(
+                                        selected = color == swatch,
+                                        role = Role.RadioButton,
+                                        onClick = { color = swatch },
+                                    )
+                                    .semantics { contentDescription = colorLabel },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                if (color == swatch) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Check,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onUpdateTag(tag.copy(name = name.trim(), colorHex = color))
+                        editingTag = null
+                    },
+                    enabled = name.isNotBlank(),
+                ) {
+                    Text(stringResource(R.string.action_save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { editingTag = null }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
+    }
+
+    // Deleting a tag only clears its tasks' tagId; the tasks themselves stay.
+    deletingTag?.let { tag ->
+        LocalizedAlertDialog(
+            localizedContext = localizedContext,
+            onDismissRequest = { deletingTag = null },
+            title = { Text(stringResource(R.string.settings_delete_tag_title)) },
+            text = { Text(stringResource(R.string.settings_delete_tag_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteTag(tag.id)
+                        deletingTag = null
+                    },
+                ) {
+                    Text(
+                        text = stringResource(R.string.action_delete),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deletingTag = null }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
     }
 
     // Reset confirmation dialog

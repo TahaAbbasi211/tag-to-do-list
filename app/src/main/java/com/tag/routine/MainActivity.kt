@@ -538,6 +538,7 @@ private fun TagRoot(
                                     onConfirmReplaceRestore = { viewModel.confirmRestore(BackupMode.REPLACE) },
                                     onReset = viewModel::resetProgress,
                                     onAddTag = { name -> viewModel.addTag(name) },
+                                    onUpdateTag = viewModel::updateTag,
                                     onDeleteTag = { id ->
                                         val removed = state.tags.firstOrNull { it.id == id }
                                         viewModel.deleteTag(id)
