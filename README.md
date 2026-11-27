@@ -1,4 +1,4 @@
-# ✅ Tag — Daily Routine & Task Planner (v2.2)
+# ✅ Tag — Daily Routine & Task Planner (v2.3)
 
 A clean and customizable Android routine and task planner with day-centric scheduling, task deadlines and reminders, editable tags, Gregorian & Solar Hijri (Jalali) calendar support, safe local JSON backup & restore, a built-in focus timer with optional Pomodoro breaks, unified Material 3 design system, optional Dynamic Color, an interactive home screen widget, full TalkBack and large-font support, tablet/landscape layouts, and full support for five languages.
 
@@ -78,7 +78,9 @@ The unit test suite (329 tests on both debug and release variants) covers the mo
 - [x] Item-linked focus sessions and per-item focus insights (v1.3)
 - [x] Solar Hijri (Jalali) calendar display and date selection (v1.5)
 - [x] Safe local JSON backup & restore with preview, merge/replace, and automatic safety backups (v1.6)
-- [x] Focus goals & Pomodoro break intervals (v2.2)
+- [x] Task due times, reminder offsets, and notification actions (v2.3)
+- [x] Editable tags and safe tag deletion (v2.3)
+- [x] Focus goals & Pomodoro break intervals (v2.3)
 - [ ] Task categories & recurring tasks
 - [ ] Cloud backup and sync
 - [x] Home screen widget with today's progress and upcoming items (v1.7)
@@ -87,6 +89,7 @@ The unit test suite (329 tests on both debug and release variants) covers the mo
 - [x] Living motion architecture, expressive Canvas charts/celebrations & Calm Focus mode (v2.0)
 - [x] Hardening release: core reliability fixes, reduced UX friction & animation/typography polish (v2.1)
 - [x] Store-readiness & polish release: Play Store exact-alarm compliance, focus-switch guard, contextual notification prompts, Latin Jalali months, variable Inter font, real SQLite migration checks & guarded GitHub Release workflow (v2.2)
+- [x] Reminder, tag-management & Pomodoro release: task deadlines and reminders, editable tags with delete confirmation, optional short/long focus breaks, and versionCode 25 (v2.3)
 
 ## 🤝 Contributing
 
@@ -98,14 +101,16 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 📝 Changelog
 
-- **2.2**:
+- **2.3**:
   - **Task Deadlines & Reminders (`TaskEditorSheet`, `RemindAtCalculator`, `TaskReminderPolicy`, `TaskReminderIds`, `Reminders`, `Receivers`)**: Tasks gain an optional due time plus reminders at the due time, 10 minutes, 1 hour, or 1 day before. A date-only task can use the 09:00 day-before reminder; impossible or past combinations are rejected in the editor with localized errors. Task alarms use their own PendingIntent request-code namespace (alarm, mark-done, snooze), share the exact/inexact `AlarmSchedulingPolicy` fallback, and are rescheduled after edits, restores, reboots, and time-zone or clock changes. Task notifications offer **Mark done** and **Snooze** without duplicating the routine reminder path
   - **Tag Editing & Safe Deletion (`SettingsScreen`, `TagRepository`, `MainActivity`)**: Existing tags can be renamed or recoloured through a TalkBack-friendly dialog with a 48dp colour-swatch row and live preview. Deleting a tag now opens an explicit confirmation and only clears the tag reference; tagged tasks keep their data and become untagged
   - **Optional Pomodoro Breaks (`FocusBreakEngine`, `FocusTimerService`, `FocusTimerReceiver`, `FocusController`, `FocusScreen`, `SettingsScreen`, `BackupManager`)**: Break mode is off by default and leaves the previous focus timer behaviour unchanged when disabled. When enabled, Settings configures short (5 min), long (15 min), sessions per cycle (4), and auto-start. A pure phase machine moves **Focus → Short break / Long break → ready Focus**, supports skipping a break, and records only focus phases in history and statistics. Phase/cycle/length persist in `activeFocusRun` with a v2 codec that still reads legacy v1 runs as `FOCUS`; break settings round-trip through backup with backward-compatible defaults. Phase changes are announced through localized notifications, the running card shows the current phase and **2/4** cycle count, breaks use a calm teal palette, and all new text exists in English, Persian, German, French, and Turkish
+  - **Version & Compatibility**: Bumped to `versionCode = 25`, `versionName = "2.3"` on top of the v2.2 release, with no new permissions, no `INTERNET` permission, no new dependencies, and no Room schema, Gradle wrapper, or AGP changes. Backup format, focus-run persistence, accessibility, RTL, Jalali, Dynamic Color, and all five languages remain compatible; 329 unit tests pass
+- **2.2**:
   - **Play Store & Build Supply-Chain Compliance (`AndroidManifest`, `Reminders`, `FocusTimerReceiver`, `settings.gradle.kts`)**: Removed `USE_EXACT_ALARM` while retaining `SCHEDULE_EXACT_ALARM` and shared `AlarmSchedulingPolicy` inexact `setWindow(...)` fallback across both routine reminders and focus-timer alarms; switched `settings.gradle.kts` to canonical repositories (`google()`, `mavenCentral()`, `gradlePluginPortal()`) by default and gated Aliyun/Tencent mirrors and mirror-only plugin resolution behind opt-in `useMirrors=true` (`-PuseMirrors=true`, `ORG_GRADLE_PROJECT_useMirrors=true`, or `local.properties`)
   - **Focus-Switch Guard & Contextual Permissions (`MainActivity`, `FocusTimerService`, `FocusController`, `AppViewModel`)**: Replaced silent overwriting of an active focus run with a 5-language confirmation dialog (**Stop & switch** vs **Keep current**) and serialized settlement (`settleLock` + controller `actionLock`) so prior sessions are recorded cleanly and old completion alarms are cancelled before starting the replacement run; removed cold `POST_NOTIFICATIONS` requests from onboarding Skip/Finish and restricted prompts to contextual reminder/digest toggles or newly enabled timed routine reminders (`NotificationPolicy`)
   - **UI Polish, Typography & Jalali Localization (`InsightsScreen`, `SettingsScreen`, `JalaliCalendar`, `Dates`, `Type`)**: Keyed `InsightsScreen` leaderboard `MiniRing` reveals by `routine.id` instead of title; updated `DigestTimeSlider` to 15-minute increments (`0..1425`, 96 stops / `steps = 94`) while preserving `AppConstants.clampDigestMinutes` for legacy/backup values; added Latin Jalali month names (`Farvardin..Esfand`) for non-Persian locales alongside Persian script (`فروردین..اسفند`) for `fa`; and replaced the 6 static Inter fonts (`2.47 MB`) with a single `InterVariable.ttf` (`863 KB`) configured via Compose `FontVariation.Settings` (`wght` + `opsz`)
-  - **Real SQLite & Room Migration Verification + Release Automation**: Added instrumented `MigrationTestHelper` tests (`TagDatabaseMigrationTest` in `androidTest`) plus real `sqlite-jdbc` SQLite schema verification in `DatabaseMigrationTest`, wired `:app:compileDebugAndroidTestKotlin` into CI workflows, added guarded GitHub Release workflow (`.github/workflows/release.yml`), and bumped `versionCode = 24`, `versionName = "2.2"` (zero schema or permission additions; 329 unit tests green)
+  - **Real SQLite & Room Migration Verification + Release Automation**: Added instrumented `MigrationTestHelper` tests (`TagDatabaseMigrationTest` in `androidTest`) plus real `sqlite-jdbc` SQLite schema verification in `DatabaseMigrationTest`, wired `:app:compileDebugAndroidTestKotlin` into CI workflows, added guarded GitHub Release workflow (`.github/workflows/release.yml`), and bumped `versionCode = 23`, `versionName = "2.2"` (zero schema or permission additions)
 
 - **2.1**:
   - **Core Reliability & Midnight/Notification Handling (`Receivers`, `DateRolloverPolicy`, `TagApp`, `AppViewModel`)**: `NotificationReceiver.rearm` now completes asynchronously under `goAsync()` (`try ... finally { pending.finish() }`), notification `Mark done` and `Snooze` actions actively cancel that item's notification via `NotificationManagerCompat`, and in-process `ACTION_DATE_CHANGED` / clock / timezone changes (plus `MainActivity.onStart`) update today's UI date via `DateRolloverPolicy` without adding periodic timers
