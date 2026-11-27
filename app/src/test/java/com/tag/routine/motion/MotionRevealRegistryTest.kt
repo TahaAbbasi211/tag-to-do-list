@@ -35,4 +35,16 @@ class MotionRevealRegistryTest {
         // Staying at updated value after tab round-trip does not replay.
         assertFalse(registry.shouldAnimateValue(key, 80))
     }
+
+    @Test
+    fun leaderboardKeysByRoutineId_doNotCollideForIdenticalTitles() {
+        val registry = MotionRevealRegistry()
+        val keyA = "insights-leaderboard:routine-1"
+        val keyB = "insights-leaderboard:routine-2"
+
+        assertTrue(registry.shouldAnimateValue(keyA, 0.9f))
+        assertTrue(registry.shouldAnimateValue(keyB, 0.7f))
+        assertFalse(registry.shouldAnimateValue(keyA, 0.9f))
+        assertFalse(registry.shouldAnimateValue(keyB, 0.7f))
+    }
 }

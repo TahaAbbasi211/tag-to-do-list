@@ -201,6 +201,12 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
         focusController.start(routine, clamped)
     }
 
+    fun switchFocus(routine: RoutineEntity?, minutes: Int) {
+        val clamped = AppConstants.clampFocusMinutes(minutes)
+        viewModelScope.launch { repository.setFocusMinutes(clamped) }
+        focusController.switchTo(routine, clamped)
+    }
+
     fun pauseFocus() = focusController.pause()
 
     fun resumeFocus() = focusController.resume()

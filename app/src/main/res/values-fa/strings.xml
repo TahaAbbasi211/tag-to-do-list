@@ -250,6 +250,10 @@
     <string name="focus_minutes">%1$d دقیقه</string>
     <string name="focus_session_done">جلسه تمرکز کامل شد</string>
     <string name="focus_total">مجموع تمرکز: %1$s</string>
+    <string name="focus_switch_title">تغییر جلسه تمرکز؟</string>
+    <string name="focus_switch_body">جلسه \"%1$s\" در حال اجراست. متوقف و ذخیره شود و روی \"%2$s\" تمرکز شروع شود؟</string>
+    <string name="focus_switch_confirm">توقف و تغییر</string>
+    <string name="focus_switch_keep">ادامه جلسه فعلی</string>
 
     <!-- Focus screen -->
     <string name="focus_subtitle">کار عمیق، هر بار یک بازه</string>

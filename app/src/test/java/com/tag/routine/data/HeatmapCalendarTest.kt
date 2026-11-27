@@ -116,6 +116,7 @@ class HeatmapCalendarTest {
         assertTrue(labels.any { it.year == 1405 && it.month == 1 })
         val farvardinLabel = labels.first { it.year == 1405 && it.month == 1 }
         assertTrue(farvardinLabel.columnIndex in 0 until columns.size)
-        assertEquals("فروردین", Dates.shortMonthName(farvardinLabel.referenceDate, java.util.Locale.ENGLISH, CalendarType.JALALI))
+        assertEquals("Farvardin", Dates.shortMonthName(farvardinLabel.referenceDate, java.util.Locale.ENGLISH, CalendarType.JALALI))
+        assertEquals("فروردین", Dates.shortMonthName(farvardinLabel.referenceDate, java.util.Locale.forLanguageTag("fa"), CalendarType.JALALI))
     }
 }

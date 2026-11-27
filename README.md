@@ -1,4 +1,4 @@
-# ✅ Tag — Daily Routine & Task Planner (v2.1)
+# ✅ Tag — Daily Routine & Task Planner (v2.2)
 
 A clean and customizable Android routine and task planner with day-centric scheduling, Gregorian & Solar Hijri (Jalali) calendar support, safe local JSON backup & restore, a built-in focus timer, unified Material 3 design system, optional Dynamic Color, an interactive home screen widget, full TalkBack and large-font support, tablet/landscape layouts, and full support for five languages.
 
@@ -14,7 +14,7 @@ A clean and customizable Android routine and task planner with day-centric sched
 
 - 💾 **Safe Backup & Restore (`BackupCodec`, `BackupCoordinator`, SAF)**: Export a full JSON backup (`formatVersion = 3` with app version, timestamp, routines with day-centric fields, tasks, tags, completion logs, focus sessions, and settings) via Android's Storage Access Framework (`CreateDocument`) with zero storage permissions. Restore via `OpenDocument` with bounded streaming validation, a pre-restore preview (creation date, item/task/focus counts, date range), **Merge** (non-destructive, duplicate-safe) or **Replace** (with an explicit warning), automatic safety backups in internal storage (last 3 kept), atomic Room `withTransaction` execution, live UI/stats refresh, reminder rescheduling/cleanup, and backward compatibility with legacy backups without `formatVersion`
 
-- 🗓️ **Gregorian & Solar Hijri (Jalali) calendar**: Switch between **Gregorian** (default) and **Solar Hijri (Jalali)** anytime in Settings without restarting or modifying stored data — featuring Persian month names (`فروردین… اسفند`) across all 5 app languages, Saturday-start weeks, a custom Jalali date picker in Tasks, month/year headers on the Week Strip, Jalali day numbers in Copy to Another Day, month labels and Saturday-aligned columns in the Insights Heatmap, Saturday–Friday boundaries in the Weekly Report, and Jalali timestamps in Focus history
+- 🗓️ **Gregorian & Solar Hijri (Jalali) calendar**: Switch between **Gregorian** (default) and **Solar Hijri (Jalali)** anytime in Settings without restarting or modifying stored data — featuring localized Solar Hijri month names (`فروردین… اسفند` in Persian and Latin `Farvardin… Esfand` across English, French, German, and Turkish), Saturday-start weeks, a custom Jalali date picker in Tasks, month/year headers on the Week Strip, Jalali day numbers in Copy to Another Day, month labels and Saturday-aligned columns in the Insights Heatmap, Saturday–Friday boundaries in the Weekly Report, and Jalali timestamps in Focus history
 - 📅 **Day-centric Today timeline**: Each routine/item belongs to its selected day (past, today, or future) with optional daily repeat (`Repeat daily`)
 - 🗑️ **Flexible recurring delete**: Remove a repeating item for today only or from this day onwards without losing historical completion logs
 - 📑 **Copy items between days**: One tap copies yesterday's items onto the selected day, and any item's menu offers **Copy to another day** with a multi-day picker. Only items are copied — never the tick state — and pressing the action twice never creates duplicates
@@ -57,18 +57,18 @@ A clean and customizable Android routine and task planner with day-centric sched
    ```
 
 2. Open the project in **Android Studio**.
-3. Wait for Gradle to sync.
+3. Wait for Gradle to sync. (Canonical repositories `google()`, `mavenCentral()`, and `gradlePluginPortal()` are used by default; on throttled networks you can opt into third-party mirrors by passing `-PuseMirrors=true`, setting `ORG_GRADLE_PROJECT_useMirrors=true`, or adding `useMirrors=true` to `local.properties`.)
 4. Run the app on an emulator or a physical device.
 
 ## 🧪 Tests
 
-Run the unit tests with:
+Run the unit tests and verify `androidTest` compilation with:
 
 ```bash
-./gradlew :app:testDebugUnitTest
+./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin
 ```
 
-The unit test suite (269 tests on both debug and release variants) covers the motion infrastructure and living-UI rules (`AnimationPolicyTest`, `DayPhaseTest`, `FocusMotionLogicTest`, `InsightsMotionLogicTest`, `MotionRevealRegistryTest`, `MotionThemePolicyTest`, `ParticleEngineTest`, `StreakMilestoneTest`, `TagMotionTest`), notification & midnight rollover policies (`NotificationPolicyTest`, `DateRolloverPolicyTest`), routine time validation (`RoutineTimeValidatorTest`), the widget action decider (`WidgetActionDeciderTest`: valid mark-done actions, already-done/double-tap idempotency, missing/unscheduled routines, post-midnight stale dates, queue progression, and unique PendingIntent request codes), the widget state builder (`WidgetStateBuilderTest`: empty day, fully done day, partly done day, repeating and one-off items, next-item ordering by clock time, and the midnight boundary), widget manifest/layout/ProGuard guards (`WidgetConfigTest`), accessibility sentence builders for timeline rows, heatmap cells (Gregorian and Jalali, Persian digits) and chart summaries (`AccessibilityLabelsTest`), the reduced-motion rule (`MotionPreferencesTest`), backup validation, streaming bounds, legacy compatibility, duplicate-free merge, replace (including orphaned `activeFocusRun` cleanup), round-trip fidelity, safety-backup retention, and mid-restore rollback (`BackupManagerTest`), Solar Hijri (Jalali) conversions, leap years, year boundaries, Saturday-start weeks, calendar-aware weekend dates and month labels (`JalaliCalendarTest`, `DatesTest`), weekly reporting (`WeeklyReportEngine`), 12-week calendar heatmap building (`HeatmapCalendar`), daily focus totals, unlinked focus sessions and per-item focus ranking (`FocusSummaryEngine`), copy rules, quick-add ranking, dynamic Today line, plus the existing stats, focus timer, ordering, migration and localization guards.
+The unit test suite (282 tests on both debug and release variants) covers the motion infrastructure and living-UI rules (`AnimationPolicyTest`, `DayPhaseTest`, `FocusMotionLogicTest`, `InsightsMotionLogicTest`, `MotionRevealRegistryTest`, `MotionThemePolicyTest`, `ParticleEngineTest`, `StreakMilestoneTest`, `TagMotionTest`), notification permission, exact-alarm fallback, manifest guards & midnight rollover policies (`NotificationPolicyTest`, `DateRolloverPolicyTest`), serialized focus-switch & completion locking (`FocusTimerCoordinatorTest`, `FocusTimerEngineTest`), routine time validation (`RoutineTimeValidatorTest`), the widget action decider (`WidgetActionDeciderTest`), the widget state builder (`WidgetStateBuilderTest`), widget manifest/layout/ProGuard guards (`WidgetConfigTest`), accessibility sentence builders for timeline rows, heatmap cells (Gregorian and Jalali, Persian/Latin month names and digits) and chart summaries (`AccessibilityLabelsTest`), the reduced-motion rule (`MotionPreferencesTest`), backup validation, streaming bounds, legacy compatibility, duplicate-free merge, replace (including orphaned `activeFocusRun` cleanup), round-trip fidelity, safety-backup retention, and mid-restore rollback (`BackupManagerTest`), Solar Hijri (Jalali) conversions, leap years, year boundaries, Saturday-start weeks, calendar-aware weekend dates and locale-aware month names (`JalaliCalendarTest`, `DatesTest`), weekly reporting (`WeeklyReportEngine`), 12-week calendar heatmap building (`HeatmapCalendar`), daily focus totals, unlinked focus sessions and per-item focus ranking (`FocusSummaryEngine`), copy rules, quick-add ranking, dynamic Today line, real SQLite-backed Room migration verification across schemas `1 -> 2 -> 3 -> 4` (`DatabaseMigrationTest` using `sqlite-jdbc`), plus ordering and localization guards. In addition, `app/src/androidTest/` includes instrumented `MigrationTestHelper` verification (`TagDatabaseMigrationTest`).
 
 ## 🔮 Future Improvements
 
@@ -83,6 +83,7 @@ The unit test suite (269 tests on both debug and release variants) covers the mo
 - [x] TalkBack semantics, alternative swipe actions, large-font layouts and centred wide-screen content (v1.9)
 - [x] Living motion architecture, expressive Canvas charts/celebrations & Calm Focus mode (v2.0)
 - [x] Hardening release: core reliability fixes, reduced UX friction & animation/typography polish (v2.1)
+- [x] Store-readiness & polish release: Play Store exact-alarm compliance, focus-switch guard, contextual notification prompts, Latin Jalali months, variable Inter font, real SQLite migration checks & guarded GitHub Release workflow (v2.2)
 
 ## 🤝 Contributing
 
@@ -93,6 +94,12 @@ Contributions are welcome! Feel free to open an issue or submit a pull request.
 This project is licensed under the [MIT License](LICENSE).
 
 ## 📝 Changelog
+
+- **2.2**:
+  - **Play Store & Build Supply-Chain Compliance (`AndroidManifest`, `Reminders`, `FocusTimerReceiver`, `settings.gradle.kts`)**: Removed `USE_EXACT_ALARM` while retaining `SCHEDULE_EXACT_ALARM` and shared `AlarmSchedulingPolicy` inexact `setWindow(...)` fallback across both routine reminders and focus-timer alarms; switched `settings.gradle.kts` to canonical repositories (`google()`, `mavenCentral()`, `gradlePluginPortal()`) by default and gated Aliyun/Tencent mirrors and mirror-only plugin resolution behind opt-in `useMirrors=true` (`-PuseMirrors=true`, `ORG_GRADLE_PROJECT_useMirrors=true`, or `local.properties`)
+  - **Focus-Switch Guard & Contextual Permissions (`MainActivity`, `FocusTimerService`, `FocusController`, `AppViewModel`)**: Replaced silent overwriting of an active focus run with a 5-language confirmation dialog (**Stop & switch** vs **Keep current**) and serialized settlement (`settleLock` + controller `actionLock`) so prior sessions are recorded cleanly and old completion alarms are cancelled before starting the replacement run; removed cold `POST_NOTIFICATIONS` requests from onboarding Skip/Finish and restricted prompts to contextual reminder/digest toggles or newly enabled timed routine reminders (`NotificationPolicy`)
+  - **UI Polish, Typography & Jalali Localization (`InsightsScreen`, `SettingsScreen`, `JalaliCalendar`, `Dates`, `Type`)**: Keyed `InsightsScreen` leaderboard `MiniRing` reveals by `routine.id` instead of title; updated `DigestTimeSlider` to 15-minute increments (`0..1425`, 96 stops / `steps = 94`) while preserving `AppConstants.clampDigestMinutes` for legacy/backup values; added Latin Jalali month names (`Farvardin..Esfand`) for non-Persian locales alongside Persian script (`فروردین..اسفند`) for `fa`; and replaced the 6 static Inter fonts (`2.47 MB`) with a single `InterVariable.ttf` (`863 KB`) configured via Compose `FontVariation.Settings` (`wght` + `opsz`)
+  - **Real SQLite & Room Migration Verification + Release Automation**: Added instrumented `MigrationTestHelper` tests (`TagDatabaseMigrationTest` in `androidTest`) plus real `sqlite-jdbc` SQLite schema verification in `DatabaseMigrationTest`, wired `:app:compileDebugAndroidTestKotlin` into CI workflows, added guarded GitHub Release workflow (`.github/workflows/release.yml`), and bumped `versionCode = 23`, `versionName = "2.2"` (zero schema or permission additions)
 
 - **2.1**:
   - **Core Reliability & Midnight/Notification Handling (`Receivers`, `DateRolloverPolicy`, `TagApp`, `AppViewModel`)**: `NotificationReceiver.rearm` now completes asynchronously under `goAsync()` (`try ... finally { pending.finish() }`), notification `Mark done` and `Snooze` actions actively cancel that item's notification via `NotificationManagerCompat`, and in-process `ACTION_DATE_CHANGED` / clock / timezone changes (plus `MainActivity.onStart`) update today's UI date via `DateRolloverPolicy` without adding periodic timers

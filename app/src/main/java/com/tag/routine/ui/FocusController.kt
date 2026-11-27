@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /** Live state of the focus timer, as rendered on the Focus screen. */
 data class FocusState(
@@ -50,6 +52,7 @@ class FocusController(
     val state: StateFlow<FocusState> = _state.asStateFlow()
 
     private var tickJob: Job? = null
+    private val actionLock = Mutex()
 
     init {
         // The run is the source of truth: whenever the service starts, pauses, resumes
@@ -80,36 +83,53 @@ class FocusController(
     }
 
     /**
-     * Starts (or restarts) a focus run for [routine] lasting [minutes].
+     * Starts a focus run for [routine] lasting [minutes]. Any existing run is settled
+     * cleanly before starting the replacement.
      *
      * Runs on the application scope, not the view-model scope: the user can tap Start and
      * immediately swipe the app away, and the run must still be persisted and handed to
      * the service rather than being cancelled along with the screen.
      */
-    fun start(routine: RoutineEntity?, minutes: Int) {
+    fun start(routine: RoutineEntity?, minutes: Int) = switchTo(routine, minutes)
+
+    /**
+     * Cancels any pending completion alarm, settles the active run if one exists, and starts
+     * and persists the new focus session for [routine].
+     */
+    fun switchTo(routine: RoutineEntity?, minutes: Int) {
+        val clamped = AppConstants.clampFocusMinutes(minutes)
         appScope().launch {
-            FocusTimerRuntime.start(
-                routineId = routine?.id,
-                routineTitle = routine?.title,
-                minutes = AppConstants.clampFocusMinutes(minutes),
-            )
-            withAppContext { ctx -> FocusTimerRuntime.run.value?.let { FocusTimerAlarms.arm(ctx, it) } }
-            startTimerService()
+            actionLock.withLock {
+                val next = FocusTimerRuntime.switchTo(
+                    routineId = routine?.id,
+                    routineTitle = routine?.title,
+                    minutes = clamped,
+                    onBeforeSettle = {
+                        withAppContext { ctx -> FocusTimerAlarms.cancel(ctx) }
+                    },
+                )
+                withAppContext { ctx -> FocusTimerAlarms.arm(ctx, next) }
+                startTimerService()
+            }
         }
     }
 
     fun pause() {
         appScope().launch {
-            FocusTimerRuntime.pause()
-            withAppContext { ctx -> FocusTimerAlarms.cancel(ctx) }
+            actionLock.withLock {
+                FocusTimerRuntime.pause()
+                withAppContext { ctx -> FocusTimerAlarms.cancel(ctx) }
+            }
         }
     }
 
     fun resume() {
         appScope().launch {
-            FocusTimerRuntime.resume()
-            withAppContext { ctx -> FocusTimerRuntime.run.value?.let { FocusTimerAlarms.arm(ctx, it) } }
-            startTimerService()
+            actionLock.withLock {
+                FocusTimerRuntime.resume()
+                withAppContext { ctx -> FocusTimerRuntime.run.value?.let { FocusTimerAlarms.arm(ctx, it) } }
+                startTimerService()
+            }
         }
     }
 
@@ -119,9 +139,11 @@ class FocusController(
      */
     fun stop() {
         appScope().launch {
-            withAppContext { ctx -> FocusTimerAlarms.cancel(ctx) }
-            stopTimerService()
-            FocusTimerRuntime.finish()
+            actionLock.withLock {
+                withAppContext { ctx -> FocusTimerAlarms.cancel(ctx) }
+                stopTimerService()
+                FocusTimerRuntime.finish()
+            }
         }
     }
 

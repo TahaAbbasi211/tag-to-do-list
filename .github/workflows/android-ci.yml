@@ -29,6 +29,8 @@ jobs:
         run: chmod +x ./gradlew || true
       - name: Run unit tests
         run: ./gradlew :app:testReleaseUnitTest --stacktrace
+      - name: Compile androidTest sources
+        run: ./gradlew :app:compileDebugAndroidTestKotlin --stacktrace
       - name: Run lint (release)
         run: ./gradlew :app:lintRelease --stacktrace
       - name: Assemble release

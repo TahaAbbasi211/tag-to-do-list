@@ -19,6 +19,7 @@ import com.tag.routine.R
 import com.tag.routine.TagApp
 import com.tag.routine.data.ActiveFocusRun
 import com.tag.routine.data.AppConstants
+import com.tag.routine.data.FocusRunStorage
 import com.tag.routine.data.FocusTimerEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +36,137 @@ import kotlinx.coroutines.sync.withLock
 import java.util.UUID
 
 /**
+ * Pure coroutine state machine behind [FocusTimerRuntime].
+ *
+ * Serializes all run transitions (`start`, `switchTo`, `pause`, `resume`, `advance`,
+ * `finish`, `discardWithoutRecording`) under [settleLock] so switching routines or racing
+ * with service completion never loses or double-records a [FocusSessionEntity].
+ */
+internal class FocusTimerCoordinator(
+    private val storageProvider: () -> FocusRunStorage?,
+) {
+    private val _run = MutableStateFlow<ActiveFocusRun?>(null)
+
+    /** Serialises settlement so the service, receiver, and UI cannot race. */
+    private val settleLock = Mutex()
+
+    /** The run in progress, or null. Ticks are not pushed here; elapsed time is derived. */
+    val run: StateFlow<ActiveFocusRun?> = _run.asStateFlow()
+
+    suspend fun restore(run: ActiveFocusRun?) = settleLock.withLock {
+        if (_run.value != null) return@withLock
+        _run.value = run
+    }
+
+    suspend fun start(
+        routineId: String?,
+        routineTitle: String?,
+        minutes: Int,
+        now: Long = System.currentTimeMillis(),
+        onBeforeSettle: () -> Unit = {},
+    ): ActiveFocusRun = switchTo(
+        routineId = routineId,
+        routineTitle = routineTitle,
+        minutes = minutes,
+        now = now,
+        onBeforeSettle = onBeforeSettle,
+    )
+
+    /**
+     * Atomically settles any currently active run (recording elapsed time if >= minimum)
+     * and starts and persists a fresh run for the new target.
+     */
+    suspend fun switchTo(
+        routineId: String?,
+        routineTitle: String?,
+        minutes: Int,
+        now: Long = System.currentTimeMillis(),
+        onBeforeSettle: () -> Unit = {},
+    ): ActiveFocusRun = settleLock.withLock {
+        onBeforeSettle()
+        val storage = storageProvider()
+        val previous = _run.value ?: storage?.currentActiveFocusRun()
+        if (previous != null) {
+            storage?.clearActiveFocusRun()
+            val session = FocusTimerEngine.toSession(previous, id = previous.id, now = now)
+            if (session != null) {
+                storage?.recordFocusSession(
+                    id = session.id,
+                    routineId = session.routineId,
+                    startedAt = session.startedAt,
+                    endedAt = session.endedAt,
+                    plannedMinutes = session.plannedMinutes,
+                    completed = session.completed,
+                )
+            }
+        }
+        val next = FocusTimerEngine.start(
+            id = UUID.randomUUID().toString(),
+            routineId = routineId,
+            routineTitle = routineTitle,
+            minutes = minutes,
+            now = now,
+        )
+        _run.value = next
+        storage?.setActiveFocusRun(next)
+        next
+    }
+
+    suspend fun pause(now: Long = System.currentTimeMillis()) = settleLock.withLock {
+        val current = _run.value ?: return@withLock
+        val updated = FocusTimerEngine.pause(current, now)
+        _run.value = updated
+        storageProvider()?.setActiveFocusRun(updated)
+    }
+
+    suspend fun resume(now: Long = System.currentTimeMillis()) = settleLock.withLock {
+        val current = _run.value ?: return@withLock
+        val updated = FocusTimerEngine.resume(current, now)
+        _run.value = updated
+        storageProvider()?.setActiveFocusRun(updated)
+    }
+
+    suspend fun advance(now: Long = System.currentTimeMillis()): Boolean = settleLock.withLock {
+        val pending = _run.value ?: return@withLock false
+        val ticked = FocusTimerEngine.tick(pending, now)
+        if (!ticked.completed) return@withLock false
+        _run.value = ticked.run
+        settleLocked(now)
+        true
+    }
+
+    suspend fun finish(now: Long = System.currentTimeMillis()) = settleLock.withLock {
+        settleLocked(now)
+    }
+
+    suspend fun discardWithoutRecording() = settleLock.withLock {
+        _run.value = null
+        storageProvider()?.clearActiveFocusRun()
+    }
+
+    suspend fun adopt(run: ActiveFocusRun?) = settleLock.withLock {
+        if (_run.value != null) return@withLock
+        _run.value = run
+    }
+
+    private suspend fun settleLocked(now: Long) {
+        val storage = storageProvider() ?: return
+        val current = _run.value ?: storage.currentActiveFocusRun() ?: return
+        _run.value = null
+        storage.clearActiveFocusRun()
+        val session = FocusTimerEngine.toSession(current, id = current.id, now = now) ?: return
+        storage.recordFocusSession(
+            id = session.id,
+            routineId = session.routineId,
+            startedAt = session.startedAt,
+            endedAt = session.endedAt,
+            plannedMinutes = session.plannedMinutes,
+            completed = session.completed,
+        )
+    }
+}
+
+/**
  * Process-wide view of the focus timer.
  *
  * The timer itself is owned by [FocusTimerService]; this object is the single place the
@@ -47,134 +179,77 @@ import java.util.UUID
  */
 object FocusTimerRuntime {
 
-    private val _run = MutableStateFlow<ActiveFocusRun?>(null)
-
-    /** Serialises settlement so the service and the UI cannot both record the same run. */
-    private val settleLock = Mutex()
+    private val coordinator = FocusTimerCoordinator { TagApp.containerOrNull?.repository }
 
     /** The run in progress, or null. Ticks are not pushed here; elapsed time is derived. */
-    val run: StateFlow<ActiveFocusRun?> = _run.asStateFlow()
+    val run: StateFlow<ActiveFocusRun?> = coordinator.run
 
     /**
      * Warms the in-memory copy from disk when nothing is loaded yet.
      *
      * The in-memory run is always at least as fresh as the stored one — while a run is
      * counting, the stored copy keeps its original start timestamp and elapsed time is
-     * derived from it — so an existing run is deliberately left untouched. That matters
-     * because this is called from the UI whenever the app is reopened, and the process
-     * (and this object) can survive the Activity being destroyed while the service runs.
+     * derived from it — so an existing run is deliberately left untouched.
      */
-    suspend fun restore(run: ActiveFocusRun?) {
-        if (_run.value != null) return
-        _run.value = run
-    }
+    suspend fun restore(run: ActiveFocusRun?) = coordinator.restore(run)
 
-    /** Starts a new run and makes it durable. */
+    /** Starts a new run and makes it durable, settling any prior active run first. */
     suspend fun start(
         routineId: String?,
         routineTitle: String?,
         minutes: Int,
         now: Long = System.currentTimeMillis(),
-    ): ActiveFocusRun {
-        val run = FocusTimerEngine.start(
-            id = UUID.randomUUID().toString(),
-            routineId = routineId,
-            routineTitle = routineTitle,
-            minutes = minutes,
-            now = now,
-        )
-        persist(run)
-        return run
-    }
+        onBeforeSettle: () -> Unit = {},
+    ): ActiveFocusRun = coordinator.start(
+        routineId = routineId,
+        routineTitle = routineTitle,
+        minutes = minutes,
+        now = now,
+        onBeforeSettle = onBeforeSettle,
+    )
 
-    suspend fun pause() {
-        val current = _run.value ?: return
-        persist(FocusTimerEngine.pause(current))
-    }
+    /** Settles any active run cleanly and starts a replacement run under the settle lock. */
+    suspend fun switchTo(
+        routineId: String?,
+        routineTitle: String?,
+        minutes: Int,
+        now: Long = System.currentTimeMillis(),
+        onBeforeSettle: () -> Unit = {},
+    ): ActiveFocusRun = coordinator.switchTo(
+        routineId = routineId,
+        routineTitle = routineTitle,
+        minutes = minutes,
+        now = now,
+        onBeforeSettle = onBeforeSettle,
+    )
 
-    suspend fun resume() {
-        val current = _run.value ?: return
-        persist(FocusTimerEngine.resume(current))
-    }
+    suspend fun pause() = coordinator.pause()
+
+    suspend fun resume() = coordinator.resume()
 
     /**
      * Advances the run against the wall clock and settles it when it has reached its
      * planned length.
      *
-     * Both the service and the Focus screen call this. Having one entry point means the
-     * session is recorded exactly once even if the service is not running, and the
-     * write is keyed by the run's id so a double call cannot double-count.
-     *
      * @return true when this call completed and recorded the run.
      */
-    suspend fun advance(): Boolean = settleLock.withLock {
-        // Re-read inside the lock: another caller may have settled it already.
-        val pending = _run.value ?: return@withLock false
-        if (!FocusTimerEngine.tick(pending).completed) return@withLock false
-        // Clamp to the planned length before settling, so the recording path sees the
-        // finished run rather than the overshoot.
-        _run.value = FocusTimerEngine.tick(pending).run
-        settleLocked()
-        true
-    }
+    suspend fun advance(): Boolean = coordinator.advance()
 
     /**
      * Clears the run, recording it when it earned a place in the history.
-     *
-     * Clearing happens before the write so the run can never come back to life if
-     * recording fails. The session id is the run's own id, which makes the write
-     * idempotent across the service, the backstop alarm and the startup sweep.
      */
-    suspend fun finish() = settleLock.withLock { settleLocked() }
+    suspend fun finish() = coordinator.finish()
 
     /**
      * Drops the active run from memory and disk without recording a history row.
      * Used when a full backup replace removes the linked routine.
      */
-    suspend fun discardWithoutRecording() = settleLock.withLock {
-        _run.value = null
-        TagApp.containerOrNull?.repository?.clearActiveFocusRun()
-    }
-
-    /**
-     * The body of [finish] and [advance], which must be called while holding [settleLock].
-     *
-     * When the in-memory copy is gone — the process was killed and the notification's
-     * stop action restarted the service — the run is read back from disk so the user's
-     * stop still records what they actually did.
-     */
-    private suspend fun settleLocked() {
-        val repository = TagApp.containerOrNull?.repository ?: return
-        val current = _run.value ?: repository.currentActiveFocusRun() ?: return
-        _run.value = null
-        repository.clearActiveFocusRun()
-        val session = FocusTimerEngine.toSession(current, id = current.id) ?: return
-        repository.recordFocusSession(
-            id = session.id,
-            routineId = session.routineId,
-            startedAt = session.startedAt,
-            endedAt = session.endedAt,
-            plannedMinutes = session.plannedMinutes,
-            completed = session.completed,
-        )
-    }
+    suspend fun discardWithoutRecording() = coordinator.discardWithoutRecording()
 
     /**
      * Applies a run loaded from disk without writing it back.
-     *
-     * Only fills the gap when nothing is loaded. A caller working from a stale snapshot
-     * — a notification action for a run the user has since replaced — must never be able
-     * to overwrite the live run that is already in memory.
      */
-    fun adopt(run: ActiveFocusRun?) {
-        if (_run.value != null) return
-        _run.value = run
-    }
-
-    private suspend fun persist(run: ActiveFocusRun) {
-        _run.value = run
-        TagApp.containerOrNull?.repository?.setActiveFocusRun(run)
-    }
+    suspend fun adopt(run: ActiveFocusRun?) = coordinator.adopt(run)
 }
 
 /**

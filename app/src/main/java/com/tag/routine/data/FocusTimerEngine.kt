@@ -1,6 +1,24 @@
 package com.tag.routine.data
 
 /**
+ * Persistence boundary for [com.tag.routine.notifications.FocusTimerCoordinator], kept
+ * Android-free so focus-timer transitions and locking can be unit tested directly on the JVM.
+ */
+interface FocusRunStorage {
+    suspend fun currentActiveFocusRun(): ActiveFocusRun?
+    suspend fun setActiveFocusRun(run: ActiveFocusRun)
+    suspend fun clearActiveFocusRun()
+    suspend fun recordFocusSession(
+        routineId: String?,
+        startedAt: Long,
+        endedAt: Long,
+        plannedMinutes: Int,
+        completed: Boolean,
+        id: String,
+    )
+}
+
+/**
  * The decision half of the focus timer, kept free of Android types so it can be unit
  * tested directly.
  *

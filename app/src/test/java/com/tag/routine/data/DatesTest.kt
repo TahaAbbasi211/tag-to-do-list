@@ -88,14 +88,15 @@ class DatesTest {
         val aban28 = LocalDate.of(2026, 11, 19) // 1405-08-28
 
         assertEquals("اسفند ۱۴۰۴ – فروردین ۱۴۰۵", Dates.monthYearRange(esfand25, farvardin8, fa, CalendarType.JALALI))
-        assertEquals("اسفند 1404 – فروردین 1405", Dates.monthYearRange(esfand25, farvardin8, en, CalendarType.JALALI))
+        assertEquals("Esfand 1404 – Farvardin 1405", Dates.monthYearRange(esfand25, farvardin8, en, CalendarType.JALALI))
         assertEquals("آبان ۱۴۰۵", Dates.monthYearRange(aban28, aban28, fa, CalendarType.JALALI))
+        assertEquals("Aban 1405", Dates.monthYearRange(aban28, aban28, Locale.FRENCH, CalendarType.JALALI))
 
         // Beyond +/- 6 days, relativeDayLabel falls back to dayMonth in the active calendar.
         val farLabelFa = Dates.relativeDayLabel(farvardin1, aban28, null, fa, CalendarType.JALALI)
         val farLabelEn = Dates.relativeDayLabel(farvardin1, aban28, null, en, CalendarType.JALALI)
         assertTrue(farLabelFa.contains("۱ فروردین"))
-        assertTrue(farLabelEn.contains("1 فروردین"))
+        assertTrue(farLabelEn.contains("1 Farvardin"))
     }
 
     @Test

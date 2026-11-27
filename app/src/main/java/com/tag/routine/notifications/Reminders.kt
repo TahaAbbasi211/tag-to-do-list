@@ -28,6 +28,9 @@ import java.time.ZonedDateTime
  *
  * POST_NOTIFICATIONS is only a runtime permission from Android 13 (API 33); before that
  * the system-wide notifications switch alone decides whether posting is allowed.
+ * Runtime permission prompts are strictly contextual (e.g. enabling reminders/digest in
+ * Settings or saving a routine with a reminder enabled for the first time), never shown
+ * cold during onboarding.
  */
 internal object NotificationPolicy {
     fun shouldPost(
@@ -39,8 +42,65 @@ internal object NotificationPolicy {
     fun shouldRequestRuntimePermission(
         sdkInt: Int,
         permissionGranted: Boolean,
-        onboarded: Boolean,
-    ): Boolean = sdkInt >= Build.VERSION_CODES.TIRAMISU && !permissionGranted && onboarded
+        contextualTrigger: Boolean,
+    ): Boolean = sdkInt >= Build.VERSION_CODES.TIRAMISU && !permissionGranted && contextualTrigger
+
+    fun shouldTriggerOnRoutineSave(
+        previousReminderEnabled: Boolean,
+        newReminderEnabled: Boolean,
+        hasReminderTime: Boolean,
+    ): Boolean = newReminderEnabled && hasReminderTime && !previousReminderEnabled
+
+    fun shouldRequestOnRoutineSave(
+        sdkInt: Int,
+        permissionGranted: Boolean,
+        previousReminderEnabled: Boolean,
+        newReminderEnabled: Boolean,
+        hasReminderTime: Boolean,
+    ): Boolean = shouldRequestRuntimePermission(
+        sdkInt = sdkInt,
+        permissionGranted = permissionGranted,
+        contextualTrigger = shouldTriggerOnRoutineSave(
+            previousReminderEnabled = previousReminderEnabled,
+            newReminderEnabled = newReminderEnabled,
+            hasReminderTime = hasReminderTime,
+        ),
+    )
+}
+
+internal enum class AlarmScheduleMode {
+    EXACT,
+    INEXACT_WINDOW,
+}
+
+/**
+ * Pure exact-alarm decision: on Android 12+ (API 31+) exact alarms require user-granted
+ * SCHEDULE_EXACT_ALARM (never USE_EXACT_ALARM), falling back to an inexact window when
+ * denied or revoked.
+ */
+internal object AlarmSchedulingPolicy {
+    fun modeFor(sdkInt: Int, canScheduleExactAlarms: Boolean): AlarmScheduleMode =
+        if (sdkInt >= Build.VERSION_CODES.S && !canScheduleExactAlarms) {
+            AlarmScheduleMode.INEXACT_WINDOW
+        } else {
+            AlarmScheduleMode.EXACT
+        }
+}
+
+internal fun AlarmManager.scheduleRtcWakeup(triggerAt: Long, pending: PendingIntent) {
+    val mode = AlarmSchedulingPolicy.modeFor(
+        sdkInt = Build.VERSION.SDK_INT,
+        canScheduleExactAlarms = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || canScheduleExactAlarms(),
+    )
+    if (mode == AlarmScheduleMode.INEXACT_WINDOW) {
+        setWindow(AlarmManager.RTC_WAKEUP, triggerAt, AppConstants.ALARM_WINDOW_MILLIS, pending)
+        return
+    }
+    runCatching {
+        setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pending)
+    }.onFailure {
+        setWindow(AlarmManager.RTC_WAKEUP, triggerAt, AppConstants.ALARM_WINDOW_MILLIS, pending)
+    }
 }
 
 object Notifications {
@@ -487,16 +547,7 @@ object ReminderScheduler {
         pending: PendingIntent,
         requestCode: Int,
     ) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-            // Exact alarms are unavailable: fall back to an inexact window so reminders still fire.
-            alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, AppConstants.ALARM_WINDOW_MILLIS, pending)
-            return
-        }
-        runCatching {
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pending)
-        }.onFailure {
-            alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, AppConstants.ALARM_WINDOW_MILLIS, pending)
-        }
+        alarmManager.scheduleRtcWakeup(triggerAt, pending)
     }
 
     /** Next epoch millis matching [routine]'s schedule at [minutes] past midnight, or null if none upcoming. */

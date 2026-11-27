@@ -511,6 +511,7 @@ private fun InsightsContent(state: UiState) {
                         val top = state.routineRates.take(5)
                         top.forEachIndexed { index, (routine, rate) ->
                             RoutineLeaderboardRow(
+                                routineId = routine.id,
                                 title = routine.title,
                                 rate = rate,
                                 appLocale = appLocale,
@@ -651,6 +652,7 @@ private fun weekdayName(isoWeekday: Int, locale: Locale): String {
 
 @Composable
 private fun RoutineLeaderboardRow(
+    routineId: String,
     title: String,
     rate: Float,
     appLocale: Locale,
@@ -667,7 +669,7 @@ private fun RoutineLeaderboardRow(
             size = 38.dp,
             stroke = 4.dp,
             color = MaterialTheme.colorScheme.primary,
-            revealKey = "insights-leaderboard:$title",
+            revealKey = "insights-leaderboard:$routineId",
         )
         Spacer(Modifier.width(spacing.md))
         Column(modifier = Modifier.weight(1f)) {

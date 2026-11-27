@@ -103,6 +103,21 @@ class AccessibilityLabelsTest {
     }
 
     @Test
+    fun `heatmap cell in jalali calendar uses Latin month name for non-Persian locales`() {
+        val label = AccessibilityLabels.heatmapCell(
+            date = LocalDate.of(2024, 3, 20),
+            scheduled = 4,
+            completed = 3,
+            locale = en,
+            calendarType = CalendarType.JALALI,
+            noItemsLabel = noItems,
+            cellPattern = cellPattern,
+        )
+        assertTrue("missing Latin jalali month: $label", label.contains("Farvardin"))
+        assertTrue("missing percent: $label", label.contains("75%"))
+    }
+
+    @Test
     fun `heatmap cell without scheduled items reports the neutral state`() {
         val label = AccessibilityLabels.heatmapCell(
             date = LocalDate.of(2024, 1, 15),

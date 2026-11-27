@@ -250,6 +250,10 @@
     <string name="focus_minutes">%1$d dk</string>
     <string name="focus_session_done">Odaklanma oturumu tamamlandı</string>
     <string name="focus_total">Toplam odaklanma: %1$s</string>
+    <string name="focus_switch_title">Odak oturumu değiştirilsin mi?</string>
+    <string name="focus_switch_body">\"%1$s\" şu anda çalışıyor. Durdurulup kaydedilsin ve \"%2$s\" başlatılsın mı?</string>
+    <string name="focus_switch_confirm">Durdur ve değiştir</string>
+    <string name="focus_switch_keep">Mevcut olanı koru</string>
 
     <!-- Odak ekranı -->
     <string name="focus_subtitle">Derin çalışma, her seferinde bir blok</string>
