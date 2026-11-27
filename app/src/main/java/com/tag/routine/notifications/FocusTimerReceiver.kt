@@ -70,6 +70,9 @@ class FocusTimerReceiver : BroadcastReceiver() {
                         FocusTimerAlarms.cancel(context)
                         FocusTimerRuntime.adopt(container.repository.currentActiveFocusRun())
                         FocusTimerRuntime.finish()
+                        runCatching {
+                            context.stopService(Intent(context, FocusTimerService::class.java))
+                        }
                     }
 
                     else -> {
@@ -79,12 +82,22 @@ class FocusTimerReceiver : BroadcastReceiver() {
                         // length, and its lock plus the run-id-keyed write make this safe
                         // even if the service is finishing the same run at the same moment.
                         FocusTimerRuntime.adopt(run)
-                        FocusTimerRuntime.advance()
+                        val transition = FocusTimerRuntime.advanceWithTransition()
+                        val next = transition.next
+                        if (next != null && next.running) {
+                            // Break mode auto-started the next phase; keep the foreground
+                            // service and its backstop alarm alive from this receiver.
+                            FocusTimerAlarms.arm(context, next)
+                            runCatching { FocusTimerService.start(context) }
+                        } else {
+                            // No next phase (or it is a paused focus run): tear the service
+                            // down. `stopService` is always permitted, unlike `startService`.
+                            runCatching {
+                                context.stopService(Intent(context, FocusTimerService::class.java))
+                            }
+                        }
                     }
                 }
-                // Tear the service down if it is still up. `stopService` is always
-                // permitted, unlike `startService`, which a background app may not call.
-                runCatching { context.stopService(Intent(context, FocusTimerService::class.java)) }
             } finally {
                 pending.finish()
             }

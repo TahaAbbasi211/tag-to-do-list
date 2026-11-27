@@ -211,6 +211,8 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
 
     fun resumeFocus() = focusController.resume()
 
+    fun skipFocusBreak() = focusController.skipBreak()
+
     fun stopFocus() = focusController.stop()
 
     fun finishFocus() = focusController.finish()
@@ -806,6 +808,26 @@ class AppViewModel(private val container: AppContainer) : ViewModel() {
     /** Stores the default focus length used when the Focus screen opens. */
     fun setFocusMinutes(minutes: Int) = viewModelScope.launch {
         repository.setFocusMinutes(AppConstants.clampFocusMinutes(minutes))
+    }
+
+    fun setBreakModeEnabled(enabled: Boolean) = viewModelScope.launch {
+        repository.setBreakModeEnabled(enabled)
+    }
+
+    fun setShortBreakMinutes(minutes: Int) = viewModelScope.launch {
+        repository.setShortBreakMinutes(AppConstants.clampShortBreakMinutes(minutes))
+    }
+
+    fun setLongBreakMinutes(minutes: Int) = viewModelScope.launch {
+        repository.setLongBreakMinutes(AppConstants.clampLongBreakMinutes(minutes))
+    }
+
+    fun setLongBreakInterval(sessions: Int) = viewModelScope.launch {
+        repository.setLongBreakInterval(AppConstants.clampLongBreakInterval(sessions))
+    }
+
+    fun setAutoStartBreak(enabled: Boolean) = viewModelScope.launch {
+        repository.setAutoStartBreak(enabled)
     }
 
     fun resetProgress() = viewModelScope.launch { repository.resetProgress() }

@@ -47,6 +47,36 @@ object AppConstants {
     fun clampFocusMinutes(minutes: Int): Int =
         minutes.coerceIn(MIN_FOCUS_MINUTES, MAX_FOCUS_MINUTES)
 
+    /** Default short break after a focus session, in minutes. */
+    const val DEFAULT_SHORT_BREAK_MINUTES = 5
+
+    /** Default long break after a full cycle, in minutes. */
+    const val DEFAULT_LONG_BREAK_MINUTES = 15
+
+    /** Default number of focus sessions in one cycle before a long break. */
+    const val DEFAULT_LONG_BREAK_INTERVAL = 4
+
+    /** Shortest break length the user may enter, in minutes. */
+    const val MIN_BREAK_MINUTES = 1
+
+    /** Longest break length the user may enter, in minutes. */
+    const val MAX_BREAK_MINUTES = 60
+
+    /** Shortest supported long-break interval, in focus sessions. */
+    const val MIN_LONG_BREAK_INTERVAL = 2
+
+    /** Longest supported long-break interval, in focus sessions. */
+    const val MAX_LONG_BREAK_INTERVAL = 10
+
+    fun clampShortBreakMinutes(minutes: Int): Int =
+        minutes.coerceIn(MIN_BREAK_MINUTES, MAX_BREAK_MINUTES)
+
+    fun clampLongBreakMinutes(minutes: Int): Int =
+        minutes.coerceIn(MIN_BREAK_MINUTES, MAX_BREAK_MINUTES)
+
+    fun clampLongBreakInterval(sessions: Int): Int =
+        sessions.coerceIn(MIN_LONG_BREAK_INTERVAL, MAX_LONG_BREAK_INTERVAL)
+
     /** How far ahead a snoozed reminder is re-armed, in minutes. */
     const val SNOOZE_MINUTES = 15
 

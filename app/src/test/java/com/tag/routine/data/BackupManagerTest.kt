@@ -137,6 +137,11 @@ class BackupManagerTest {
             hapticsEnabled = false,
             onboarded = true,
             focusMinutes = 45,
+            breakModeEnabled = true,
+            shortBreakMinutes = 7,
+            longBreakMinutes = 20,
+            longBreakInterval = 3,
+            autoStartBreak = false,
             templatesCardDismissed = true,
             animationSetting = AnimationSetting.REDUCED,
         )
@@ -587,6 +592,12 @@ class BackupManagerTest {
         assertEquals("teal", settings.themePalette)
         assertEquals(CalendarType.JALALI, settings.calendarType)
         assertFalse(settings.hapticsEnabled)
+        // Break fields did not exist in v1.9; they must fall back to safe defaults.
+        assertFalse(settings.breakModeEnabled)
+        assertEquals(AppConstants.DEFAULT_SHORT_BREAK_MINUTES, settings.shortBreakMinutes)
+        assertEquals(AppConstants.DEFAULT_LONG_BREAK_MINUTES, settings.longBreakMinutes)
+        assertEquals(AppConstants.DEFAULT_LONG_BREAK_INTERVAL, settings.longBreakInterval)
+        assertTrue(settings.autoStartBreak)
     }
 
     // ---------------------------------------------------------------- round-trip

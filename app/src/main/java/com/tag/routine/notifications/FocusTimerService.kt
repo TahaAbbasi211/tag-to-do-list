@@ -19,6 +19,8 @@ import com.tag.routine.R
 import com.tag.routine.TagApp
 import com.tag.routine.data.ActiveFocusRun
 import com.tag.routine.data.AppConstants
+import com.tag.routine.data.FocusBreakEngine
+import com.tag.routine.data.FocusPhase
 import com.tag.routine.data.FocusRunStorage
 import com.tag.routine.data.FocusTimerEngine
 import kotlinx.coroutines.CoroutineScope
@@ -34,6 +36,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.UUID
+
+/** Result of one completed phase, including the run that should come next. */
+data class FocusTransition(
+    val completed: Boolean = false,
+    val previousPhase: FocusPhase = FocusPhase.FOCUS,
+    val recordedFocus: Boolean = false,
+    val next: ActiveFocusRun? = null,
+)
 
 /**
  * Pure coroutine state machine behind [FocusTimerRuntime].
@@ -126,12 +136,38 @@ internal class FocusTimerCoordinator(
         storageProvider()?.setActiveFocusRun(updated)
     }
 
-    suspend fun advance(now: Long = System.currentTimeMillis()): Boolean = settleLock.withLock {
-        val pending = _run.value ?: return@withLock false
+    suspend fun advance(now: Long = System.currentTimeMillis()): Boolean =
+        advanceWithTransition(now).completed
+
+    /**
+     * Completes the current phase and applies the break state machine.
+     *
+     * A completed focus run is recorded once, then either becomes a break or, when
+     * break mode is off, clears exactly like the pre-2.2 timer. A completed break is
+     * never recorded; it becomes a paused focus run ready for the user.
+     */
+    suspend fun advanceWithTransition(
+        now: Long = System.currentTimeMillis(),
+    ): FocusTransition = settleLock.withLock {
+        val pending = _run.value ?: return@withLock FocusTransition()
         val ticked = FocusTimerEngine.tick(pending, now)
-        if (!ticked.completed) return@withLock false
+        if (!ticked.completed) return@withLock FocusTransition()
         _run.value = ticked.run
-        settleLocked(now)
+        settlePhaseLocked(ticked.run, now)
+    }
+
+    /**
+     * Skips the current break and leaves a paused focus run ready to start.
+     * Returns false when there is no active break.
+     */
+    suspend fun skipBreak(now: Long = System.currentTimeMillis()): Boolean = settleLock.withLock {
+        val current = _run.value ?: return@withLock false
+        if (!current.phase.isBreak) return@withLock false
+        val storage = storageProvider() ?: return@withLock false
+        val next = FocusBreakEngine.skipBreak(current, storage.focusBreakSettings(), now)
+            ?: return@withLock false
+        _run.value = next
+        storage.setActiveFocusRun(next)
         true
     }
 
@@ -149,11 +185,46 @@ internal class FocusTimerCoordinator(
         _run.value = run
     }
 
+    private suspend fun settlePhaseLocked(current: ActiveFocusRun, now: Long): FocusTransition {
+        val storage = storageProvider() ?: return FocusTransition(completed = true)
+        val previousPhase = current.phase
+        _run.value = null
+        storage.clearActiveFocusRun()
+        val session = FocusTimerEngine.toSession(current, id = current.id, now = now)
+        if (session != null) {
+            storage.recordFocusSession(
+                id = session.id,
+                routineId = session.routineId,
+                startedAt = session.startedAt,
+                endedAt = session.endedAt,
+                plannedMinutes = session.plannedMinutes,
+                completed = session.completed,
+            )
+        }
+        val settings = storage.focusBreakSettings()
+        val next = if (current.phase == FocusPhase.FOCUS) {
+            FocusBreakEngine.afterFocus(current, settings, now)
+        } else {
+            FocusBreakEngine.nextFocus(current, settings, now)
+        }
+        if (next != null) {
+            _run.value = next
+            storage.setActiveFocusRun(next)
+        }
+        return FocusTransition(
+            completed = true,
+            previousPhase = previousPhase,
+            recordedFocus = session != null,
+            next = next,
+        )
+    }
+
     private suspend fun settleLocked(now: Long) {
         val storage = storageProvider() ?: return
         val current = _run.value ?: storage.currentActiveFocusRun() ?: return
         _run.value = null
         storage.clearActiveFocusRun()
+        // A stopped break is discarded silently; only focus time belongs in history.
         val session = FocusTimerEngine.toSession(current, id = current.id, now = now) ?: return
         storage.recordFocusSession(
             id = session.id,
@@ -231,9 +302,16 @@ object FocusTimerRuntime {
      * Advances the run against the wall clock and settles it when it has reached its
      * planned length.
      *
-     * @return true when this call completed and recorded the run.
+     * @return true when this call completed the phase.
      */
     suspend fun advance(): Boolean = coordinator.advance()
+
+    /** Completes the current phase and reports the break/focus run that replaced it. */
+    suspend fun advanceWithTransition(): FocusTransition =
+        coordinator.advanceWithTransition()
+
+    /** Skips an active break and leaves the next focus run paused. */
+    suspend fun skipBreak(): Boolean = coordinator.skipBreak()
 
     /**
      * Clears the run, recording it when it earned a place in the history.
@@ -344,10 +422,24 @@ class FocusTimerService : Service() {
                 armCompletionAlarm(current)
                 publishIfChanged(current)
 
-                val completed = FocusTimerRuntime.advance()
-                if (completed) {
+                val transition = FocusTimerRuntime.advanceWithTransition()
+                if (transition.completed) {
                     FocusTimerAlarms.cancel(this@FocusTimerService)
-                    notifyFinished(current)
+                    notifyPhaseTransition(transition, current)
+                    val next = transition.next
+                    if (next != null && next.running) {
+                        publishedFingerprint = null
+                        promoteToForeground(next)
+                        continue
+                    }
+                    stopTimer()
+                    return@launch
+                }
+                // The screen can settle the same phase first. If that produced a paused
+                // next run (a finished break or a skipped break), this service has nothing
+                // left to watch; a null run means the user stopped it entirely.
+                val latest = FocusTimerRuntime.run.value
+                if (latest == null || (latest.id != current.id && !latest.running)) {
                     stopTimer()
                     return@launch
                 }
@@ -374,6 +466,8 @@ class FocusTimerService : Service() {
             displayedSeconds,
             run.plannedMinutes,
             run.routineTitle,
+            run.phase.key,
+            run.cycleCount,
         ).joinToString("|")
         if (fingerprint == publishedFingerprint) return
         publishedFingerprint = fingerprint
@@ -465,8 +559,12 @@ class FocusTimerService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 
-        val title = run.routineTitle?.takeIf { it.isNotBlank() }
-            ?: getString(R.string.focus_history_untitled)
+        val title = when (run.phase) {
+            FocusPhase.SHORT_BREAK -> getString(R.string.focus_phase_short_break)
+            FocusPhase.LONG_BREAK -> getString(R.string.focus_phase_long_break)
+            FocusPhase.FOCUS -> run.routineTitle?.takeIf { it.isNotBlank() }
+                ?: getString(R.string.focus_history_untitled)
+        }
 
         val builder = NotificationCompat.Builder(this, FocusTimerNotifications.CHANNEL_FOCUS)
             .setSmallIcon(R.drawable.ic_stat_tag)
@@ -504,6 +602,70 @@ class FocusTimerService : Service() {
      */
     private fun remainingDeadline(run: ActiveFocusRun): Long =
         SystemClock.elapsedRealtime() + run.remainingSeconds() * 1000L
+
+    /** Announces the phase the timer just moved into, using the shared notification gate. */
+    private fun notifyPhaseTransition(transition: FocusTransition, finished: ActiveFocusRun) {
+        val next = transition.next
+        when {
+            transition.previousPhase == FocusPhase.FOCUS && next == null ->
+                notifyFinished(finished)
+            next != null && next.phase.isBreak -> notifyBreakStarted(next)
+            next != null && transition.previousPhase.isBreak -> notifyFocusReady()
+        }
+    }
+
+    private fun notifyBreakStarted(run: ActiveFocusRun) {
+        if (!Notifications.canPost(this)) return
+        val openApp = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val title = if (run.phase == FocusPhase.LONG_BREAK) {
+            getString(R.string.focus_phase_long_break)
+        } else {
+            getString(R.string.focus_phase_short_break)
+        }
+        val notification = NotificationCompat.Builder(this, FocusTimerNotifications.CHANNEL_FOCUS)
+            .setSmallIcon(R.drawable.ic_stat_tag)
+            .setContentTitle(getString(R.string.notif_break_started_title))
+            .setContentText(
+                getString(
+                    R.string.notif_break_started_text,
+                    getString(R.string.focus_minutes, run.plannedMinutes),
+                ),
+            )
+            .setSubText(title)
+            .setColor(0xFF4FD9C0.toInt())
+            .setAutoCancel(true)
+            .setContentIntent(openApp)
+            .build()
+        runCatching { Notifications.post(this, PHASE_NOTIFICATION_ID, notification) }
+    }
+
+    private fun notifyFocusReady() {
+        if (!Notifications.canPost(this)) return
+        val openApp = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val notification = NotificationCompat.Builder(this, FocusTimerNotifications.CHANNEL_FOCUS)
+            .setSmallIcon(R.drawable.ic_stat_tag)
+            .setContentTitle(getString(R.string.notif_focus_ready_title))
+            .setContentText(getString(R.string.notif_focus_ready_text))
+            .setColor(0xFF7C6CFF.toInt())
+            .setAutoCancel(true)
+            .setContentIntent(openApp)
+            .build()
+        runCatching { Notifications.post(this, PHASE_NOTIFICATION_ID, notification) }
+    }
 
     /** Tells the user the run finished, then removes the ongoing notification. */
     private fun notifyFinished(run: ActiveFocusRun) {
@@ -550,6 +712,7 @@ class FocusTimerService : Service() {
 
         private const val NOTIFICATION_ID = 4201
         private const val FINISHED_NOTIFICATION_ID = 4202
+        private const val PHASE_NOTIFICATION_ID = 4203
         private const val TICK_MILLIS = 1_000L
 
         /** How often the notification's text is re-rendered while the run is counting. */

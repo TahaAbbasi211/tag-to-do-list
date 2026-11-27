@@ -39,6 +39,11 @@ class SettingsStore(private val context: Context) {
         val seeded = booleanPreferencesKey("seeded")
         val onboarded = booleanPreferencesKey("onboarded")
         val focusMinutes = intPreferencesKey("focus_minutes")
+        val breakModeEnabled = booleanPreferencesKey("break_mode_enabled")
+        val shortBreakMinutes = intPreferencesKey("short_break_minutes")
+        val longBreakMinutes = intPreferencesKey("long_break_minutes")
+        val longBreakInterval = intPreferencesKey("long_break_interval")
+        val autoStartBreak = booleanPreferencesKey("auto_start_break")
         val activeFocusRun = stringPreferencesKey("active_focus_run")
         val firstLaunchDate = stringPreferencesKey("first_launch_date")
         val templatesCardDismissed = booleanPreferencesKey("templates_card_dismissed")
@@ -65,6 +70,17 @@ class SettingsStore(private val context: Context) {
             focusMinutes = AppConstants.clampFocusMinutes(
                 prefs[Keys.focusMinutes] ?: AppConstants.DEFAULT_FOCUS_MINUTES,
             ),
+            breakModeEnabled = prefs[Keys.breakModeEnabled] ?: false,
+            shortBreakMinutes = AppConstants.clampShortBreakMinutes(
+                prefs[Keys.shortBreakMinutes] ?: AppConstants.DEFAULT_SHORT_BREAK_MINUTES,
+            ),
+            longBreakMinutes = AppConstants.clampLongBreakMinutes(
+                prefs[Keys.longBreakMinutes] ?: AppConstants.DEFAULT_LONG_BREAK_MINUTES,
+            ),
+            longBreakInterval = AppConstants.clampLongBreakInterval(
+                prefs[Keys.longBreakInterval] ?: AppConstants.DEFAULT_LONG_BREAK_INTERVAL,
+            ),
+            autoStartBreak = prefs[Keys.autoStartBreak] ?: true,
             firstLaunchDate = prefs[Keys.firstLaunchDate] ?: "",
             templatesCardDismissed = prefs[Keys.templatesCardDismissed] ?: false,
             animationSetting = AnimationSetting.fromKey(prefs[Keys.animationSetting]),
@@ -150,6 +166,26 @@ class SettingsStore(private val context: Context) {
         it[Keys.focusMinutes] = AppConstants.clampFocusMinutes(minutes)
     }
 
+    suspend fun setBreakModeEnabled(enabled: Boolean) = context.settingsStore.edit {
+        it[Keys.breakModeEnabled] = enabled
+    }
+
+    suspend fun setShortBreakMinutes(minutes: Int) = context.settingsStore.edit {
+        it[Keys.shortBreakMinutes] = AppConstants.clampShortBreakMinutes(minutes)
+    }
+
+    suspend fun setLongBreakMinutes(minutes: Int) = context.settingsStore.edit {
+        it[Keys.longBreakMinutes] = AppConstants.clampLongBreakMinutes(minutes)
+    }
+
+    suspend fun setLongBreakInterval(sessions: Int) = context.settingsStore.edit {
+        it[Keys.longBreakInterval] = AppConstants.clampLongBreakInterval(sessions)
+    }
+
+    suspend fun setAutoStartBreak(enabled: Boolean) = context.settingsStore.edit {
+        it[Keys.autoStartBreak] = enabled
+    }
+
     /** Records [todayIso] as the first launch date if none has been stored yet. */
     suspend fun ensureFirstLaunchDate(todayIso: String) = context.settingsStore.edit { prefs ->
         if (prefs[Keys.firstLaunchDate].isNullOrBlank()) {
@@ -181,6 +217,11 @@ class SettingsStore(private val context: Context) {
             prefs[Keys.digestMinutes] = backup.dailyDigestMinutes.coerceIn(0, 1439)
             prefs[Keys.haptics] = backup.hapticsEnabled
             prefs[Keys.focusMinutes] = AppConstants.clampFocusMinutes(backup.focusMinutes)
+            prefs[Keys.breakModeEnabled] = backup.breakModeEnabled
+            prefs[Keys.shortBreakMinutes] = AppConstants.clampShortBreakMinutes(backup.shortBreakMinutes)
+            prefs[Keys.longBreakMinutes] = AppConstants.clampLongBreakMinutes(backup.longBreakMinutes)
+            prefs[Keys.longBreakInterval] = AppConstants.clampLongBreakInterval(backup.longBreakInterval)
+            prefs[Keys.autoStartBreak] = backup.autoStartBreak
             prefs[Keys.templatesCardDismissed] = backup.templatesCardDismissed
             prefs[Keys.animationSetting] = backup.animationSetting.key
             prefs[Keys.onboarded] = true

@@ -505,6 +505,8 @@ private fun TagRoot(
                                     defaultMinutes = state.settings.focusMinutes,
                                     calendarType = state.settings.calendarType,
                                     calmMode = focusCalmMode,
+                                    breakModeEnabled = state.settings.breakModeEnabled,
+                                    longBreakInterval = state.settings.longBreakInterval,
                                     onToggleCalmMode = {
                                         focusCalmMode = FocusMotionLogic.resolveCalmMode(
                                             requestedCalm = !focusCalmMode,
@@ -514,6 +516,7 @@ private fun TagRoot(
                                     onStart = viewModel::startFocus,
                                     onPause = viewModel::pauseFocus,
                                     onResume = viewModel::resumeFocus,
+                                    onSkipBreak = viewModel::skipFocusBreak,
                                     onFinish = viewModel::finishFocus,
                                 )
 
@@ -555,6 +558,11 @@ private fun TagRoot(
                                     },
                                     onSetName = viewModel::setUserName,
                                     onFocusMinutes = viewModel::setFocusMinutes,
+                                    onBreakMode = viewModel::setBreakModeEnabled,
+                                    onShortBreakMinutes = viewModel::setShortBreakMinutes,
+                                    onLongBreakMinutes = viewModel::setLongBreakMinutes,
+                                    onLongBreakInterval = viewModel::setLongBreakInterval,
+                                    onAutoStartBreak = viewModel::setAutoStartBreak,
                                     onOpenLanguages = { showLanguagePage = true },
                                 )
                             }

@@ -43,6 +43,7 @@ import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material3.HorizontalDivider
@@ -153,6 +154,11 @@ fun SettingsScreen(
     onDeleteTag: (String) -> Unit,
     onSetName: (String) -> Unit,
     onFocusMinutes: (Int) -> Unit,
+    onBreakMode: (Boolean) -> Unit,
+    onShortBreakMinutes: (Int) -> Unit,
+    onLongBreakMinutes: (Int) -> Unit,
+    onLongBreakInterval: (Int) -> Unit,
+    onAutoStartBreak: (Boolean) -> Unit,
     onOpenLanguages: () -> Unit,
 ) {
     val settings = state.settings
@@ -170,6 +176,9 @@ fun SettingsScreen(
     var newTag by remember { mutableStateOf("") }
     var nameInput by remember { mutableStateOf(settings.userName) }
     var focusInput by remember { mutableStateOf(settings.focusMinutes.toString()) }
+    var shortBreakInput by remember { mutableStateOf(settings.shortBreakMinutes.toString()) }
+    var longBreakInput by remember { mutableStateOf(settings.longBreakMinutes.toString()) }
+    var intervalInput by remember { mutableStateOf(settings.longBreakInterval.toString()) }
     val launchExport = rememberBackupExportLauncher(onExportUri)
     val launchImport = rememberBackupImportLauncher(onImportUri)
     val backupBusy = backupState is BackupUiState.Working
@@ -181,6 +190,15 @@ fun SettingsScreen(
     }
     LaunchedEffect(settings.focusMinutes) {
         focusInput = settings.focusMinutes.toString()
+    }
+    LaunchedEffect(settings.shortBreakMinutes) {
+        shortBreakInput = settings.shortBreakMinutes.toString()
+    }
+    LaunchedEffect(settings.longBreakMinutes) {
+        longBreakInput = settings.longBreakMinutes.toString()
+    }
+    LaunchedEffect(settings.longBreakInterval) {
+        intervalInput = settings.longBreakInterval.toString()
     }
 
     LargeScreenFrame {
@@ -428,6 +446,83 @@ fun SettingsScreen(
                         shape = MaterialTheme.shapes.small,
                     )
                 }
+            }
+
+            Spacer(Modifier.height(spacing.lg))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            Spacer(Modifier.height(spacing.md))
+            SettingsToggle(
+                icon = Icons.Rounded.Timer,
+                title = stringResource(R.string.settings_break_mode),
+                subtitle = stringResource(R.string.settings_break_mode_desc),
+                checked = settings.breakModeEnabled,
+                onCheckedChange = onBreakMode,
+            )
+
+            if (settings.breakModeEnabled) {
+                Spacer(Modifier.height(spacing.md))
+                val shortParsed = shortBreakInput.toIntOrNull()
+                val longParsed = longBreakInput.toIntOrNull()
+                val intervalParsed = intervalInput.toIntOrNull()
+                val breakValid = shortParsed != null &&
+                    shortParsed in AppConstants.MIN_BREAK_MINUTES..AppConstants.MAX_BREAK_MINUTES &&
+                    longParsed != null &&
+                    longParsed in AppConstants.MIN_BREAK_MINUTES..AppConstants.MAX_BREAK_MINUTES &&
+                    intervalParsed != null &&
+                    intervalParsed in AppConstants.MIN_LONG_BREAK_INTERVAL..AppConstants.MAX_LONG_BREAK_INTERVAL
+
+                SettingsNumberField(
+                    value = shortBreakInput,
+                    onValueChange = { shortBreakInput = it.filter { ch -> ch.isDigit() }.take(2) },
+                    label = stringResource(R.string.settings_short_break),
+                    hint = stringResource(
+                        R.string.settings_break_range,
+                        AppConstants.MIN_BREAK_MINUTES,
+                        AppConstants.MAX_BREAK_MINUTES,
+                    ),
+                )
+                Spacer(Modifier.height(spacing.sm))
+                SettingsNumberField(
+                    value = longBreakInput,
+                    onValueChange = { longBreakInput = it.filter { ch -> ch.isDigit() }.take(2) },
+                    label = stringResource(R.string.settings_long_break),
+                    hint = stringResource(
+                        R.string.settings_break_range,
+                        AppConstants.MIN_BREAK_MINUTES,
+                        AppConstants.MAX_BREAK_MINUTES,
+                    ),
+                )
+                Spacer(Modifier.height(spacing.sm))
+                SettingsNumberField(
+                    value = intervalInput,
+                    onValueChange = { intervalInput = it.filter { ch -> ch.isDigit() }.take(2) },
+                    label = stringResource(R.string.settings_long_break_interval),
+                    hint = stringResource(
+                        R.string.settings_interval_range,
+                        AppConstants.MIN_LONG_BREAK_INTERVAL,
+                        AppConstants.MAX_LONG_BREAK_INTERVAL,
+                    ),
+                )
+                Spacer(Modifier.height(spacing.sm))
+                AppButton(
+                    text = stringResource(R.string.action_save),
+                    onClick = {
+                        shortParsed?.let(onShortBreakMinutes)
+                        longParsed?.let(onLongBreakMinutes)
+                        intervalParsed?.let(onLongBreakInterval)
+                    },
+                    enabled = breakValid,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                )
+                Spacer(Modifier.height(spacing.sm))
+                SettingsToggle(
+                    icon = Icons.Rounded.PlayArrow,
+                    title = stringResource(R.string.settings_auto_start_break),
+                    subtitle = stringResource(R.string.settings_auto_start_break_desc),
+                    checked = settings.autoStartBreak,
+                    onCheckedChange = onAutoStartBreak,
+                )
             }
         }
 
@@ -1028,6 +1123,25 @@ private fun currentLanguageLabel(tag: String): String {
     if (sanitized == AppLanguage.SYSTEM) return stringResource(R.string.settings_language_system)
     return AppLanguage.supported.firstOrNull { it.tag == sanitized }?.nativeName
         ?: stringResource(R.string.settings_language_system)
+}
+
+@Composable
+private fun SettingsNumberField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    hint: String,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        supportingText = { Text(hint) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 @Composable
